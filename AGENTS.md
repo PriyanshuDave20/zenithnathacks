@@ -43,6 +43,11 @@ A Python backend may be added later; if so it lives in `api/` and contracts go i
 - Record decisions and API contracts in `docs/` so other people's agents see them.
 - Don't run destructive git commands (force-push, reset --hard) on shared branches.
 
+## Code graph (graphify, optional, local only)
+- The graphify knowledge graph lives OUTSIDE the repo: `~/.graphify/zenithnathacks/graphify-out/graph.json` (AST-only build of `src/`, no LLM cost). Never write `graphify-out/` into the repo.
+- Query instead of reading many files: `graphify query "<question>" --graph ~/.graphify/zenithnathacks/graphify-out/graph.json --budget 1500`.
+- Rebuild steps are in the top `docs/HANDOFF.md` entry that mentions graphify. The graph is per machine; teammates without it just use grep.
+
 ## Task board
 Active tasks and owners live in `docs/TASKS.md`. Update it when you start/finish something.
 

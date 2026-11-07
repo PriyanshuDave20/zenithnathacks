@@ -15,6 +15,35 @@ Do not put secrets or patient data here.
 
 ## Entries
 
+### 2026-11-07  Zach / Claude  zach/body-diagram (handover: infrastructure overhaul to Claude)
+- Handover: Zach assigns the **infrastructure overhaul to Claude** (next Claude session). The scope isn't written down yet: confirm it with Zach before editing shared config, package manifests or CI. Task row added in `docs/TASKS.md` (Tooling / docs).
+- Graphify lives outside the repo, on Zach's machine: `~/.graphify/zenithnathacks/graphify-out/graph.json` (496 nodes, AST-only build of `src/` excluding `src/generated`; no LLM tokens spent). The interpreter is `~/.local/share/uv/tools/graphifyy/bin/python` (installed with `uv tool install graphifyy`). Also noted in `AGENTS.md`.
+  - Query: `graphify query "<question>" --graph ~/.graphify/zenithnathacks/graphify-out/graph.json --budget 1500`.
+  - Rebuild (run from the repo root; writes only outside the repo):
+    ```
+    ~/.local/share/uv/tools/graphifyy/bin/python -c "
+    from pathlib import Path
+    from graphify.extract import collect_files, extract
+    from graphify.build import build_from_json
+    from graphify.cluster import cluster
+    from graphify.export import to_json
+    out = Path.home()/'.graphify/zenithnathacks/graphify-out'; out.mkdir(parents=True, exist_ok=True)
+    files = [p for p in collect_files(Path('src')) if 'generated' not in str(p)]
+    G = build_from_json(extract(files, cache_root=out.parent, root=Path('.')), root='.', directed=False)
+    to_json(G, cluster(G), str(out/'graph.json'), force=True)"
+    ```
+  - Rules: never create `graphify-out/` inside the repo (it is gitignored, but keep it external anyway). Prefer graph queries over broad file reads to save tokens. The graph goes stale after code changes, so rebuild it at the start of a session that relies on it.
+- Touched: `AGENTS.md` (new short "Code graph" section, shared file), `docs/TASKS.md`, `docs/HANDOFF.md`. No code changes in this entry.
+
+### 2026-11-07  Zach / Claude  zach/body-diagram
+- Done: tappable body diagram for "Where does it hurt?" (`src/components/input/body-diagram.tsx`, parts table `src/lib/input/body-parts.ts`). Front and back views (a Front/Back switch on phones, side by side from `md`), 41 tappable parts with right/left sides, several parts at once. A chosen part fills Signal Blue and gets a check disc; chosen parts are listed below as removable chips. Keyboard: Tab, then Enter or Space. Patient-language labels in en/es/ar/zh-Hans (demo translations, need a fluent speaker's review). The figure never mirrors in right-to-left languages.
+- Wiring: guided intake shows the diagram by default for Deaf/HoH, low-literacy and can't-speak modes, and the picture tiles for standard mode; a quiet button switches between them. Low-literacy and can't-speak modes read the tapped part aloud. The mock translate handles part ids: one read-back line ("Dónde: Pecho, Rodilla derecha y …"), a combined chief complaint, and the chest-pain red flag for the chest.
+- Contract: unchanged. `onSelect(region, "tap")` emits the contract `RegionId`; `onToggle(partId)` carries the finer part. Real `/api/translate` only knows question-bank option ids, so when wiring the real API either map parts with `regionOf(partId)` (loses side and detail) or Backend 1 accepts body-part ids for `where` (recommended; labels are in `BODY_PARTS`).
+- Lane: `src/components/input` and `src/lib/input` belong to Backend 2, which has no owner; Zach asked for this directly. Also touched: `patient-screens.tsx`, `strings.ts`, `mocks/index.ts`, a small `.body-mark` animation in `globals.css`, and one line in the shared test list (`test-support/run.mjs`).
+- Checked: typecheck, 48 tests (3 new), lint 0 errors. Browser at 390x844 and 1280x900, Spanish, low-literacy mode: front and back selection, the shared arm parts, chips, read-back, clinician summary. Not yet checked in the browser: Arabic RTL and a gaze-dwell pass.
+- Next: gaze (ICU) can reuse the same parts; the targets are smallest on the arms (about 25px wide on phones), so gaze needs dwell plus zoom or larger regions.
+- Notes: an SVG `<clipPath>` ignores `<g>` children (that clips everything away), so put shapes directly inside it. The graphify graph now lives outside the repo at `~/.graphify/zenithnathacks/graphify-out/graph.json`; query it with `--graph`.
+
 ### 2026-11-07  Prem / Claude  prem/migrate-repo-refs (repo migration)
 - Done: the project moved from the old private repo to https://github.com/PriyanshuDave20/zenithnathacks as a single fresh "Initial commit" of the old `main` (2227c5c). History, PRs, issues and branches were NOT carried over. README clone command now points here; the two old-repo PR links below were reduced to plain text.
 - Notes: "PR #nn" and branch names in older entries below refer to the old repo and no longer resolve here. Everyone must re-clone (old checkouts have unrelated history). `main` branch protection (PR required, 1 approval) must be set by the repo owner under Settings > Branches. Old `.graphifyignore` / graphify outputs stay local and uncommitted.
