@@ -15,6 +15,26 @@ Do not put secrets or patient data here.
 
 ## Entries
 
+### 2026-11-07  Zach / Claude  zach/body-diagram (handover: infrastructure overhaul to Claude)
+- Handover: Zach assigns the **infrastructure overhaul to Claude** (next Claude session). The scope isn't written down yet: confirm it with Zach before editing shared config, package manifests or CI. Task row added in `docs/TASKS.md` (Tooling / docs).
+- Graphify lives outside the repo, on Zach's machine: `~/.graphify/zenithnathacks/graphify-out/graph.json` (496 nodes, AST-only build of `src/` excluding `src/generated`; no LLM tokens spent). The interpreter is `~/.local/share/uv/tools/graphifyy/bin/python` (installed with `uv tool install graphifyy`). Also noted in `AGENTS.md`.
+  - Query: `graphify query "<question>" --graph ~/.graphify/zenithnathacks/graphify-out/graph.json --budget 1500`.
+  - Rebuild (run from the repo root; writes only outside the repo):
+    ```
+    ~/.local/share/uv/tools/graphifyy/bin/python -c "
+    from pathlib import Path
+    from graphify.extract import collect_files, extract
+    from graphify.build import build_from_json
+    from graphify.cluster import cluster
+    from graphify.export import to_json
+    out = Path.home()/'.graphify/zenithnathacks/graphify-out'; out.mkdir(parents=True, exist_ok=True)
+    files = [p for p in collect_files(Path('src')) if 'generated' not in str(p)]
+    G = build_from_json(extract(files, cache_root=out.parent, root=Path('.')), root='.', directed=False)
+    to_json(G, cluster(G), str(out/'graph.json'), force=True)"
+    ```
+  - Rules: never create `graphify-out/` inside the repo (it is gitignored, but keep it external anyway). Prefer graph queries over broad file reads to save tokens. The graph goes stale after code changes, so rebuild it at the start of a session that relies on it.
+- Touched: `AGENTS.md` (new short "Code graph" section, shared file), `docs/TASKS.md`, `docs/HANDOFF.md`. No code changes in this entry.
+
 ### 2026-11-07  Zach / Claude  zach/body-diagram
 - Done: tappable body diagram for "Where does it hurt?" (`src/components/input/body-diagram.tsx`, parts table `src/lib/input/body-parts.ts`). Front and back views (a Front/Back switch on phones, side by side from `md`), 41 tappable parts with right/left sides, several parts at once. A chosen part fills Signal Blue and gets a check disc; chosen parts are listed below as removable chips. Keyboard: Tab, then Enter or Space. Patient-language labels in en/es/ar/zh-Hans (demo translations, need a fluent speaker's review). The figure never mirrors in right-to-left languages.
 - Wiring: guided intake shows the diagram by default for Deaf/HoH, low-literacy and can't-speak modes, and the picture tiles for standard mode; a quiet button switches between them. Low-literacy and can't-speak modes read the tapped part aloud. The mock translate handles part ids: one read-back line ("Dónde: Pecho, Rodilla derecha y …"), a combined chief complaint, and the chest-pain red flag for the chest.
