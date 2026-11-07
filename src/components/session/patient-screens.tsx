@@ -30,6 +30,9 @@ import {
   Speaker,
   Stop,
 } from "@/components/home/icons";
+import { BodyDiagram } from "@/components/input/body-diagram";
+import { RegionIdSchema } from "@/lib/contracts";
+import { getBodyPart } from "@/lib/input/body-parts";
 import { STRINGS } from "./strings";
 import { ActionBar, PrimaryButton, QuietButton, Screen, SpeechBubble, Spinner, Tile, Title } from "./ui";
 import { useRecognition, useSpeak } from "./use-speech";
@@ -227,18 +230,37 @@ export function IntakeGuided({
   const t = STRINGS[lang.code];
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  // "Where" can be answered on the body diagram (default for modes that rely on pictures and taps)
+  // or with the picture tiles. The diagram allows several parts at once.
+  const [useBody, setUseBody] = useState(mode !== "standard");
+  const [parts, setParts] = useState<string[]>([]);
+  const { speak } = useSpeak();
   const q = QUESTIONS[index];
   const last = index === QUESTIONS.length - 1;
-  const chosen = answers[q.id];
+  const isWhere = q.id === "where";
+  const bodyOn = isWhere && useBody;
+  const chosen = bodyOn ? parts.length > 0 : Boolean(answers[q.id]);
   const isScale = q.id === "how_strong";
   const flip = lang.dir === "rtl" ? "rotate-180" : "";
 
+  function togglePart(id: string, on: boolean) {
+    setParts((prev) => (on ? [...prev.filter((p) => p !== id), id] : prev.filter((p) => p !== id)));
+    // Low-literacy and can't-speak patients hear the part named back (the clinician hears it too).
+    const part = getBodyPart(id);
+    if (on && part && (mode === "low_literacy" || mode === "mute")) speak(part.text[lang.code], lang.speech);
+  }
+
   function next() {
-    if (!last) setIndex(index + 1);
-    else
-      onSubmit(
-        QUESTIONS.filter((x) => answers[x.id]).map((x) => ({ questionId: x.id, kind: "option" as const, value: answers[x.id] })),
-      );
+    if (!last) return setIndex(index + 1);
+    onSubmit(
+      QUESTIONS.flatMap((x) =>
+        x.id === "where" && useBody
+          ? parts.map((value) => ({ questionId: x.id, kind: "option" as const, value }))
+          : answers[x.id]
+            ? [{ questionId: x.id, kind: "option" as const, value: answers[x.id] }]
+            : [],
+      ),
+    );
   }
 
   return (
@@ -256,11 +278,14 @@ export function IntakeGuided({
           <Title>{q.text[lang.code]}</Title>
           {mode !== "deaf_hoh" ? <ReadAloud text={q.text[lang.code]} lang={lang.speech} label={t.readAloud} /> : null}
 
-          {/* The body diagram (Backend 2, src/components/input/body-diagram) replaces these tiles for "where" when it lands. */}
-          {isScale ? (
+          {bodyOn ? (
+            <div className="mt-2">
+              <BodyDiagram regions={RegionIdSchema.options} onSelect={() => {}} lang={lang.code} selected={parts} onToggle={togglePart} />
+            </div>
+          ) : isScale ? (
             <div className="mt-4 grid grid-cols-5 gap-2 sm:gap-3">
               {q.options.map((o, i) => {
-                const on = chosen === o.id;
+                const on = answers[q.id] === o.id;
                 return (
                   <button
                     key={o.id}
@@ -285,7 +310,7 @@ export function IntakeGuided({
                 return (
                   <Tile
                     key={o.id}
-                    on={chosen === o.id}
+                    on={answers[q.id] === o.id}
                     onClick={() => setAnswers({ ...answers, [q.id]: o.id })}
                     icon={Picto ? <Picto size={40} /> : undefined}
                   >
@@ -295,6 +320,15 @@ export function IntakeGuided({
               })}
             </div>
           )}
+          {isWhere ? (
+            <QuietButton
+              icon={useBody ? undefined : <PictoChest size={20} />}
+              onClick={() => setUseBody(!useBody)}
+              className="self-start"
+            >
+              {useBody ? t.showList : t.showBody}
+            </QuietButton>
+          ) : null}
         </div>
       </div>
 

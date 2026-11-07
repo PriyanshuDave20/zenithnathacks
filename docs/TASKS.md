@@ -32,7 +32,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 | **Phase 2: Core flow (~28h)** | | | | |
 | Stage flow shell (start, intake, handoff, review, response, end) + clear-session + idle timeout | Frontend | Zach | zach/start-flow (PR #12) | Done (finish review: ship) |
 | Patient intake: mode/language selection, two paths (free-form speech/text, guided questions), voice (Web Speech) with typed fallback, pictograms | Frontend | Zach | zach/start-flow | Done (on mocks; body diagram slot for Backend 2) |
-| Body diagram component with tap selection, emits `RegionId` | Backend 2 | TBD | | Todo |
+| Body diagram component with tap selection, emits `RegionId` | Backend 2 (built by Frontend at Zach's request) | Zach / Claude | zach/body-diagram | Done: front/back tappable diagram, 41 parts (multi-select) mapped to `RegionId`; wired into guided "Where"; real API wiring must send `regionOf(partId)` or Backend 1 accepts part ids |
 | Mode: Deaf/HoH (captions, large text, tap responses) | Frontend | Zach | zach/start-flow | Done (first pass) |
 | Mode: low-literacy (stepwise, pictograms, read-aloud) | Frontend | Zach | zach/start-flow | Done (first pass) |
 | Mode: mute (taps/typing + text-to-speech) | Frontend | Zach | zach/start-flow | Done (first pass) |
