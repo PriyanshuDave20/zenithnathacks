@@ -388,3 +388,18 @@ a {
     transform: none;
   }
 }
+
+/* Body diagram: the check disc on a chosen part pops in (src/components/input/body-diagram.tsx). */
+@media (prefers-reduced-motion: no-preference) {
+  .body-mark {
+    animation: body-mark 420ms var(--spring-pop) both;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+}
+@keyframes body-mark {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}

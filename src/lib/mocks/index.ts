@@ -6,6 +6,7 @@
 // rejects like a 502 model failure, so the typed-fallback state can be demoed.
 
 import { CLINICIAN_REPLIES, OUT_OF_FIVE, QUESTION_SHORT, QUESTIONS, TEACH_BACK, type PatientLanguage } from "./data";
+import { getBodyPart } from "@/lib/input/body-parts";
 import type {
   ApiError,
   MetricsEvent,
@@ -53,10 +54,15 @@ const FEVER = /fever|fiebre|حمى|حمّى|发烧/i;
 const DIZZY = /dizz|mare|دوخ|头晕/i;
 const TWO_DAYS = /two days|2 days|dos d[ií]as|يومين|两天/i;
 
+// "where" answers may also be body-diagram part ids (src/lib/input/body-parts.ts), e.g. "right_knee".
+const bodyPart = (qid: string, oid: string) => (qid === "where" ? getBodyPart(oid) : undefined);
 const optionLabel = (qid: string, oid: string) =>
-  QUESTIONS.find((q) => q.id === qid)?.options.find((o) => o.id === oid)?.label;
+  QUESTIONS.find((q) => q.id === qid)?.options.find((o) => o.id === oid)?.label ?? bodyPart(qid, oid)?.label;
 const optionText = (qid: string, oid: string, lang: string) =>
-  QUESTIONS.find((q) => q.id === qid)?.options.find((o) => o.id === oid)?.text[lang] ?? oid;
+  QUESTIONS.find((q) => q.id === qid)?.options.find((o) => o.id === oid)?.text[lang] ??
+  bodyPart(qid, oid)?.text[lang as PatientLanguage] ??
+  oid;
+const listJoin = (items: string[], lang: string) => new Intl.ListFormat(lang, { type: "conjunction" }).format(items);
 
 export async function mockTranslate(req: TranslateRequest): Promise<TranslateResponse> {
   await delay(latency());
@@ -68,18 +74,22 @@ export async function mockTranslate(req: TranslateRequest): Promise<TranslateRes
   const symptoms: string[] = [];
   const redFlags: string[] = [];
   let site: string | undefined;
+  const sites: string[] = [];
   let duration: string | undefined;
 
   // Guided answers carry pre-written English labels: no machine translation needed.
   for (const g of guided) {
     const label = optionLabel(g.questionId!, g.value);
     if (!label) continue;
-    if (g.questionId === "where") site = label.toLowerCase();
+    if (g.questionId === "where") sites.push(label.toLowerCase());
     else if (g.questionId === "how_long") duration = label;
     else if (g.value !== "none" && g.value !== "nothing") symptoms.push(label);
     if (g.value === "s5") redFlags.push("Severe pain (5/5)");
     if (g.value === "short_breath") redFlags.push("Shortness of breath");
   }
+
+  if (sites.length) site = listJoin(sites, "en");
+  const chestPain = guided.some((g) => g.questionId === "where" && (g.value === "chest" || bodyPart("where", g.value)?.region === "chest"));
 
   const { text: freeText, count: redactions } = redact(free.map((f) => f.value).join(" ").trim());
   if (freeText) {
@@ -89,7 +99,7 @@ export async function mockTranslate(req: TranslateRequest): Promise<TranslateRes
     if (DIZZY.test(freeText)) symptoms.push("Dizziness");
     if (TWO_DAYS.test(freeText)) duration ??= "2 days";
   }
-  if (site === "chest") redFlags.unshift("Chest pain");
+  if (site === "chest" || chestPain) redFlags.unshift("Chest pain");
 
   const chiefComplaint = site ? `${site[0].toUpperCase()}${site.slice(1)} pain` : "Not clear from the patient's words";
   const translatedParts = [chiefComplaint, ...symptoms.map((s) => s.toLowerCase())];
@@ -97,12 +107,15 @@ export async function mockTranslate(req: TranslateRequest): Promise<TranslateRes
 
   // Guided read-back pairs each answer with its question so the patient can confirm it ("Dónde: Pecho").
   const L = (lang in OUT_OF_FIVE ? lang : "en") as PatientLanguage;
-  const guidedOriginal = guided
-    .map((g) => {
-      const answer = optionText(g.questionId!, g.value, lang);
-      const shown = g.questionId === "how_strong" ? OUT_OF_FIVE[L](answer) : answer;
-      return `${QUESTION_SHORT[g.questionId!]?.[L] ?? g.questionId}: ${shown}`;
-    })
+  // Several body parts for "where" read back as one line ("Dónde: Rodilla derecha y Espalda baja").
+  const byQuestion = new Map<string, string[]>();
+  for (const g of guided) {
+    const answer = optionText(g.questionId!, g.value, lang);
+    const shown = g.questionId === "how_strong" ? OUT_OF_FIVE[L](answer) : answer;
+    byQuestion.set(g.questionId!, [...(byQuestion.get(g.questionId!) ?? []), shown]);
+  }
+  const guidedOriginal = [...byQuestion]
+    .map(([qid, shown]) => `${QUESTION_SHORT[qid]?.[L] ?? qid}: ${listJoin(shown, L)}`)
     .join("\n");
   const original = [freeText, guidedOriginal].filter(Boolean).join("\n");
   const known = Boolean(site || symptoms.length);
