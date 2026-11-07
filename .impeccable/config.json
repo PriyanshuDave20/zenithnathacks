@@ -1,0 +1,84 @@
+{
+  "telemetry": false,
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "sans\",ui-sans-serif,system-ui,sans-serif",
+        "createdAt": "2026-11-07T06:40:22.470Z",
+        "reason": "detector parse artifact of the documented Noto Sans stack in DESIGN.md"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "noto sans arabic",
+        "createdAt": "2026-11-07T06:40:22.498Z",
+        "reason": "DESIGN.md Typography lists Noto Sans Arabic as the lang=ar script fallback"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/mode-dial.html"
+        ],
+        "createdAt": "2026-11-07T06:40:22.523Z",
+        "reason": "decision sketch: navy-tinted Lift shadow is DESIGN.md's documented elevation on the white-ground CTA"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/signal-line.html"
+        ],
+        "createdAt": "2026-11-07T06:40:22.547Z",
+        "reason": "decision sketch: navy-tinted Lift shadow is DESIGN.md's documented elevation on the white-ground CTA"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/live-thread.html"
+        ],
+        "createdAt": "2026-11-07T06:40:22.572Z",
+        "reason": "decision sketch: navy-tinted Lift shadow is DESIGN.md's documented elevation on the white-ground CTA"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/handoff-deck.html"
+        ],
+        "createdAt": "2026-11-07T06:42:12.955Z",
+        "reason": "decision sketch: navy-tinted Lift shadow is DESIGN.md's documented elevation on the white-ground CTA"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/body-map.html"
+        ],
+        "createdAt": "2026-11-07T06:42:12.980Z",
+        "reason": "decision sketch: navy-tinted Lift shadow is DESIGN.md's documented elevation on the white-ground CTA"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/stopwatch.html"
+        ],
+        "createdAt": "2026-11-07T06:42:13.005Z",
+        "reason": "decision sketch: navy-tinted Lift shadow is DESIGN.md's documented elevation on the white-ground CTA"
+      },
+      {
+        "rule": "bounce-easing",
+        "value": "*",
+        "files": [
+          "src/app/globals.css"
+        ],
+        "createdAt": "2026-11-07T07:03:25.027Z",
+        "reason": "DESIGN.md Motion: --spring is the documented critically damped entrance curve (no overshoot); --spring-pop is reserved for press feedback"
+      }
+    ]
+  }
+}

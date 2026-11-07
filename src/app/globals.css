@@ -1,0 +1,390 @@
+@import "tailwindcss";
+
+/* Synapse tokens. Source of truth: DESIGN.md (navy / light blue / white). */
+:root {
+  color-scheme: light;
+  --navy: #101e34;
+  --navy-raised: #1b2c47;
+  --blue: #77a0c4;
+  --blue-deep: #2d5f8b;
+  --blue-deeper: #1f4a70;
+  --blue-soft: #e6eef6;
+  --ground: #ffffff;
+  --ground-2: #eef3f8;
+  --surface: #ffffff;
+  --ink: #101e34;
+  --ink-soft: #4a6380;
+  --line: #d5e0eb;
+  --on-navy-soft: #b9c9db;
+
+  --shadow-soft: 0 1px 2px rgb(16 30 52 / 0.06), 0 10px 28px -10px rgb(16 30 52 / 0.16);
+  --shadow-lift: 0 2px 4px rgb(16 30 52 / 0.06), 0 22px 44px -14px rgb(16 30 52 / 0.26);
+  --shadow-device: 0 2px 6px rgb(5 10 20 / 0.25), 0 40px 80px -24px rgb(5 10 20 / 0.55);
+
+  /* Critically damped spring (entrances) and a lightly under-damped one (press, toggles) */
+  --spring: linear(0, 0.2 4%, 0.55 10%, 0.79 17%, 0.92 25%, 0.975 34%, 1.002 48%, 1.004 62%, 1);
+  --spring-pop: linear(0, 0.24 5%, 0.64 12%, 0.92 20%, 1.04 30%, 1.055 36%, 1.02 47%, 0.996 58%, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@theme inline {
+  --radius-inset: 1.25rem;
+  --radius-field: 1.5rem;
+  --radius-bubble-sm: 1.75rem;
+  --radius-bubble: 1.9rem;
+  --radius-sheet: 2rem;
+  --radius-sheet-lg: 2.25rem;
+  --radius-tail: 0.5rem;
+  --text-screen-title: clamp(2rem, 6.5vw, 3rem);
+  --text-bubble: clamp(1.5rem, 5vw, 2rem);
+  --color-navy: var(--navy);
+  --color-navy-raised: var(--navy-raised);
+  --color-blue: var(--blue);
+  --color-blue-deep: var(--blue-deep);
+  --color-blue-deeper: var(--blue-deeper);
+  --color-blue-soft: var(--blue-soft);
+  --color-ground: var(--ground);
+  --color-ground-2: var(--ground-2);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-on-navy-soft: var(--on-navy-soft);
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
+  --shadow-device: var(--shadow-device);
+}
+
+html {
+  background: var(--navy);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Navy behind everything: the translucent header and the page edges read as Synapse Navy; sections paint their own ground. */
+body {
+  background: var(--navy);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
+}
+
+/* Scripts the Latin faces do not carry */
+[lang="zh-Hans"] {
+  font-family: var(--font-zh), var(--font-sans);
+}
+[lang="ar"] {
+  font-family: var(--font-ar), var(--font-sans);
+}
+
+/* Browser surfaces, themed from the palette */
+::selection {
+  background: var(--blue-deep);
+  color: #fff;
+}
+:focus-visible {
+  outline: 3px solid var(--blue-deep);
+  outline-offset: 3px;
+}
+.on-navy :focus-visible {
+  outline-color: var(--blue);
+}
+* {
+  scrollbar-color: var(--line) var(--ground);
+  scrollbar-width: thin;
+}
+a {
+  text-underline-offset: 0.2em;
+}
+:target {
+  scroll-margin-top: 5rem;
+}
+
+/* Press feedback starts on pointer-down, instantly, and springs back */
+.press {
+  transition:
+    transform 420ms var(--spring-pop),
+    background-color 160ms ease-out,
+    box-shadow 200ms ease-out,
+    color 160ms ease-out;
+}
+.press:active:not(:disabled) {
+  transform: scale(0.965);
+  transition-duration: 90ms;
+}
+
+/* Shared field treatment; labels and text sizes remain specific to their context. */
+@utility field-control {
+  width: 100%;
+  background-color: var(--surface);
+  color: var(--ink);
+  caret-color: var(--blue-deep);
+  --tw-ring-color: var(--line);
+  @apply ring-1;
+  &::placeholder { color: var(--ink-soft); }
+  &:focus-visible {
+    outline: none;
+    --tw-ring-color: var(--blue-deep);
+    @apply ring-[3px];
+  }
+}
+
+/* The one authored entrance: hero content rises and settles, visible by default */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+.rise {
+  animation: rise 900ms var(--spring) backwards;
+  animation-delay: calc(var(--i, 0) * 110ms + 80ms);
+}
+
+/* A bubble arriving in the demo exchange */
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+    filter: blur(4px);
+  }
+}
+.arrive {
+  animation: arrive 620ms var(--ease-out) backwards;
+}
+
+/* Screen change inside the pinned phone */
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(6px);
+  }
+}
+.screen-in {
+  animation: screen-in 560ms var(--ease-out) backwards;
+}
+
+/* The pass: the pinned phone turns toward whoever now holds it (patient sits across the desk) */
+@keyframes pass-to-patient {
+  0% {
+    transform: rotateY(0deg) translateX(0);
+  }
+  45% {
+    transform: rotateY(-22deg) translateX(-28px) scale(0.96);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes pass-to-clinician {
+  0% {
+    transform: rotateY(0deg) translateX(0);
+  }
+  45% {
+    transform: rotateY(22deg) translateX(28px) scale(0.96);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes pass-fade {
+  from {
+    opacity: 0.4;
+  }
+}
+.pass-to-patient {
+  animation: pass-to-patient 760ms var(--ease-out) both;
+}
+.pass-to-clinician {
+  animation: pass-to-clinician 760ms var(--ease-out) both;
+}
+
+/* The page melts between colour bands instead of meeting at a hard edge, so the pinned phone
+   always floats over one continuous field. Quality: colours mix in OKLab (midpoints stay clean and
+   blue, never grey), the fade follows a smootherstep curve sampled at 15 stops (no visible kink where
+   it starts or ends), and a fine mid-grey grain dithers away the 8-bit banding long gradients get.
+   Painted as the section's own background (not an overlay), so no subpixel seam can show.
+   Gradient colours use the raw variables: Tailwind inlines the --color-* theme names. */
+.page-melt-down,
+.page-melt-up,
+.page-mist {
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+.page-melt-down {
+  --melt: 11rem;
+  background: linear-gradient(
+      in oklab to bottom,
+      var(--navy) calc(100% - var(--melt)),
+    var(--navy) calc(100% - var(--melt) * 1.0000),
+    color-mix(in oklab, var(--navy), color-mix(in oklab, var(--navy), var(--blue) 38%) 0.7%) calc(100% - var(--melt) * 0.9286),
+    color-mix(in oklab, var(--navy), color-mix(in oklab, var(--navy), var(--blue) 38%) 5.2%) calc(100% - var(--melt) * 0.8571),
+    color-mix(in oklab, var(--navy), color-mix(in oklab, var(--navy), var(--blue) 38%) 15.4%) calc(100% - var(--melt) * 0.7857),
+    color-mix(in oklab, var(--navy), color-mix(in oklab, var(--navy), var(--blue) 38%) 32.2%) calc(100% - var(--melt) * 0.7143),
+    color-mix(in oklab, var(--navy), color-mix(in oklab, var(--navy), var(--blue) 38%) 54.7%) calc(100% - var(--melt) * 0.6429),
+    color-mix(in oklab, var(--navy), color-mix(in oklab, var(--navy), var(--blue) 38%) 81.8%) calc(100% - var(--melt) * 0.5714),
+    color-mix(in oklab, color-mix(in oklab, var(--navy), var(--blue) 38%), var(--blue-soft) 13.5%) calc(100% - var(--melt) * 0.5000),
+    color-mix(in oklab, color-mix(in oklab, var(--navy), var(--blue) 38%), var(--blue-soft) 49.2%) calc(100% - var(--melt) * 0.4286),
+    color-mix(in oklab, color-mix(in oklab, var(--navy), var(--blue) 38%), var(--blue-soft) 82.1%) calc(100% - var(--melt) * 0.3571),
+    color-mix(in oklab, var(--blue-soft), var(--ground) 19.6%) calc(100% - var(--melt) * 0.2857),
+    color-mix(in oklab, var(--blue-soft), var(--ground) 61.4%) calc(100% - var(--melt) * 0.2143),
+    color-mix(in oklab, var(--blue-soft), var(--ground) 87.1%) calc(100% - var(--melt) * 0.1429),
+    color-mix(in oklab, var(--blue-soft), var(--ground) 98.2%) calc(100% - var(--melt) * 0.0714),
+    var(--ground) calc(100% - var(--melt) * 0.0000)
+    );
+}
+.page-melt-up {
+  --melt: 13rem;
+  background: linear-gradient(
+      in oklab to bottom,
+      var(--ground) calc(100% - var(--melt)),
+    var(--ground) calc(100% - var(--melt) * 1.0000),
+    color-mix(in oklab, var(--ground), var(--blue-soft) 1.8%) calc(100% - var(--melt) * 0.9286),
+    color-mix(in oklab, var(--ground), var(--blue-soft) 12.9%) calc(100% - var(--melt) * 0.8571),
+    color-mix(in oklab, var(--ground), var(--blue-soft) 38.6%) calc(100% - var(--melt) * 0.7857),
+    color-mix(in oklab, var(--ground), var(--blue-soft) 80.4%) calc(100% - var(--melt) * 0.7143),
+    color-mix(in oklab, var(--blue-soft), color-mix(in oklab, var(--navy), var(--blue) 38%) 17.9%) calc(100% - var(--melt) * 0.6429),
+    color-mix(in oklab, var(--blue-soft), color-mix(in oklab, var(--navy), var(--blue) 38%) 50.8%) calc(100% - var(--melt) * 0.5714),
+    color-mix(in oklab, var(--blue-soft), color-mix(in oklab, var(--navy), var(--blue) 38%) 86.5%) calc(100% - var(--melt) * 0.5000),
+    color-mix(in oklab, color-mix(in oklab, var(--navy), var(--blue) 38%), var(--navy) 18.2%) calc(100% - var(--melt) * 0.4286),
+    color-mix(in oklab, color-mix(in oklab, var(--navy), var(--blue) 38%), var(--navy) 45.3%) calc(100% - var(--melt) * 0.3571),
+    color-mix(in oklab, color-mix(in oklab, var(--navy), var(--blue) 38%), var(--navy) 67.8%) calc(100% - var(--melt) * 0.2857),
+    color-mix(in oklab, color-mix(in oklab, var(--navy), var(--blue) 38%), var(--navy) 84.6%) calc(100% - var(--melt) * 0.2143),
+    color-mix(in oklab, color-mix(in oklab, var(--navy), var(--blue) 38%), var(--navy) 94.8%) calc(100% - var(--melt) * 0.1429),
+    color-mix(in oklab, color-mix(in oklab, var(--navy), var(--blue) 38%), var(--navy) 99.3%) calc(100% - var(--melt) * 0.0714),
+    var(--navy) calc(100% - var(--melt) * 0.0000)
+    );
+}
+/* The Mist band for the modes section: eased in and out of the white page. */
+.page-mist {
+  background:
+    linear-gradient(
+      in oklab to bottom,
+      color-mix(in oklab, var(--ground), var(--ground-2) 0.0%) 0.0rem,
+      color-mix(in oklab, var(--ground), var(--ground-2) 1.6%) 1.5rem,
+      color-mix(in oklab, var(--ground), var(--ground-2) 10.4%) 3.0rem,
+      color-mix(in oklab, var(--ground), var(--ground-2) 27.5%) 4.5rem,
+      color-mix(in oklab, var(--ground), var(--ground-2) 50.0%) 6.0rem,
+      color-mix(in oklab, var(--ground), var(--ground-2) 72.5%) 7.5rem,
+      color-mix(in oklab, var(--ground), var(--ground-2) 89.6%) 9.0rem,
+      color-mix(in oklab, var(--ground), var(--ground-2) 98.4%) 10.5rem,
+      color-mix(in oklab, var(--ground), var(--ground-2) 100.0%) 12.0rem,
+      var(--ground-2) calc(100% - 12rem),
+      color-mix(in oklab, var(--ground-2), var(--ground) 0.0%) calc(100% - 12.0rem),
+      color-mix(in oklab, var(--ground-2), var(--ground) 1.6%) calc(100% - 10.5rem),
+      color-mix(in oklab, var(--ground-2), var(--ground) 10.4%) calc(100% - 9.0rem),
+      color-mix(in oklab, var(--ground-2), var(--ground) 27.5%) calc(100% - 7.5rem),
+      color-mix(in oklab, var(--ground-2), var(--ground) 50.0%) calc(100% - 6.0rem),
+      color-mix(in oklab, var(--ground-2), var(--ground) 72.5%) calc(100% - 4.5rem),
+      color-mix(in oklab, var(--ground-2), var(--ground) 89.6%) calc(100% - 3.0rem),
+      color-mix(in oklab, var(--ground-2), var(--ground) 98.4%) calc(100% - 1.5rem),
+      color-mix(in oklab, var(--ground-2), var(--ground) 100.0%) calc(100% - 0.0rem)
+    );
+}
+/* The dithering grain lives only inside the fade, feathered at both ends so it never starts or
+   stops on a flat colour (which would show as a faint line). */
+.page-melt-down,
+.page-melt-up {
+  position: relative;
+  isolation: isolate;
+}
+.page-melt-down::after,
+.page-melt-up::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: var(--melt);
+  z-index: -1;
+  pointer-events: none;
+  background: var(--grain) 0 0 / 180px 180px;
+  mask-image: linear-gradient(to bottom, transparent, var(--navy) 25%, var(--navy) 75%, transparent);
+}
+@media (width >= 64rem) {
+  .page-melt-down,
+  .page-melt-up {
+    --melt: 20rem;
+  }
+}
+
+/* Extruded Synapse mark: a solid 3D object that turns to face the visitor as its section scrolls in */
+.mark3d-stage {
+  perspective: 900px;
+  perspective-origin: 50% 40%;
+}
+.mark3d-object {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateX(8deg) rotateY(-20deg);
+}
+.mark3d-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: visible;
+}
+.mark3d-front {
+  filter: drop-shadow(0 1px 0 rgb(255 255 255 / 0.35));
+}
+@keyframes mark-turn {
+  from {
+    transform: rotateX(16deg) rotateY(-78deg) scale(0.92);
+  }
+  to {
+    transform: rotateX(6deg) rotateY(-14deg);
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .mark3d-object {
+      animation: mark-turn linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 50%;
+    }
+  }
+}
+
+/* Live dot and voice level */
+@keyframes level {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+.level > span {
+  transform-origin: center;
+  animation: level 1.1s ease-in-out infinite;
+  animation-delay: calc(var(--d, 0) * 120ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pass-to-patient,
+  .pass-to-clinician {
+    animation: pass-fade 300ms ease-out both;
+  }
+  .rise,
+  .arrive,
+  .screen-in,
+  .level > span {
+    animation: none;
+  }
+  .press,
+  .press:active {
+    transition: none;
+    transform: none;
+  }
+}

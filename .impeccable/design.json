@@ -1,0 +1,648 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-07T00:00:00Z",
+  "title": "Design System: Synapse",
+  "extensions": {
+    "colorMeta": {
+      "navy": {
+        "role": "primary",
+        "displayName": "Synapse Navy",
+        "canonical": "#101e34",
+        "tonalRamp": [
+          "#080e18",
+          "#0a1322",
+          "#0d182b",
+          "#101e34",
+          "#4c5667",
+          "#888e9a",
+          "#c3c7cc",
+          "#e7e8eb"
+        ]
+      },
+      "navy-raised": {
+        "role": "primary",
+        "displayName": "Raised Navy",
+        "canonical": "#1b2c47",
+        "tonalRamp": [
+          "#0a111d",
+          "#101a2b",
+          "#162339",
+          "#1b2c47",
+          "#546175",
+          "#8d96a3",
+          "#c6cad1",
+          "#e8eaed"
+        ]
+      },
+      "blue": {
+        "role": "secondary",
+        "displayName": "Synapse Light Blue",
+        "canonical": "#77a0c4",
+        "tonalRamp": [
+          "#222e3c",
+          "#3e546a",
+          "#5a7a97",
+          "#77a0c4",
+          "#99b8d3",
+          "#bbd0e2",
+          "#dde7f0",
+          "#f1f6f9"
+        ]
+      },
+      "blue-deep": {
+        "role": "primary",
+        "displayName": "Signal Blue",
+        "canonical": "#2d5f8b",
+        "tonalRamp": [
+          "#0f1e2e",
+          "#19344d",
+          "#23496c",
+          "#2d5f8b",
+          "#6287a8",
+          "#96afc5",
+          "#cad7e2",
+          "#eaeff3"
+        ]
+      },
+      "blue-deeper": {
+        "role": "primary",
+        "displayName": "Deep Signal Blue",
+        "canonical": "#1f4a70",
+        "tonalRamp": [
+          "#0c1827",
+          "#122940",
+          "#183a58",
+          "#1f4a70",
+          "#577794",
+          "#8fa4b8",
+          "#c7d2db",
+          "#e9edf1"
+        ]
+      },
+      "blue-soft": {
+        "role": "secondary",
+        "displayName": "Blue Wash",
+        "canonical": "#e6eef6",
+        "tonalRamp": [
+          "#3d4249",
+          "#767b82",
+          "#aeb4bc",
+          "#e6eef6",
+          "#ecf2f8",
+          "#f2f6fa",
+          "#f9fbfd",
+          "#fcfdfe"
+        ]
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Clinic White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#44464b",
+          "#828487",
+          "#c0c1c3",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff"
+        ]
+      },
+      "ground-2": {
+        "role": "neutral",
+        "displayName": "Cool Mist",
+        "canonical": "#eef3f8",
+        "tonalRamp": [
+          "#3f4349",
+          "#7a7e84",
+          "#b4b8be",
+          "#eef3f8",
+          "#f2f6fa",
+          "#f6f9fc",
+          "#fbfcfd",
+          "#fdfefe"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#44464b",
+          "#828487",
+          "#c0c1c3",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Navy Ink",
+        "canonical": "#101e34",
+        "tonalRamp": [
+          "#080e18",
+          "#0a1322",
+          "#0d182b",
+          "#101e34",
+          "#4c5667",
+          "#888e9a",
+          "#c3c7cc",
+          "#e7e8eb"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Slate Blue",
+        "canonical": "#4a6380",
+        "tonalRamp": [
+          "#161f2b",
+          "#283648",
+          "#394c64",
+          "#4a6380",
+          "#778aa0",
+          "#a4b1c0",
+          "#d2d8df",
+          "#edeff2"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Frost Line",
+        "canonical": "#d5e0eb",
+        "tonalRamp": [
+          "#393e46",
+          "#6d747d",
+          "#a1aab4",
+          "#d5e0eb",
+          "#e0e8f0",
+          "#eaf0f5",
+          "#f4f7fa",
+          "#fbfcfd"
+        ]
+      },
+      "on-navy-soft": {
+        "role": "neutral",
+        "displayName": "On-Navy Mist",
+        "canonical": "#b9c9db",
+        "tonalRamp": [
+          "#2a323b",
+          "#4d5c6c",
+          "#7f93a8",
+          "#b9c9db",
+          "#cad6e4",
+          "#dbe4ed",
+          "#ecf1f6",
+          "#f7f9fb"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The single hero headline, Figtree 700, clamp(2.9rem, 11vw, 5.25rem)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles, balanced, 14 to 18ch, clamp(2.25rem, 6vw, 3.5rem)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card and bubble titles."
+      },
+      "sheet-text": {
+        "displayName": "Sheet text",
+        "purpose": "Sentences the user reads and answers, Figtree 600."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Paragraphs in Noto Sans, 40 to 64ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Sentence-case captions and field labels, 14px minimum."
+      },
+      "screen-title": {
+        "displayName": "Screen title",
+        "purpose": "The one heading of each session-app screen, in the holder's language."
+      },
+      "handoff-line": {
+        "displayName": "Handoff line",
+        "purpose": "The single instruction on a handoff or hand-back screen, white on navy, 18ch."
+      },
+      "section-label": {
+        "displayName": "Section label",
+        "purpose": "Names a group of choices or a field in 16px semibold Slate Blue; never above another heading."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-soft",
+        "value": "0 1px 2px rgb(16 30 52 / 0.06), 0 10px 28px -10px rgb(16 30 52 / 0.16)",
+        "purpose": "Resting sheets, tint cards, thumb, selected choices, glass."
+      },
+      {
+        "name": "shadow-lift",
+        "value": "0 2px 4px rgb(16 30 52 / 0.06), 0 22px 44px -14px rgb(16 30 52 / 0.26)",
+        "purpose": "Primary call to action and the one sheet that changes."
+      },
+      {
+        "name": "glass",
+        "value": "background rgb(255 255 255 / 0.62); backdrop-filter blur(26px) saturate(170%); border 1px rgb(255 255 255 / 0.75)",
+        "purpose": "Translucent material over colour fields; opaque white under reduced transparency or more contrast."
+      },
+      {
+        "name": "shadow-device",
+        "value": "0 2px 6px rgb(5 10 20 / 0.25), 0 40px 80px -24px rgb(5 10 20 / 0.55)",
+        "purpose": "The phone frame only; holds on navy and on white."
+      },
+      {
+        "name": "header-glass-navy",
+        "value": "background rgb(16 30 52 / 0.92); backdrop-filter blur(24px); border-bottom 1px rgb(255 255 255 / 0.10)",
+        "purpose": "The translucent sticky header over a navy body."
+      },
+      {
+        "name": "action-bar-material",
+        "value": "background rgb(255 255 255 / 0.92); backdrop-filter blur(24px); border-top 1px #d5e0eb",
+        "purpose": "The sticky session ActionBar: chrome, not a glass sheet; no shadow."
+      }
+    ],
+    "motion": [
+      {
+        "name": "spring",
+        "value": "linear(0, 0.2 4%, 0.55 10%, 0.79 17%, 0.92 25%, 0.975 34%, 1.002 48%, 1.004 62%, 1)",
+        "purpose": "Critically damped; entrances (rise, 900ms)."
+      },
+      {
+        "name": "spring-pop",
+        "value": "linear(0, 0.24 5%, 0.64 12%, 0.92 20%, 1.04 30%, 1.055 36%, 1.02 47%, 0.996 58%, 1)",
+        "purpose": "Slight overshoot; press (420ms), thumb (520ms), pill fill-in (700ms) only."
+      },
+      {
+        "name": "press-down",
+        "value": "scale(0.965) in 90ms",
+        "purpose": "Instant pointer-down feedback."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Arrivals, screen changes and the pass."
+      },
+      {
+        "name": "arrive",
+        "value": "620ms ease-out from translateY(10px) scale(0.96) blur(4px), opacity 0",
+        "purpose": "A bubble or summary arriving in a demo exchange. Removed under reduced motion."
+      },
+      {
+        "name": "screen-in",
+        "value": "560ms ease-out from translateY(14px) blur(6px), opacity 0",
+        "purpose": "A new screen in the phone or a new tab panel. Removed under reduced motion."
+      },
+      {
+        "name": "pass",
+        "value": "760ms ease-out; 45%: rotateY(-22deg) translateX(-28px) scale(0.96) toward patient, rotateY(22deg) translateX(28px) scale(0.96) toward clinician; perspective 1400px",
+        "purpose": "The pinned phone turns toward the new holder. Reduced motion: 300ms crossfade from 40% opacity."
+      },
+      {
+        "name": "level",
+        "value": "scaleY 0.35 to 1, 1.1s ease-in-out infinite, 120ms stagger",
+        "purpose": "Decorative voice level while listening or speaking. Removed under reduced motion."
+      },
+      {
+        "name": "pass-disc",
+        "value": "pass keyframes (760ms ease-out, rotateY 22deg, translateX 28px) on the 96px handoff disc, perspective 600px",
+        "purpose": "Handoff and hand-back screens turn the device glyph toward the new holder. Reduced motion: 300ms crossfade."
+      },
+      {
+        "name": "toast-life",
+        "value": "arrive in, removed after 3500ms",
+        "purpose": "Clear confirmations under the session bar."
+      },
+      {
+        "name": "spin",
+        "value": "rotate 360deg, 1s linear infinite",
+        "purpose": "Spinner. Stops under reduced motion; the static ring and its label carry the state."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "custom",
+      "refersTo": "button-primary",
+      "description": "Signal Blue pill call to action with an arrow disc.",
+      "html": "<a class=\"ds-btn\" href=\"#\">Start a session<span class=\"ds-disc\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 5v14M6 13l6 6 6-6\"/></svg></span></a>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;gap:12px;min-height:56px;padding:8px 10px 8px 32px;border-radius:9999px;background:#2d5f8b;color:#fff;font:600 18px/1 'Noto Sans',system-ui,sans-serif;text-decoration:none;box-shadow:0 2px 4px rgb(16 30 52 / .06),0 22px 44px -14px rgb(16 30 52 / .26);transition:transform 420ms cubic-bezier(.3,1.4,.5,1),background-color 160ms ease-out}.ds-btn:hover{background:#1f4a70}.ds-btn:active{transform:scale(.965);transition-duration:90ms}.ds-btn:focus-visible{outline:3px solid #2d5f8b;outline-offset:3px;border-radius:9999px}.ds-disc{display:grid;place-items:center;width:40px;height:40px;border-radius:9999px;background:rgb(255 255 255 / .2)}"
+    },
+    {
+      "name": "Choice Button",
+      "kind": "chip",
+      "refersTo": "choice",
+      "description": "Answer control; selected is Signal Blue fill plus check.",
+      "html": "<div style=\"display:flex;gap:8px\"><button class=\"ds-choice\">No</button><button class=\"ds-choice ds-on\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12l5 5 9-10\"/></svg>Sí</button></div>",
+      "css": ".ds-choice{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 24px;border:0;border-radius:9999px;background:#fff;color:#101e34;box-shadow:inset 0 0 0 1px #d5e0eb;font:600 16px 'Noto Sans',system-ui,sans-serif;cursor:pointer;transition:transform 420ms cubic-bezier(.3,1.4,.5,1)}.ds-choice:hover{box-shadow:inset 0 0 0 1px #4a6380}.ds-choice:active{transform:scale(.965)}.ds-choice:focus-visible{outline:3px solid #2d5f8b;outline-offset:3px}.ds-on{background:#2d5f8b;color:#fff;box-shadow:0 1px 2px rgb(16 30 52 / .06),0 10px 28px -10px rgb(16 30 52 / .16)}"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "nav",
+      "refersTo": "segmented-track",
+      "description": "Pill track with a Paper White thumb that slides on the spring.",
+      "html": "<div class=\"ds-seg\"><span class=\"ds-thumb\"></span><button class=\"ds-cell ds-act\">Español</button><button class=\"ds-cell\">中文</button><button class=\"ds-cell\">العربية</button></div>",
+      "css": ".ds-seg{position:relative;display:grid;grid-template-columns:repeat(3,1fr);padding:4px;border-radius:9999px;background:#eef3f8}.ds-thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/3);border-radius:9999px;background:#fff;box-shadow:0 1px 2px rgb(16 30 52 / .06),0 10px 28px -10px rgb(16 30 52 / .16);transition:transform 520ms cubic-bezier(.3,1.4,.5,1)}.ds-cell{position:relative;z-index:1;min-height:48px;border:0;border-radius:9999px;background:transparent;color:#4a6380;font:500 16px 'Noto Sans',system-ui,sans-serif;cursor:pointer}.ds-cell:hover{color:#101e34}.ds-cell:focus-visible{outline:3px solid #2d5f8b;outline-offset:3px}.ds-act{color:#101e34;font-weight:700}"
+    },
+    {
+      "name": "State Pills",
+      "kind": "chip",
+      "refersTo": "pill-asked",
+      "description": "Asked (solid outline), pending (dashed), remembered (Cool Mist with Signal Blue check), confirmed (Blue Wash with check).",
+      "html": "<div style=\"display:flex;flex-wrap:wrap;gap:8px\"><span class=\"ds-pill ds-asked\">Español</span><span class=\"ds-pill ds-pend\">Not known yet</span><span class=\"ds-pill ds-rem\"><i class=\"ds-chk\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12l5 5 9-10\"/></svg></i>Short sentences</span><span class=\"ds-pill ds-conf\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12l5 5 9-10\"/></svg>Yes</span></div>",
+      "css": ".ds-pill{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border-radius:9999px;font:600 16px 'Noto Sans',system-ui,sans-serif;color:#101e34}.ds-asked{background:#fff;box-shadow:0 0 0 1px #101e34}.ds-pend{border:1px dashed #4a6380;color:#4a6380}.ds-rem{background:#eef3f8}.ds-chk{display:grid;place-items:center;width:20px;height:20px;border-radius:9999px;background:#2d5f8b}.ds-conf{background:#e6eef6;color:#1f4a70}"
+    },
+    {
+      "name": "Glass Bubble",
+      "kind": "card",
+      "refersTo": "bubble-tint",
+      "description": "Translucent sheet with a bottom-left tail corner; shown over a light-blue colour field.",
+      "html": "<div class=\"ds-field\"><div class=\"ds-blob\"></div><article class=\"ds-glass\"><p class=\"ds-cap\">Patient · Español</p><p class=\"ds-say\">Me duele el pecho cuando respiro.</p></article></div>",
+      "css": ".ds-field{position:relative;isolation:isolate;padding:32px 16px;overflow:hidden;background:#ffffff}.ds-blob{position:absolute;left:-30px;top:-20px;width:200px;height:200px;border-radius:63% 37% 54% 46% / 55% 48% 52% 45%;background:#77a0c4;filter:blur(44px);z-index:-1}.ds-glass{padding:16px 20px;border-radius:32px 32px 32px 8px;background:rgb(255 255 255 / .62);backdrop-filter:blur(26px) saturate(170%);border:1px solid rgb(255 255 255 / .75);box-shadow:0 1px 2px rgb(16 30 52 / .06),0 10px 28px -10px rgb(16 30 52 / .16)}.ds-cap{margin:0;font:500 14px/1.25 'Noto Sans',system-ui,sans-serif;color:#4a6380}.ds-say{margin:4px 0 0;font:600 20px/1.375 Figtree,system-ui,sans-serif;color:#101e34}"
+    },
+    {
+      "name": "Tint Card",
+      "kind": "card",
+      "refersTo": "bubble-tint",
+      "description": "Blue Wash answer bubble with a tail on the speaking side.",
+      "html": "<div class=\"ds-tint\"><h3>Hearing</h3><p>Captions, large text and tap answers stand in for a spoken exchange.</p></div>",
+      "css": ".ds-tint{max-width:36rem;padding:20px 24px;border-radius:32px 32px 8px 32px;background:#e6eef6;color:#101e34;box-shadow:0 1px 2px rgb(16 30 52 / .06),0 10px 28px -10px rgb(16 30 52 / .16)}.ds-tint h3{margin:0;font:700 24px Figtree,system-ui,sans-serif}.ds-tint p{margin:8px 0 0;font:400 18px/1.625 'Noto Sans',system-ui,sans-serif}"
+    },
+    {
+      "name": "Clinician Bubble",
+      "kind": "card",
+      "refersTo": "bubble-clinician",
+      "description": "Synapse Navy bubble: the clinician's voice is always navy.",
+      "html": "<div class=\"ds-clin\"><p class=\"ds-c1\">Clinician · English</p><p class=\"ds-c2\">Chest pain, worse with breathing</p></div>",
+      "css": ".ds-clin{padding:16px 20px;border-radius:30px 30px 30px 8px;background:#1f4a70;color:#fff;box-shadow:0 2px 4px rgb(16 30 52 / .06),0 22px 44px -14px rgb(16 30 52 / .26)}.ds-c1{margin:0;font:500 14px 'Noto Sans',system-ui,sans-serif;color:rgb(255 255 255 / .85)}.ds-c2{margin:4px 0 0;font:600 20px/1.375 Figtree,system-ui,sans-serif}"
+    },
+    {
+      "name": "Header",
+      "kind": "nav",
+      "refersTo": "header-start",
+      "description": "Translucent Synapse Navy bar, sticky at the top: logo on its native navy field at left, section links from md, one quiet outline Start in Light Blue at right.",
+      "html": "<header class=\"ds-head\"><span class=\"ds-word\">SYN<span class=\"ds-apse\">APSE</span></span><nav class=\"ds-links\"><a href=\"#\">How it works</a><a href=\"#\">Privacy</a></nav><a class=\"ds-try\" href=\"#\">Start<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></a></header>",
+      "css": ".ds-head{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px;padding:0 16px;background:rgb(16 30 52 / .92);backdrop-filter:blur(24px);border-bottom:1px solid rgb(255 255 255 / .1);color:#fff}.ds-word{font:700 18px Figtree,system-ui,sans-serif;letter-spacing:.08em;color:#fff}.ds-apse{color:#77a0c4}.ds-links{display:flex;gap:4px}.ds-links a{padding:10px 16px;border-radius:9999px;color:#b9c9db;font:500 16px 'Noto Sans',system-ui,sans-serif;text-decoration:none;transition:background-color 160ms,color 160ms}.ds-links a:hover{background:#1b2c47;color:#fff}.ds-try{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 20px;border-radius:9999px;color:#77a0c4;box-shadow:inset 0 0 0 1px rgb(119 160 196 / .6);font:600 16px 'Noto Sans',system-ui,sans-serif;text-decoration:none;transition:transform 420ms cubic-bezier(.3,1.4,.5,1),background-color 160ms}.ds-try:hover{background:#1b2c47;color:#fff}.ds-try:active{transform:scale(.965)}.ds-try:focus-visible,.ds-links a:focus-visible{outline:3px solid #77a0c4;outline-offset:3px}"
+    },
+    {
+      "name": "Primary Button on Navy",
+      "kind": "button",
+      "refersTo": "button-primary-on-navy",
+      "description": "Light Blue pill with Navy text and an arrow disc: the one primary action on navy (Start a session).",
+      "html": "<div style=\"background:#101e34;padding:24px\"><a class=\"ds-btn-nav\" href=\"#\">Start a session<span class=\"ds-disc-nav\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></span></a></div>",
+      "css": ".ds-btn-nav{display:inline-flex;align-items:center;gap:12px;min-height:56px;padding:8px 10px 8px 32px;border-radius:9999px;background:#77a0c4;color:#101e34;font:600 18px/1 'Noto Sans',system-ui,sans-serif;text-decoration:none;box-shadow:0 2px 4px rgb(16 30 52 / .06),0 22px 44px -14px rgb(16 30 52 / .26);transition:transform 420ms cubic-bezier(.3,1.4,.5,1),background-color 160ms ease-out}.ds-btn-nav:hover{background:#fff}.ds-btn-nav:active{transform:scale(.965);transition-duration:90ms}.ds-btn-nav:focus-visible{outline:3px solid #77a0c4;outline-offset:3px}.ds-disc-nav{display:grid;place-items:center;width:40px;height:40px;border-radius:9999px;background:rgb(16 30 52 / .1)}"
+    },
+    {
+      "name": "Phone Frame with ScreenBar",
+      "kind": "custom",
+      "refersTo": "phone-frame",
+      "description": "The product carrier: Raised Navy frame, Device shadow, status strip, and a holder chip naming who holds the device.",
+      "html": "<figure class=\"ds-phone\" aria-label=\"Step 2\"><div class=\"ds-screen\"><div class=\"ds-status\"><span>9:41</span><span class=\"ds-island\"></span><span class=\"ds-batt\"></span></div><div class=\"ds-bar\"><span class=\"ds-hold ds-hold-pt\">Patient</span><span class=\"ds-step\">Step 2 of 6</span></div><div class=\"ds-body\"><div class=\"ds-bub\"><p class=\"ds-bc\">Patient · Español</p><p class=\"ds-bs\" lang=\"es\">Me duele el pecho cuando respiro.</p></div></div></div></figure>",
+      "css": ".ds-phone{margin:0 auto;width:100%;max-width:20.5rem;padding:10px;border-radius:3rem;background:#1b2c47;box-shadow:0 2px 6px rgb(5 10 20 / .25),0 40px 80px -24px rgb(5 10 20 / .55)}.ds-screen{display:flex;flex-direction:column;height:24rem;overflow:hidden;border-radius:2.4rem;background:#fff;color:#101e34}.ds-status{display:flex;align-items:center;justify-content:space-between;height:44px;padding:0 28px;font:600 14px 'Noto Sans',system-ui,sans-serif}.ds-island{width:96px;height:24px;border-radius:9999px;background:#101e34}.ds-batt{width:16px;height:10px;border:2px solid #101e34;border-radius:3px}.ds-bar{display:flex;align-items:center;justify-content:space-between;padding:4px 20px 12px;border-bottom:1px solid #d5e0eb}.ds-hold{padding:4px 12px;border-radius:9999px;font:600 14px 'Noto Sans',system-ui,sans-serif}.ds-hold-pt{background:#e6eef6;color:#1f4a70}.ds-step{font:500 14px 'Noto Sans',system-ui,sans-serif;color:#4a6380}.ds-body{padding:16px}.ds-bub{max-width:88%;padding:12px 16px;border-radius:1.75rem 1.75rem 1.75rem .5rem;background:#e6eef6}.ds-bc{margin:0;font:500 14px 'Noto Sans',system-ui,sans-serif;color:#4a6380}.ds-bs{margin:2px 0 0;font:600 18px/1.375 Figtree,system-ui,sans-serif}"
+    },
+    {
+      "name": "Holder Pills",
+      "kind": "chip",
+      "refersTo": "holder-chip-clinician",
+      "description": "Role pills used instead of kickers: Clinician navy, Patient Blue Wash, Clinician on navy in Raised Navy.",
+      "html": "<div style=\"display:flex;flex-wrap:wrap;gap:8px;align-items:center\"><span class=\"ds-role ds-role-cl\">Clinician holds the device</span><span class=\"ds-role ds-role-pt\">Patient</span><span style=\"background:#101e34;padding:8px;border-radius:9999px\"><span class=\"ds-role ds-role-cn\">Clinician · English</span></span></div>",
+      "css": ".ds-role{display:inline-block;padding:4px 12px;border-radius:9999px;font:600 14px/1.25 'Noto Sans',system-ui,sans-serif}.ds-role-cl{background:#101e34;color:#fff}.ds-role-pt{background:#e6eef6;color:#1f4a70}.ds-role-cn{background:#1b2c47;color:#fff}"
+    },
+    {
+      "name": "Mode Tabs",
+      "kind": "nav",
+      "refersTo": "mode-tabs-track",
+      "description": "Paper White track; selected tab Synapse Navy. Short labels on phones, whole pills wrap when narrow.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab ds-tab-on\" role=\"tab\" aria-selected=\"true\">Another language</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">Deaf or hard of hearing</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">Low literacy</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">Can’t speak</button></div>",
+      "css": ".ds-tabs{display:flex;flex-wrap:wrap;gap:4px;padding:6px;border-radius:1.75rem;background:#fff;box-shadow:0 1px 2px rgb(16 30 52 / .06),0 10px 28px -10px rgb(16 30 52 / .16)}@media (min-width:640px){.ds-tabs{flex-wrap:nowrap;border-radius:9999px}}.ds-tab{flex:1 1 auto;min-height:48px;padding:0 16px;border:0;border-radius:9999px;background:transparent;color:#4a6380;white-space:nowrap;font:600 16px/1.2 'Noto Sans',system-ui,sans-serif;cursor:pointer;transition:transform 420ms cubic-bezier(.3,1.4,.5,1),background-color 160ms,color 160ms}.ds-tab:hover{background:#eef3f8;color:#101e34}.ds-tab:active{transform:scale(.965)}.ds-tab:focus-visible{outline:3px solid #2d5f8b;outline-offset:3px}.ds-tab-on,.ds-tab-on:hover{background:#101e34;color:#fff}"
+    },
+    {
+      "name": "Session Bar",
+      "kind": "nav",
+      "refersTo": "session-bar",
+      "description": "Translucent navy bar: mark, Session, live holder pill, and a two-step Clear (Clear, then Cancel plus Light Blue Clear now).",
+      "html": "<header class=\"ds-sbar\"><span class=\"ds-smark\" aria-hidden=\"true\"></span><span class=\"ds-stitle\">Session</span><span aria-live=\"polite\"><span class=\"ds-shold\">Patient</span></span><span class=\"ds-sright\"><button class=\"ds-scancel\">Cancel</button><button class=\"ds-snow\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3\"/></svg>Clear now</button><button class=\"ds-sclear\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3\"/></svg>Clear</button></span></header>",
+      "css": ".ds-sbar{display:flex;align-items:center;gap:12px;height:64px;padding:0 16px;background:rgb(16 30 52 / .92);backdrop-filter:blur(24px);border-bottom:1px solid rgb(255 255 255 / .1);color:#fff}.ds-smark{width:36px;height:36px;border-radius:9999px;background:conic-gradient(#fff 0 50%,#77a0c4 50% 100%)}.ds-stitle{font:700 18px Figtree,system-ui,sans-serif}.ds-shold{display:inline-block;padding:4px 12px;border-radius:9999px;background:#e6eef6;color:#1f4a70;font:600 14px/1.25 'Noto Sans',system-ui,sans-serif}.ds-sright{margin-inline-start:auto;display:flex;gap:8px}.ds-sright button{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:0;border-radius:9999px;background:transparent;font:600 16px 'Noto Sans',system-ui,sans-serif;cursor:pointer;transition:transform 420ms cubic-bezier(.3,1.4,.5,1),background-color 160ms ease-out,color 160ms}.ds-sright button:active{transform:scale(.965)}.ds-sright button:focus-visible{outline:3px solid #77a0c4;outline-offset:3px}.ds-sclear{color:#77a0c4;box-shadow:inset 0 0 0 1px rgb(119 160 196 / .6)}.ds-sclear:hover,.ds-scancel:hover{background:#1b2c47;color:#fff}.ds-scancel{color:#b9c9db}.ds-sright .ds-snow{background:#77a0c4;color:#101e34}.ds-sright .ds-snow:hover{background:#fff}"
+    },
+    {
+      "name": "Action Bar with Session Buttons",
+      "kind": "button",
+      "refersTo": "button-primary-session",
+      "description": "Sticky bottom bar: primary on top and full width on phones, right-aligned row from sm. Primary disabled state shown.",
+      "html": "<div class=\"ds-abar\"><div class=\"ds-arow\"><button class=\"ds-quiet\">Back to summary</button><button class=\"ds-prim\">Pass to patient</button><button class=\"ds-prim\" disabled>Pick a language first</button></div></div>",
+      "css": ".ds-abar{padding:16px 16px calc(16px + env(safe-area-inset-bottom));background:rgb(255 255 255 / .92);backdrop-filter:blur(24px);border-top:1px solid #d5e0eb}.ds-arow{display:flex;flex-direction:column-reverse;gap:12px}@media (min-width:640px){.ds-arow{flex-direction:row;justify-content:flex-end;align-items:center}}.ds-prim,.ds-quiet{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:9999px;font-family:'Noto Sans',system-ui,sans-serif;font-weight:600;cursor:pointer;transition:transform 420ms cubic-bezier(.3,1.4,.5,1),background-color 160ms ease-out}.ds-prim{min-height:56px;padding:0 28px;background:#2d5f8b;color:#fff;font-size:18px;box-shadow:0 2px 4px rgb(16 30 52 / .06),0 22px 44px -14px rgb(16 30 52 / .26)}.ds-prim:hover{background:#1f4a70}.ds-prim:disabled{background:#d5e0eb;color:#4a6380;box-shadow:none;cursor:not-allowed}.ds-quiet{min-height:48px;padding:0 20px;background:transparent;color:#1f4a70;font-size:16px;box-shadow:inset 0 0 0 1px #d5e0eb}.ds-quiet:hover{background:#e6eef6;box-shadow:inset 0 0 0 1px #e6eef6}.ds-prim:active,.ds-quiet:active{transform:scale(.965);transition-duration:90ms}.ds-prim:focus-visible,.ds-quiet:focus-visible{outline:3px solid #2d5f8b;outline-offset:3px}"
+    },
+    {
+      "name": "Choice Pill with Radio Indicator",
+      "kind": "chip",
+      "refersTo": "choice-pill",
+      "description": "56px choice: unselected shows a 2px-ring radio indicator, selected is Signal Blue fill plus check.",
+      "html": "<div class=\"ds-cgrid\"><button class=\"ds-cp\" aria-pressed=\"false\"><span class=\"ds-ci\"><span class=\"ds-ring\"></span></span><span><span class=\"ds-cl\" lang=\"es\">Español</span><span class=\"ds-cs\">Spanish</span></span></button><button class=\"ds-cp ds-cpon\" aria-pressed=\"true\"><span class=\"ds-ci\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12.5l4.5 4.5L19 7.5\"/></svg></span><span><span class=\"ds-cl\" lang=\"ar\">العربية</span><span class=\"ds-cs\">Arabic</span></span></button></div>",
+      "css": ".ds-cgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ds-cp{display:flex;align-items:center;gap:10px;min-height:56px;padding:8px 20px;border:0;border-radius:9999px;background:#fff;color:#101e34;text-align:left;box-shadow:inset 0 0 0 1px #d5e0eb;font:600 18px/1.2 'Noto Sans',system-ui,sans-serif;cursor:pointer;transition:transform 420ms cubic-bezier(.3,1.4,.5,1),background-color 160ms ease-out}.ds-cp:hover{box-shadow:inset 0 0 0 1px #4a6380}.ds-cp:active{transform:scale(.965)}.ds-cp:focus-visible{outline:3px solid #2d5f8b;outline-offset:3px}.ds-ci{display:grid;place-items:center;width:24px;height:24px;flex:none;color:#2d5f8b}.ds-ring{width:20px;height:20px;border-radius:9999px;box-shadow:inset 0 0 0 2px #d5e0eb}.ds-cl{display:block}.ds-cs{display:block;font-size:14px;font-weight:500;color:#4a6380}.ds-cpon,.ds-cpon:hover{background:#2d5f8b;color:#fff;box-shadow:0 1px 2px rgb(16 30 52 / .06),0 10px 28px -10px rgb(16 30 52 / .16)}.ds-cpon .ds-ci{color:#fff}.ds-cpon .ds-cs{color:rgb(255 255 255 / .85)}"
+    },
+    {
+      "name": "Picture Tile and Scale Circles",
+      "kind": "chip",
+      "refersTo": "picture-tile",
+      "description": "Guided-question answers: pictogram tiles (128px, 176px from sm) and the 1 to 5 scale circles.",
+      "html": "<div class=\"ds-tiles\"><button class=\"ds-tile\" aria-pressed=\"false\"><span class=\"ds-tp\"><svg width=\"40\" height=\"40\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"9\" r=\"6\"/><path d=\"M8 15.5V21M16 15.5V21\"/></svg></span><span>Head</span></button><button class=\"ds-tile ds-ton\" aria-pressed=\"true\"><span class=\"ds-tp\"><svg width=\"40\" height=\"40\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"9\" r=\"6\"/><path d=\"M8 15.5V21M16 15.5V21\"/></svg></span><span class=\"ds-tl\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12.5l4.5 4.5L19 7.5\"/></svg>Head</span></button></div><div class=\"ds-scale\"><button class=\"ds-sc\">1<i style=\"width:18%\"></i></button><button class=\"ds-sc\">2<i style=\"width:36%\"></i></button><button class=\"ds-sc ds-scon\">3<i style=\"width:54%\"></i></button><button class=\"ds-sc\">4<i style=\"width:72%\"></i></button><button class=\"ds-sc\">5<i style=\"width:90%\"></i></button></div>",
+      "css": ".ds-tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ds-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:128px;padding:16px;border:0;border-radius:1.75rem;background:#fff;color:#101e34;box-shadow:inset 0 0 0 1px #d5e0eb;font:600 18px 'Noto Sans',system-ui,sans-serif;cursor:pointer;transition:transform 420ms cubic-bezier(.3,1.4,.5,1),background-color 160ms ease-out}@media (min-width:640px){.ds-tile{min-height:176px;font-size:20px}.ds-tp svg{width:56px;height:56px}}.ds-tile:hover{background:#e6eef6}.ds-tile:active,.ds-sc:active{transform:scale(.965)}.ds-tile:focus-visible,.ds-sc:focus-visible{outline:3px solid #2d5f8b;outline-offset:3px}.ds-tp{color:#2d5f8b}.ds-tl{display:flex;align-items:center;gap:6px}.ds-ton,.ds-ton:hover{background:#2d5f8b;color:#fff;box-shadow:0 1px 2px rgb(16 30 52 / .06),0 10px 28px -10px rgb(16 30 52 / .16)}.ds-ton .ds-tp{color:#fff}.ds-scale{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px}.ds-sc{display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1;min-height:56px;border:0;border-radius:9999px;background:#fff;color:#101e34;box-shadow:inset 0 0 0 1px #d5e0eb;font:700 28px Figtree,system-ui,sans-serif;cursor:pointer;transition:transform 420ms cubic-bezier(.3,1.4,.5,1),background-color 160ms ease-out}.ds-sc:hover{background:#e6eef6}.ds-sc i{display:block;height:6px;margin-top:4px;border-radius:9999px;background:#77a0c4}.ds-scon,.ds-scon:hover{background:#2d5f8b;color:#fff;box-shadow:none}.ds-scon i{background:#fff}"
+    },
+    {
+      "name": "Clinician Summary Sheet",
+      "kind": "card",
+      "refersTo": "summary-sheet",
+      "description": "Navy summary with the labelled red-flag block, summary fields and the Check with the patient inset.",
+      "html": "<section class=\"ds-sum\"><p class=\"ds-sl\">Chief complaint</p><p class=\"ds-scc\">Chest pain, worse with breathing</p><div class=\"ds-rf\"><p class=\"ds-rft\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 4l9 16H3z\"/><path d=\"M12 10v4M12 17.2h.01\"/></svg>Red flag: assess first</p><ul><li>Chest pain with breathlessness</li></ul></div><dl class=\"ds-sf\"><div><dt>Duration</dt><dd>Since this morning</dd></div><div><dt>Symptoms</dt><dd>Chest pain, short of breath</dd></div></dl><div class=\"ds-chk2\"><p class=\"ds-chkt\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 4l9 16H3z\"/><path d=\"M12 10v4M12 17.2h.01\"/></svg>Check with the patient</p><p class=\"ds-chkp\" lang=\"es\">me aprieta</p><p class=\"ds-chkr\">Could mean pressure or tightness.</p></div></section>",
+      "css": ".ds-sum{padding:24px;border-radius:2rem;background:#101e34;color:#fff}.ds-sl{margin:0;font:500 14px 'Noto Sans',system-ui,sans-serif;color:#b9c9db}.ds-scc{margin:4px 0 0;font:700 30px/1.15 Figtree,system-ui,sans-serif}.ds-rf{margin-top:24px;padding:16px;border-radius:1.25rem;background:#77a0c4;color:#101e34}.ds-rft,.ds-chkt{display:flex;align-items:center;gap:8px;margin:0;font:700 14px 'Noto Sans',system-ui,sans-serif}.ds-rf ul{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0;padding:0;list-style:none}.ds-rf li{padding:6px 16px;border-radius:9999px;background:#101e34;color:#fff;font:600 16px 'Noto Sans',system-ui,sans-serif}.ds-sf{display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));gap:12px;margin:24px 0 0}.ds-sf div{padding:16px;border-radius:1.25rem;background:#1b2c47}.ds-sf dt{font:400 14px 'Noto Sans',system-ui,sans-serif;color:#b9c9db}.ds-sf dd{margin:2px 0 0;font:600 18px 'Noto Sans',system-ui,sans-serif}.ds-chk2{margin-top:24px;padding:16px;border-radius:1.25rem;background:#1b2c47}.ds-chkt{font-size:16px;font-weight:600;color:#77a0c4}.ds-chkp{margin:8px 0 0;font:600 16px 'Noto Sans',system-ui,sans-serif}.ds-chkr{margin:2px 0 0;font:400 16px 'Noto Sans',system-ui,sans-serif;color:#b9c9db}"
+    },
+    {
+      "name": "Handoff Screen",
+      "kind": "custom",
+      "refersTo": "handoff-screen",
+      "description": "Full-screen navy turn: device disc with the pass, handoff line, what is hidden, one Light Blue button.",
+      "html": "<section class=\"ds-ho\"><span class=\"ds-hod\"><svg width=\"44\" height=\"44\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 4h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z\"/><path d=\"M19 9l2 2-2 2M21 11h-5\"/></svg></span><p class=\"ds-hol\">Pass the device to the patient</p><p class=\"ds-hos\">Your reply is ready in Spanish.</p><p class=\"ds-hos\">The summary is hidden while the patient holds the device.</p><button class=\"ds-hob\">Show the patient</button></section>",
+      "css": "@keyframes ds-pass{45%{transform:rotateY(-22deg) translateX(-28px) scale(.96)}}.ds-ho{display:flex;flex-direction:column;align-items:center;gap:28px;padding:64px 24px;background:#101e34;color:#fff;text-align:center}.ds-hod{display:grid;place-items:center;width:96px;height:96px;border-radius:9999px;background:#1b2c47;color:#77a0c4;animation:ds-pass 760ms cubic-bezier(.16,1,.3,1) both}@media (prefers-reduced-motion:reduce){.ds-hod{animation:none}}.ds-hol{max-width:18ch;margin:0;font:700 clamp(2rem,7vw,3.25rem)/1.05 Figtree,system-ui,sans-serif;text-wrap:balance}.ds-hos{max-width:30rem;margin:0;font:400 16px 'Noto Sans',system-ui,sans-serif;color:#b9c9db}.ds-hob{min-height:56px;padding:0 32px;border:0;border-radius:9999px;background:#77a0c4;color:#101e34;font:600 18px 'Noto Sans',system-ui,sans-serif;cursor:pointer;transition:transform 420ms cubic-bezier(.3,1.4,.5,1),background-color 160ms ease-out}.ds-hob:hover{background:#fff}.ds-hob:active{transform:scale(.965)}.ds-hob:focus-visible{outline:3px solid #77a0c4;outline-offset:3px}"
+    },
+    {
+      "name": "Idle Warning and Toast",
+      "kind": "custom",
+      "refersTo": "idle-warning",
+      "description": "Navy alertdialog card at the bottom with one Light Blue keep button; navy toast pill under the session bar.",
+      "html": "<div style=\"display:flex;flex-direction:column;gap:16px\"><p class=\"ds-toast\">Session cleared</p><div class=\"ds-idle\" role=\"alertdialog\" aria-labelledby=\"ds-it\"><div><p id=\"ds-it\" class=\"ds-it\">¿Sigue ahí?</p><p class=\"ds-id\">Esta sesión se borra en 30 s.</p><p class=\"ds-ie\" lang=\"en\">Still there? This session clears in 30s.</p></div><button class=\"ds-ik\">Seguir</button></div></div>",
+      "css": ".ds-toast{align-self:center;margin:0;padding:12px 20px;border-radius:9999px;background:#101e34;color:#fff;font:600 16px 'Noto Sans',system-ui,sans-serif;box-shadow:0 2px 4px rgb(16 30 52 / .06),0 22px 44px -14px rgb(16 30 52 / .26)}.ds-idle{display:flex;flex-direction:column;gap:16px;max-width:36rem;padding:20px;border-radius:1.75rem;background:#101e34;color:#fff;box-shadow:0 2px 4px rgb(16 30 52 / .06),0 22px 44px -14px rgb(16 30 52 / .26)}@media (min-width:640px){.ds-idle{flex-direction:row;align-items:center;padding:24px}}.ds-it{margin:0;font:700 20px Figtree,system-ui,sans-serif}.ds-id{margin:4px 0 0;font:400 16px 'Noto Sans',system-ui,sans-serif;color:#b9c9db}.ds-ie{margin:8px 0 0;font:400 14px 'Noto Sans',system-ui,sans-serif;color:#b9c9db}.ds-ik{min-height:48px;padding:0 24px;border:0;border-radius:9999px;background:#77a0c4;color:#101e34;font:600 16px 'Noto Sans',system-ui,sans-serif;cursor:pointer;transition:transform 420ms cubic-bezier(.3,1.4,.5,1),background-color 160ms ease-out}.ds-ik:hover{background:#fff}.ds-ik:active{transform:scale(.965)}.ds-ik:focus-visible{outline:3px solid #77a0c4;outline-offset:3px}"
+    },
+    {
+      "name": "Shared Primary Button",
+      "kind": "button",
+      "description": "src/components/ui/button.tsx: Button variant=\"primary\". Native button; full width below sm, content-sized above; width=\"full\" retains full width for forms. Session wrappers and auth actions reuse this primitive.",
+      "html": "<button type=\"button\" class=\"ds-shared-action ds-shared-primary\"><span>Continue</span></button>",
+      "css": ".ds-shared-action{display:inline-flex;width:100%;align-items:center;justify-content:center;border:0;border-radius:9999px;padding-top:8px;padding-bottom:8px;font-family:var(--font-body),'Noto Sans',system-ui,sans-serif;font-weight:600;cursor:pointer;transition:transform 420ms var(--spring-pop),background-color 160ms ease-out,box-shadow 200ms ease-out,color 160ms ease-out}.ds-shared-primary{min-height:56px;gap:10px;padding-left:28px;padding-right:28px;font-size:18px;line-height:28px;background:var(--blue-deep);color:white;box-shadow:var(--shadow-lift)}.ds-shared-primary:enabled:hover{background:var(--blue-deeper)}.ds-shared-primary:disabled{background:var(--line);color:var(--ink-soft);box-shadow:none}.ds-shared-action:focus-visible{outline:3px solid var(--blue-deep);outline-offset:3px}.ds-shared-action:active:not(:disabled){transform:scale(.965);transition-duration:90ms}.ds-shared-action:disabled{cursor:not-allowed}@media(min-width:640px){.ds-shared-action{width:auto}.ds-shared-action.ds-full{width:100%}}@media(prefers-reduced-motion:reduce){.ds-shared-action,.ds-shared-action:active{transition:none;transform:none}}"
+    },
+    {
+      "name": "Shared Quiet Button",
+      "kind": "button",
+      "description": "src/components/ui/button.tsx: Button variant=\"quiet\". Native button; full width below sm, content-sized above; width=\"full\" retains full width for forms. Session wrappers and auth actions reuse this primitive.",
+      "html": "<button type=\"button\" class=\"ds-shared-action ds-shared-quiet\"><span>Continue</span></button>",
+      "css": ".ds-shared-action{display:inline-flex;width:100%;align-items:center;justify-content:center;border:0;border-radius:9999px;padding-top:8px;padding-bottom:8px;font-family:var(--font-body),'Noto Sans',system-ui,sans-serif;font-weight:600;cursor:pointer;transition:transform 420ms var(--spring-pop),background-color 160ms ease-out,box-shadow 200ms ease-out,color 160ms ease-out}.ds-shared-quiet{min-height:48px;gap:8px;padding-left:20px;padding-right:20px;font-size:16px;line-height:24px;background:transparent;color:var(--blue-deeper);box-shadow:0 0 0 1px var(--line)}.ds-shared-quiet:enabled:hover{background:var(--blue-soft);box-shadow:0 0 0 1px var(--blue-soft)}.ds-shared-quiet:disabled{opacity:.5}.ds-shared-action:focus-visible{outline:3px solid var(--blue-deep);outline-offset:3px}.ds-shared-action:active:not(:disabled){transform:scale(.965);transition-duration:90ms}.ds-shared-action:disabled{cursor:not-allowed}@media(min-width:640px){.ds-shared-action{width:auto}.ds-shared-action.ds-full{width:100%}}@media(prefers-reduced-motion:reduce){.ds-shared-action,.ds-shared-action:active{transition:none;transform:none}}"
+    },
+    {
+      "name": "Shared Outline Button",
+      "kind": "button",
+      "description": "src/components/ui/button.tsx: Button variant=\"outline\". Native button; full width below sm, content-sized above; width=\"full\" retains full width for forms. Session wrappers and auth actions reuse this primitive.",
+      "html": "<button type=\"button\" class=\"ds-shared-action ds-shared-outline\"><span>Continue</span></button>",
+      "css": ".ds-shared-action{display:inline-flex;width:100%;align-items:center;justify-content:center;border:0;border-radius:9999px;padding-top:8px;padding-bottom:8px;font-family:var(--font-body),'Noto Sans',system-ui,sans-serif;font-weight:600;cursor:pointer;transition:transform 420ms var(--spring-pop),background-color 160ms ease-out,box-shadow 200ms ease-out,color 160ms ease-out}.ds-shared-outline{min-height:56px;gap:12px;padding-left:28px;padding-right:28px;font-size:18px;line-height:28px;background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}.ds-shared-outline:enabled:hover{box-shadow:0 0 0 1px var(--ink-soft)}.ds-shared-outline:disabled{opacity:.5}.ds-shared-action:focus-visible{outline:3px solid var(--blue-deep);outline-offset:3px}.ds-shared-action:active:not(:disabled){transform:scale(.965);transition-duration:90ms}.ds-shared-action:disabled{cursor:not-allowed}@media(min-width:640px){.ds-shared-action{width:auto}.ds-shared-action.ds-full{width:100%}}@media(prefers-reduced-motion:reduce){.ds-shared-action,.ds-shared-action:active{transition:none;transform:none}}"
+    },
+    {
+      "name": "Shared Field Control",
+      "kind": "input",
+      "description": "src/app/globals.css: field-control supplies surface, ink, caret, placeholder and focus ring. This account TextField adds rounded-inset (20px), 56px minimum height, 20px horizontal padding and 18px type; session textareas use rounded-field (24px). Hints and errors are associated only while rendered.",
+      "html": "<label class=\"ds-field-label\" for=\"ds-account-email\">Email</label><input class=\"ds-field-control\" id=\"ds-account-email\" type=\"email\" placeholder=\"you@example.com\">",
+      "css": ".ds-field-label{display:block;margin-bottom:8px;font:600 16px/24px var(--font-body),'Noto Sans',system-ui,sans-serif;color:var(--ink)}.ds-field-control{box-sizing:border-box;width:100%;min-height:56px;padding:0 20px;border:0;border-radius:20px;background:var(--surface);color:var(--ink);caret-color:var(--blue-deep);box-shadow:0 0 0 1px var(--line);font:400 18px/28px var(--font-body),'Noto Sans',system-ui,sans-serif}.ds-field-control::placeholder{color:var(--ink-soft)}.ds-field-control:focus-visible{outline:none;box-shadow:0 0 0 3px var(--blue-deep)}"
+    },
+    {
+      "name": "Shared Loading Status",
+      "kind": "custom",
+      "description": "src/components/ui/spinner.tsx: LoadingStatus pairs a decorative SpinnerIcon with visible label and role=\"status\". SpinnerIcon inverse uses white at 40% opacity with a white top segment when embedded on a dark surface. Reduced motion stops rotation.",
+      "html": "<span class=\"ds-loading-status\" role=\"status\"><span class=\"ds-loading-ring\" aria-hidden=\"true\"></span>Translating…</span>",
+      "css": ".ds-loading-status{display:inline-flex;align-items:center;gap:12px;color:var(--ink-soft);font:600 18px/28px var(--font-body),'Noto Sans',system-ui,sans-serif}.ds-loading-ring{display:inline-block;box-sizing:border-box;width:20px;height:20px;flex-shrink:0;border:3px solid var(--line);border-top-color:var(--blue-deep);border-radius:9999px;animation:ds-loading-spin 1s linear infinite}@keyframes ds-loading-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.ds-loading-ring{animation:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Steady Signal",
+    "overview": "Synapse is a conversation made visible. The brand comes from the team logo: a navy field, a mark shaped as a flowing \"S\" of two interlocking swooshes, and the wordmark SYN in white with APSE in light blue. The page is clean clinic white with navy for weight and trust, and light blue as the signal colour that ties it back to the logo. Content arrives as chat bubbles, each with one small tail corner. Everything is large, rounded and unhurried, because the people it serves are often anxious, tired, or reading in a second language. Tap targets are generous (44 to 56px), text is never small for anything the user must act on, and feedback is physical: things press in and spring back.\n\nState is carried by form, never by hue alone. A solid outlined pill means asked, a dashed pill means pending, a filled pill with a check means remembered, and a filled blue control with a check means selected or answered. Colour reinforces these forms but is never the only signal.\n\nNavy here is calm, not cold: it is paired with large radii, soft shadows and generous space, never with ruled, zero-radius clinical boxes.",
+    "keyCharacteristics": [
+      "White ground with navy ink; navy for the header, the logo field and the clinician's voice.",
+      "Light blue (the logo blue) as the brand accent on navy; a deeper blue of the same hue for actions on white.",
+      "Large varied radii: full pills for controls, 2rem to 2.25rem sheets, bubbles with one small corner.",
+      "Soft layered shadows tinted navy, and one translucent glass material over blurred light-blue fields.",
+      "Spring motion on press, toggle and entrance; every travel has a reduced-motion opt-out.",
+      "Multilingual by construction: scripts switch faces by lang, right-to-left follows dir.",
+      "A phone frame carries the product: real screens shown inside one device that passes between clinician and patient.",
+      "Navy bands (hero, clinician sheets, footer) alternate with Clinic White and Cool Mist sections; secondary text on navy is On-Navy Mist."
+    ],
+    "rules": [
+      {
+        "name": "The Light-Blue-On-Navy Rule",
+        "body": "The logo light blue is for navy surfaces and decorative fields. On white, anything readable or pressable uses Signal Blue or Deep Signal Blue instead.",
+        "section": "colors"
+      },
+      {
+        "name": "The Act-or-Confirmed Rule",
+        "body": "Signal Blue appears only on things the user can press or on states that have been confirmed or answered. Decorative surfaces use the Blue Wash or Cool Mist, never Signal Blue.",
+        "section": "colors"
+      },
+      {
+        "name": "The Form-Before-Hue Rule",
+        "body": "Every state is distinguishable in greyscale: outline, dash, fill plus check. A new state needs a new form, not a new colour. This matters more with a near-monochrome blue palette.",
+        "section": "colors"
+      },
+      {
+        "name": "The Language Face Rule",
+        "body": "Every block of patient-language text carries lang and dir; interface labels inside it opt back to lang=\"en\" dir=\"ltr\". Do not hand-pick a font per language.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Labels are sentence case at 14px or larger. Hierarchy comes from size, weight and ink, not caps or tracking. (The all-caps wordmark is the logo, not a label style.)",
+        "section": "typography"
+      },
+      {
+        "name": "The Glass Over Colour Rule",
+        "body": "Glass only has meaning when there is colour behind it. Place a glass sheet only where a colour field sits behind it; otherwise use an opaque sheet.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Two-Step Shadow Rule",
+        "body": "Soft at rest, Lift for the one thing to press or the one thing that changes. No other shadow values (except Device, which belongs to the phone frame alone), and no hard offset shadows.",
+        "section": "elevation"
+      },
+      {
+        "name": "The On-Navy Mist Rule",
+        "body": "On navy, primary text is white and secondary text is On-Navy Mist. Readable secondary text on navy does not use translucent white or Slate Blue.",
+        "section": "colors"
+      },
+      {
+        "name": "The Role Pill Rule",
+        "body": "A step, sheet or bubble group is introduced by who is speaking or holding the device, as a holder pill (14px semibold, full pill, 4px by 12px): Clinician is Synapse Navy with white (Raised Navy with white when already on navy), Patient is Blue Wash with Deep Signal Blue. Section headings stand alone; there is no eyebrow or kicker above them.",
+        "section": "typography"
+      },
+      {
+        "name": "The Own Ground Rule",
+        "body": "The page behind everything is navy. A new section declares its own ground (navy, Clinic White or Cool Mist); never rely on the body showing through.",
+        "section": "layout"
+      },
+      {
+        "name": "The One Device Rule",
+        "body": "The Device shadow, the 3rem frame and the 2.4rem screen belong only to the phone that carries product screens. Nothing else borrows them.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Holder's Language Rule",
+        "body": "In the session app every screen speaks the language of whoever holds the device. Patient-held screens set lang and dir on the screen frame and on each patient-language block, mirror under rtl, and flip directional arrows; clinician-held screens are English. Shared moments carry both: the handoff to the clinician leads with the patient's line in their language and the English instruction beneath, and the idle warning speaks the holder's language with an English line under it when a patient holds a non-English session.",
+        "section": "typography"
+      },
+      {
+        "name": "The Thumb Bar Rule",
+        "body": "A session screen puts all of its actions in its one sticky ActionBar: at most one primary, quiet actions beside it. Phones stack them full width with the primary on top; from sm they form a right-aligned row, mirrored under rtl. Confirmations happen in place, in the ActionBar or the session bar, never in a modal.",
+        "section": "layout"
+      }
+    ],
+    "dos": [
+      "Do use the three brand colours from the logo: navy, light blue, white.",
+      "Do use Signal Blue (not the logo light blue) for text, links and buttons on white.",
+      "Do keep the logo on its navy field, unaltered.",
+      "Do make state legible without colour: solid outline for asked, dashed for pending, fill plus check for remembered or selected.",
+      "Do give every bubble-like surface one small tail corner (0.5rem) on the speaker's side and large radii elsewhere.",
+      "Do keep targets at least 44px tall (48 to 56px for primary choices) and body text at least 18px where users read or act.",
+      "Do put glass sheets only over colour fields, and keep the reduced-transparency and increased-contrast fallbacks.",
+      "Do mark every foreign-language block with lang and dir, and reset interface labels inside it to en and ltr.",
+      "Do use On-Navy Mist for secondary text on navy and Raised Navy.",
+      "Do introduce steps and sheets with a holder pill (Clinician navy, Patient Blue Wash) rather than an eyebrow.",
+      "Do show the product inside the phone frame, with a ScreenBar naming who holds it.",
+      "Do keep short mobile labels inside the words of their accessible name, and let pill rows wrap as whole pills.",
+      "Do name who holds the device once, in the session bar's live holder pill, and write every patient-held screen in the patient's language with lang and dir on the screen.",
+      "Do put every session action in the sticky ActionBar: primary on top and full width on phones, a right-aligned row from sm, mirrored under rtl.",
+      "Do make every change of holder a full-screen navy handoff that hides the previous person's content.",
+      "Do confirm destructive actions in place, in two steps (Clear, then Cancel or Clear now).",
+      "Do show red flags as a labelled Light Blue inset on the navy summary, with an alert icon and navy flag chips."
+    ],
+    "donts": [
+      "Don't put light blue text or light blue buttons on white; it fails contrast.",
+      "Don't pair navy with ruled, zero-radius, shadowless boxes; keep it soft and rounded.",
+      "Don't add colours outside the navy / light blue / white family (no teal, apricot, or warm washes from the old design).",
+      "Don't recolour, retype or add effects to the logo.",
+      "Don't signal state by hue alone, or add a state without a distinct form.",
+      "Don't introduce shadows beyond Soft and Lift (Device is reserved for the phone frame), or hard-offset shadows.",
+      "Don't let colour fields escape the isolated, clipped wrapper or sit above content.",
+      "Don't add motion without a reduced-motion opt-out.",
+      "Don't put an uppercase or tracked eyebrow above a heading; the holder pill does that job.",
+      "Don't rely on sound alone in Deaf or hard-of-hearing mode; read-aloud controls are not rendered there.",
+      "Don't use red or a new hue for red flags or destructive actions; label, icon and inset carry the urgency.",
+      "Don't repeat the holder pill inside session screens or announce a turn with a modal."
+    ]
+  }
+}

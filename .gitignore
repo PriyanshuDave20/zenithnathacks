@@ -1,0 +1,50 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# deps / builds
+node_modules/
+.venv/
+__pycache__/
+dist/
+build/
+.next/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# personal agent config (shared config IS committed)
+.claude/settings.local.json
+CLAUDE.local.md
+
+# next / ts
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+
+/generated/prisma
+
+# next / ts
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+
+/src/generated/prisma
+
+# prisma
+/src/generated/
+
+# impeccable engine binaries (per-platform; launcher downloads + checksum-verifies them)
+.claude/skills/impeccable/scripts/bin/
+.agents/skills/impeccable/scripts/bin/
+.impeccable/config.local.json
+
+# playwright-mcp output
+.playwright-mcp/
+
+# graphify knowledge graph (local only, never commit)
+graphify-out/

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Synapse: the body map</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@600;700&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{width:390px;height:844px;overflow:hidden;background:#fff;color:#101e34;font:400 18px/1.6 'Noto Sans',ui-sans-serif,system-ui,sans-serif}
+  header{display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 8px 0 16px;background:#101e34}
+  .word{font:700 18px Figtree,ui-sans-serif,system-ui,sans-serif;letter-spacing:.08em;color:#fff}.word b{color:#77a0c4}
+  .quiet{color:#77a0c4;font:600 16px 'Noto Sans',ui-sans-serif,system-ui,sans-serif;padding:10px 16px}
+  main{padding:20px 16px 0}
+  h1{font:700 38px/1.04 Figtree,ui-sans-serif,system-ui,sans-serif;letter-spacing:-.03em}
+  .lede{margin-top:6px;color:#4a6380;font-size:18px}
+  .stage{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center;margin-top:14px}
+  .body{width:150px;height:300px}
+  .q{display:grid;gap:8px}
+  .cap{font:500 14px 'Noto Sans',ui-sans-serif,system-ui,sans-serif;color:#4a6380}
+  .qt{font:600 20px/1.3 Figtree,ui-sans-serif,system-ui,sans-serif}
+  .ch{display:flex;align-items:center;gap:8px;min-height:48px;padding:0 18px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1px #d5e0eb;font:600 16px 'Noto Sans',ui-sans-serif,system-ui,sans-serif}
+  .ch.on{background:#2d5f8b;color:#fff;box-shadow:none}
+  .clin{margin-top:16px;padding:16px 20px;border-radius:30px 30px 8px 30px;background:#101e34;color:#fff}
+  .clin .cap{color:rgb(255 255 255/.8)}
+  .clin p.s{margin-top:4px;font:600 20px/1.35 Figtree,ui-sans-serif,system-ui,sans-serif}
+  .synth{margin-top:8px;font:500 14px 'Noto Sans',ui-sans-serif,system-ui,sans-serif;color:#4a6380}
+  .cta{display:flex;align-items:center;justify-content:space-between;margin-top:14px;min-height:56px;padding:8px 10px 8px 32px;border-radius:999px;background:#2d5f8b;color:#fff;font:600 18px 'Noto Sans',ui-sans-serif,system-ui,sans-serif;box-shadow:0 2px 4px rgb(16 30 52/.06),0 22px 44px -14px rgb(16 30 52/.26)}
+  .disc{display:grid;place-items:center;width:40px;height:40px;border-radius:999px;background:rgb(255 255 255/.2)}
+</style>
+</head>
+<body>
+<header><span class="word">SYN<b>APSE</b></span><span class="quiet">How it works</span></header>
+<main>
+  <h1>Tap where it hurts.</h1>
+  <p class="lede">No shared language needed. The questions follow the body.</p>
+  <div class="stage">
+    <svg class="body" viewBox="0 0 100 200" fill="none" aria-label="Body diagram, chest selected">
+      <circle cx="50" cy="20" r="14" fill="#eef3f8" stroke="#d5e0eb" stroke-width="2"/>
+      <rect x="44" y="34" width="12" height="8" fill="#eef3f8"/>
+      <path d="M28 44h44l6 46H22z" fill="#2d5f8b"/>
+      <path d="M22 90h56l-4 30H26z" fill="#eef3f8" stroke="#d5e0eb" stroke-width="2"/>
+      <path d="M28 44l-12 58M72 44l12 58" stroke="#d5e0eb" stroke-width="10" stroke-linecap="round"/>
+      <path d="M38 120l-4 70M62 120l4 70" stroke="#d5e0eb" stroke-width="12" stroke-linecap="round"/>
+    </svg>
+    <div class="q">
+      <p class="cap">Chest · question 1 of 3</p>
+      <p class="qt">Does it hurt more when you breathe in?</p>
+      <span class="ch on">✓ Yes</span><span class="ch">No</span><span class="ch">Not sure</span>
+    </div>
+  </div>
+  <div class="clin"><p class="cap">Clinician summary</p><p class="s">Chest pain, worse on inspiration.</p></div>
+  <p class="synth">Synthetic example. No real patient data.</p>
+  <div class="cta">Start a session<span class="disc">→</span></div>
+</main>
+</body>
+</html>

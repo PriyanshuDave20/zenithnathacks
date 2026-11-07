@@ -1,0 +1,197 @@
+// Patient-facing interface text, in the patient's language. Demo phrases: a fluent speaker must
+// review them before real clinical use. Clinician-facing text stays in English.
+import type { PatientLanguage } from "@/lib/mocks";
+
+type Strings = {
+  intakeTitle: string;
+  noNames: string;
+  speak: string;
+  listening: string;
+  stop: string;
+  typeInstead: string;
+  speakInstead: string;
+  typeHere: string;
+  done: string;
+  next: string;
+  back: string;
+  questionOf: (n: number, t: number) => string;
+  readAloud: string;
+  working: string;
+  isThisRight: string;
+  yesRight: string;
+  tryAgain: string;
+  passToClinician: string;
+  clinicianSays: string;
+  listen: string;
+  yes: string;
+  no: string;
+  unsure: string;
+  handBack: string;
+  handBackDone: string;
+  tapPhrases: string;
+  speakForMe: string;
+  clearPhrases: string;
+  micUnavailable: string;
+  yourMessage: string;
+  inEnglish: string;
+  couldNotTranslate: string;
+  retry: string;
+  stillThere: string;
+  clearsIn: (n: number) => string;
+  keepSession: string;
+};
+
+export const STRINGS: Record<PatientLanguage, Strings> = {
+  en: {
+    intakeTitle: "Tell us what's wrong.",
+    noNames: "Please don't say your name or personal details.",
+    speak: "Speak",
+    listening: "Listening…",
+    stop: "Stop",
+    typeInstead: "Type instead",
+    speakInstead: "Speak instead",
+    typeHere: "Type here",
+    done: "I'm finished",
+    next: "Next",
+    back: "Back",
+    questionOf: (n, t) => `Question ${n} of ${t}`,
+    readAloud: "Read aloud",
+    working: "One moment…",
+    isThisRight: "Is this what you meant?",
+    yesRight: "Yes, that's right",
+    tryAgain: "No, try again",
+    passToClinician: "Pass the device to the clinician",
+    clinicianSays: "Your clinician says",
+    listen: "Listen",
+    yes: "Yes",
+    no: "No",
+    unsure: "Not sure",
+    handBack: "Hand the device back to the clinician",
+    handBackDone: "I've handed it back",
+    tapPhrases: "Tap words to build what you want to say",
+    speakForMe: "Say it out loud",
+    clearPhrases: "Clear",
+    micUnavailable: "The microphone isn't available here. Please type.",
+    yourMessage: "Your message",
+    inEnglish: "Shown in English",
+    couldNotTranslate: "Translation isn’t available right now. The clinician will see your words as you wrote them.",
+    retry: "Try again",
+    stillThere: "Still there?",
+    clearsIn: (n) => `To protect privacy, this session clears in ${n}s.`,
+    keepSession: "Keep session",
+  },
+  es: {
+    intakeTitle: "Díganos qué le pasa.",
+    noNames: "Por favor, no diga su nombre ni datos personales.",
+    speak: "Hablar",
+    listening: "Escuchando…",
+    stop: "Detener",
+    typeInstead: "Prefiero escribir",
+    speakInstead: "Prefiero hablar",
+    typeHere: "Escriba aquí",
+    done: "Terminé",
+    next: "Siguiente",
+    back: "Atrás",
+    questionOf: (n, t) => `Pregunta ${n} de ${t}`,
+    readAloud: "Leer en voz alta",
+    working: "Un momento…",
+    isThisRight: "¿Es esto lo que quiso decir?",
+    yesRight: "Sí, es correcto",
+    tryAgain: "No, decirlo otra vez",
+    passToClinician: "Pase el dispositivo al personal médico",
+    clinicianSays: "El personal médico dice",
+    listen: "Escuchar",
+    yes: "Sí",
+    no: "No",
+    unsure: "No estoy seguro",
+    handBack: "Devuelva el dispositivo al personal médico",
+    handBackDone: "Ya lo devolví",
+    tapPhrases: "Toque las palabras para decir lo que necesita",
+    speakForMe: "Decirlo en voz alta",
+    clearPhrases: "Borrar",
+    micUnavailable: "El micrófono no está disponible aquí. Por favor, escriba.",
+    yourMessage: "Su mensaje",
+    inEnglish: "Se muestra en inglés",
+    couldNotTranslate: "La traducción no está disponible ahora. El personal médico verá sus palabras tal como las escribió.",
+    retry: "Intentar de nuevo",
+    stillThere: "¿Sigue ahí?",
+    clearsIn: (n) => `Para proteger su privacidad, esta sesión se borra en ${n} s.`,
+    keepSession: "Mantener la sesión",
+  },
+  ar: {
+    intakeTitle: "أخبرنا بما تشعر به.",
+    noNames: "من فضلك لا تذكر اسمك أو أي معلومات شخصية.",
+    speak: "تحدّث",
+    listening: "جارٍ الاستماع…",
+    stop: "إيقاف",
+    typeInstead: "أفضّل الكتابة",
+    speakInstead: "أفضّل التحدث",
+    typeHere: "اكتب هنا",
+    done: "انتهيت",
+    next: "التالي",
+    back: "رجوع",
+    questionOf: (n, t) => `السؤال ${n} من ${t}`,
+    readAloud: "اقرأ بصوت عالٍ",
+    working: "لحظة من فضلك…",
+    isThisRight: "هل هذا ما قصدته؟",
+    yesRight: "نعم، صحيح",
+    tryAgain: "لا، سأعيد",
+    passToClinician: "سلّم الجهاز إلى الطاقم الطبي",
+    clinicianSays: "يقول الطاقم الطبي",
+    listen: "استمع",
+    yes: "نعم",
+    no: "لا",
+    unsure: "لست متأكدًا",
+    handBack: "أعد الجهاز إلى الطاقم الطبي",
+    handBackDone: "أعدته",
+    tapPhrases: "اضغط على الكلمات لتقول ما تحتاجه",
+    speakForMe: "انطقها بصوت عالٍ",
+    clearPhrases: "مسح",
+    micUnavailable: "الميكروفون غير متاح هنا. من فضلك اكتب.",
+    yourMessage: "رسالتك",
+    inEnglish: "معروض باللغة الإنجليزية",
+    couldNotTranslate: "الترجمة غير متاحة الآن. سيرى الطاقم الطبي كلماتك كما كتبتها.",
+    retry: "حاول مرة أخرى",
+    stillThere: "هل ما زلت هنا؟",
+    clearsIn: (n) => `لحماية خصوصيتك، ستُمسح هذه الجلسة خلال ${n} ثانية.`,
+    keepSession: "إبقاء الجلسة",
+  },
+  "zh-Hans": {
+    intakeTitle: "请告诉我们您哪里不舒服。",
+    noNames: "请不要说出您的姓名或个人信息。",
+    speak: "说话",
+    listening: "正在聆听…",
+    stop: "停止",
+    typeInstead: "我想打字",
+    speakInstead: "我想说话",
+    typeHere: "在这里输入",
+    done: "说完了",
+    next: "下一步",
+    back: "返回",
+    questionOf: (n, t) => `第 ${n} 题，共 ${t} 题`,
+    readAloud: "朗读",
+    working: "请稍候…",
+    isThisRight: "这是您想表达的意思吗？",
+    yesRight: "对，没错",
+    tryAgain: "不对，重新说",
+    passToClinician: "请把设备交给医护人员",
+    clinicianSays: "医护人员说",
+    listen: "收听",
+    yes: "明白",
+    no: "不明白",
+    unsure: "不确定",
+    handBack: "请把设备还给医护人员",
+    handBackDone: "已经还给医护人员",
+    tapPhrases: "点击词语，说出您想表达的内容",
+    speakForMe: "替我说出来",
+    clearPhrases: "清除",
+    micUnavailable: "这里无法使用麦克风，请打字。",
+    yourMessage: "您的信息",
+    inEnglish: "以英文显示",
+    couldNotTranslate: "暂时无法翻译。医护人员会看到您写下的原话。",
+    retry: "重试",
+    stillThere: "您还在吗？",
+    clearsIn: (n) => `为保护您的隐私，本次会话将在 ${n} 秒后清除。`,
+    keepSession: "保留会话",
+  },
+};

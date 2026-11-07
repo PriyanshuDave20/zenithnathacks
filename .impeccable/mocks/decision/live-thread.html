@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Synapse: the live thread</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@600;700&family=Noto+Sans:wght@400;500;600&family=Noto+Sans+Arabic:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{width:390px;height:844px;overflow:hidden;background:#fff;color:#101e34;font:400 18px/1.6 'Noto Sans',ui-sans-serif,system-ui,sans-serif}
+  header{display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 8px 0 16px;background:#101e34}
+  .word{font:700 18px Figtree,ui-sans-serif,system-ui,sans-serif;letter-spacing:.08em;color:#fff}.word b{color:#77a0c4}
+  .quiet{color:#77a0c4;font:600 16px 'Noto Sans',ui-sans-serif,system-ui,sans-serif;padding:10px 16px}
+  main{padding:22px 16px 0}
+  h1{font:700 38px/1.04 Figtree,ui-sans-serif,system-ui,sans-serif;letter-spacing:-.03em}
+  .chips{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+  .chip{min-height:44px;display:inline-flex;align-items:center;padding:0 18px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1px #d5e0eb;font:600 16px 'Noto Sans',ui-sans-serif,system-ui,sans-serif}
+  .chip.on{background:#2d5f8b;color:#fff;box-shadow:none}
+  .thread{display:grid;gap:12px;margin-top:18px}
+  .b{max-width:300px;padding:14px 18px}
+  .cap{font:500 14px 'Noto Sans',ui-sans-serif,system-ui,sans-serif;color:#4a6380}
+  .say{margin-top:2px;font:600 22px/1.35 Figtree,ui-sans-serif,system-ui,sans-serif}
+  .pat{border-radius:28px 28px 28px 8px;background:#e6eef6}
+  .pat .say{font-family:'Noto Sans','Noto Sans Arabic',ui-sans-serif,system-ui,sans-serif}
+  .back{justify-self:end;border-radius:28px 28px 8px 28px;background:#eef3f8}
+  .clin{justify-self:end;border-radius:28px 28px 8px 28px;background:#101e34;color:#fff}
+  .clin .cap{color:rgb(255 255 255/.8)}
+  .rows{margin-top:6px;font:500 15px/1.5 'Noto Sans',ui-sans-serif,system-ui,sans-serif;color:rgb(255 255 255/.9)}
+  .synth{margin-top:10px;font:500 14px 'Noto Sans',ui-sans-serif,system-ui,sans-serif;color:#4a6380}
+  .cta{display:flex;align-items:center;justify-content:space-between;margin-top:16px;min-height:56px;padding:8px 10px 8px 32px;border-radius:999px;background:#2d5f8b;color:#fff;font:600 18px 'Noto Sans',ui-sans-serif,system-ui,sans-serif;box-shadow:0 2px 4px rgb(16 30 52/.06),0 22px 44px -14px rgb(16 30 52/.26)}
+  .disc{display:grid;place-items:center;width:40px;height:40px;border-radius:999px;background:rgb(255 255 255/.2)}
+</style>
+</head>
+<body>
+<header><span class="word">SYN<b>APSE</b></span><span class="quiet">How it works</span></header>
+<main>
+  <h1>The patient speaks. You understand.</h1>
+  <div class="chips"><span class="chip">Español</span><span class="chip on">العربية</span><span class="chip">中文</span><span class="chip">ASL*</span></div>
+  <div class="thread">
+    <div class="b pat"><p class="cap" lang="en" dir="ltr">Patient · Arabic</p><p class="say" lang="ar" dir="rtl">صدري يؤلمني عندما أتنفس منذ يومين</p></div>
+    <div class="b back"><p class="cap">Read back to patient</p><p class="say" lang="ar" dir="rtl">صدرك يؤلمك عند التنفس منذ يومين؟</p></div>
+    <div class="b clin"><p class="cap">Clinician summary</p><p class="say">Chest pain on breathing</p><p class="rows">Duration: 2 days · Red flag: chest pain</p></div>
+  </div>
+  <p class="synth">Synthetic example · *sign is a stretch proof of concept</p>
+  <div class="cta">Start a session<span class="disc">→</span></div>
+</main>
+</body>
+</html>
