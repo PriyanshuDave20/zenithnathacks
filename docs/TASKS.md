@@ -21,6 +21,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 | Home page phone: Akash's 3D iPhone model, one phone pinned (CSS sticky) on the right through hero, steps, modes and privacy on desktop; in-flow phones on mobile | Frontend | Zach | zach/3d-phone (PRs #20, #21); zach/home-finish-fixes (PR #22) | Done, merged; finish review: ship |
 | Clinician accounts UI: sign in (Google + email), sign up, forgot password, profile; sign-in required before `/start` (on a mock) | Frontend | Zach | zach/clinician-auth (PR #16) | Done, merged (impeccable seed waiver for the auth pages still pending) |
 | Clinician accounts backend: auth routes, sessions, Google OAuth, `Clinician` table (see `docs/API.md`) | Backend | TBD | | Todo |
+| Infrastructure overhaul (scope to be confirmed with Zach); graphify graph kept outside the repo | Tooling / docs | Claude (next session) | TBD | Handed over 2026-11-07, not started: see top of `docs/HANDOFF.md` |
 | **Phase 1: Contracts & foundation (~8h)** | | | | |
 | Foundation: Zod contracts matching `docs/API.md`, `llm.ts` with mock provider (no model SDK/key), redaction + tests, question-bank skeleton, synthetic fixtures | Backend 1 + shared contracts | Prem / Codex | prem/backend-foundation (PR #18) | Done, merged; no API routes or real-provider integration |
 | Mocks in `src/lib/mocks/` matching the contracts | Frontend | Zach | zach/start-flow | Done (see `src/lib/mocks/AGENTS.md`) |
@@ -32,7 +33,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 | **Phase 2: Core flow (~28h)** | | | | |
 | Stage flow shell (start, intake, handoff, review, response, end) + clear-session + idle timeout | Frontend | Zach | zach/start-flow (PR #12) | Done (finish review: ship) |
 | Patient intake: mode/language selection, two paths (free-form speech/text, guided questions), voice (Web Speech) with typed fallback, pictograms | Frontend | Zach | zach/start-flow | Done (on mocks; body diagram slot for Backend 2) |
-| Body diagram component with tap selection, emits `RegionId` | Backend 2 | TBD | | Todo |
+| Body diagram component with tap selection, emits `RegionId` | Backend 2 (built by Frontend at Zach's request) | Zach / Claude | zach/body-diagram | Done: front/back tappable diagram, 41 parts (multi-select) mapped to `RegionId`; wired into guided "Where"; real API wiring must send `regionOf(partId)` or Backend 1 accepts part ids |
 | Mode: Deaf/HoH (captions, large text, tap responses) | Frontend | Zach | zach/start-flow | Done (first pass) |
 | Mode: low-literacy (stepwise, pictograms, read-aloud) | Frontend | Zach | zach/start-flow | Done (first pass) |
 | Mode: mute (taps/typing + text-to-speech) | Frontend | Zach | zach/start-flow | Done (first pass) |

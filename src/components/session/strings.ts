@@ -10,6 +10,8 @@ type Strings = {
   stop: string;
   typeInstead: string;
   speakInstead: string;
+  showBody: string;
+  showList: string;
   typeHere: string;
   done: string;
   next: string;
@@ -50,6 +52,8 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     stop: "Stop",
     typeInstead: "Type instead",
     speakInstead: "Speak instead",
+    showBody: "Point on a body picture",
+    showList: "Show a list instead",
     typeHere: "Type here",
     done: "I'm finished",
     next: "Next",
@@ -88,6 +92,8 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     stop: "Detener",
     typeInstead: "Prefiero escribir",
     speakInstead: "Prefiero hablar",
+    showBody: "Señalar en el dibujo del cuerpo",
+    showList: "Ver una lista",
     typeHere: "Escriba aquí",
     done: "Terminé",
     next: "Siguiente",
@@ -126,6 +132,8 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     stop: "إيقاف",
     typeInstead: "أفضّل الكتابة",
     speakInstead: "أفضّل التحدث",
+    showBody: "الإشارة على صورة الجسم",
+    showList: "عرض قائمة بدلًا من ذلك",
     typeHere: "اكتب هنا",
     done: "انتهيت",
     next: "التالي",
@@ -164,6 +172,8 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     stop: "停止",
     typeInstead: "我想打字",
     speakInstead: "我想说话",
+    showBody: "在人体图上指出",
+    showList: "改用列表",
     typeHere: "在这里输入",
     done: "说完了",
     next: "下一步",
