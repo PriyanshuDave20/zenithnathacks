@@ -4,7 +4,7 @@ TODO: project name + one-liner.
 
 ## New laptop setup
 ```bash
-git clone <repo-url> && cd <repo>
+git clone https://github.com/PriyanshuDave20/zenithnathacks.git && cd zenithnathacks
 ./scripts/setup.sh
 npm run dev   # http://localhost:3000
 claude        # or: codex
