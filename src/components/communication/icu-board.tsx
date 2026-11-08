@@ -129,7 +129,7 @@ export function IcuBoard({
   }, [boardUp]);
   const idle = useIdle({
     enabled: !expired,
-    idleMs: 570000, // 9:30 of inactivity, then the 30 s warning: cleared after 10 minutes
+    idleMs: 21570000, // 5 h 59 min 30 s of inactivity, then the 30 s warning: cleared after 6 hours
     graceMs: 30000,
     onExpire: () => {
       setSelected(null);
@@ -171,7 +171,7 @@ export function IcuBoard({
       {expired ? (
         <main ref={main} tabIndex={-1} className={s.handoff}>
           <h1>Session cleared</h1>
-          <p>The selected phrase was removed after ten minutes of inactivity.</p>
+          <p>The selected phrase was removed after six hours of inactivity.</p>
           <button type="button" className="sf-handoff-choice" onClick={() => setExpired(false)}>Start a new conversation</button>
           <Link href="/start" className={s.quiet}>Back to setup</Link>
         </main>
