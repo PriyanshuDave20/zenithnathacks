@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { SynapseWordmark } from "@/components/brand/synapse-logo";
 import {
   Check,
@@ -13,6 +13,16 @@ import {
   Handoff,
   Shield,
 } from "@/components/home/icons";
+import {
+  getGazeError,
+  getGazePhase,
+  getGazeRequested,
+  getGazeSkipped,
+  requestGazeStart,
+  setGazeAvailable,
+  skipGaze,
+  subscribeGaze,
+} from "@/components/input/gaze/gaze-availability";
 import { useIdle } from "@/components/session/use-idle";
 import type { SelectEvent } from "@/lib/contracts/input";
 import "./workspace.css";
@@ -60,6 +70,31 @@ export function IcuBoard({
     },
     [],
   );
+  // Gaze control exists only while the patient has the board: on the clinician handoff, the review and
+  // the cleared screen it is hidden and the camera is off. Arriving at the board starts calibration.
+  const gazeRequested = useSyncExternalStore(subscribeGaze, getGazeRequested, () => false);
+  const gazePhase = useSyncExternalStore(subscribeGaze, getGazePhase, () => "off" as const);
+  const gazeError = useSyncExternalStore(subscribeGaze, getGazeError, () => null);
+  const gazeSkipped = useSyncExternalStore(subscribeGaze, getGazeSkipped, () => false);
+  // 3-2-1 after the clinician taps Ready, so the patient can settle before the camera starts.
+  const [count, setCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (count === null) return;
+    const timer = setTimeout(() => {
+      if (count <= 1) {
+        setCount(null);
+        requestGazeStart();
+      } else {
+        setCount(count - 1);
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [count]);
+  const boardUp = !expired && !handoff && !reviewed;
+  useEffect(() => {
+    setGazeAvailable(boardUp);
+    return () => setGazeAvailable(false);
+  }, [boardUp]);
   const idle = useIdle({
     enabled: !expired,
     idleMs: 270000,
@@ -154,13 +189,39 @@ export function IcuBoard({
         </main>
       ) : (
         <main ref={main} tabIndex={-1} className={`${s.main} sf-icu-patient`}>
+          {boardUp && !gazeSkipped && (count !== null || !gazeRequested || gazePhase === "off" || gazePhase === "starting") ? (
+            <div className="sf-icu-gate" role="dialog" aria-modal="true" aria-labelledby="icu-gate-title">
+              {count !== null ? (
+                <>
+                  <h2 id="icu-gate-title" className="sf-icu-gate-label">Get ready: look at the screen</h2>
+                  <p key={count} className="sf-icu-gate-count" role="timer" aria-live="assertive">{count}</p>
+                  <button type="button" className="sf-icu-gate-quiet" onClick={() => setCount(null)}>Cancel</button>
+                </>
+              ) : gazeRequested ? (
+                <>
+                  <h2 id="icu-gate-title" className="sf-icu-gate-label">Starting the camera…</h2>
+                  <p className="sf-icu-gate-note">Allow camera access if your browser asks. Calibration begins next: the patient follows the dot for 30 seconds.</p>
+                </>
+              ) : (
+                <>
+                  <h2 id="icu-gate-title" className="sf-icu-gate-label">Eye control setup</h2>
+                  <p className="sf-icu-gate-note">Clinician: tap when the patient is in position and you are both looking at the screen. A 3-2-1 countdown, then calibration, then eye control turns on.</p>
+                  {gazeError ? <p className="sf-icu-gate-error" role="alert">{gazeError}</p> : null}
+                  <button type="button" className="sf-icu-gate-btn" autoFocus onClick={() => setCount(3)}>
+                    {gazeError ? "Try again" : "Ready"}
+                  </button>
+                  <button type="button" className="sf-icu-gate-quiet" onClick={skipGaze}>Use touch or keyboard instead</button>
+                </>
+              )}
+            </div>
+          ) : null}
           <div className={s.intro}>
             <div>
               <h1>Let your eyes do the talking.</h1>
               <p>One clear choice at a time, with room to rest.</p>
             </div>
             <span className={s.badge}>
-              Eye control available · Camera opt-in
+              {gazePhase === "on" ? "Eye control on" : "Eye control off"}
             </span>
           </div>
           <div className={i.layout}>
@@ -168,7 +229,7 @@ export function IcuBoard({
               <div className={s.panelHead}>
                 <div>
                   <h2 id="icu-prompt">What would you like to say?</h2>
-                  <p>Turn on the eye control at the screen edge, calibrate, then look at a choice for two seconds. Tap and keyboard also work.</p>
+                  <p>After calibration, look at a choice for two seconds to select it. Tap and keyboard also work.</p>
                 </div>
               </div>
               <div className="sf-icu-status" role="status" aria-live="polite">
@@ -221,7 +282,7 @@ export function IcuBoard({
               </p>
               <h3>Eye control</h3>
               <p>
-                Use the eye button at the screen edge to enable the camera and complete the 30-second moving-dot calibration. Keep the device and head steady; recalibrate after moving either.
+                Tap Start eye calibration when you and the patient are both looking at the screen; the patient then follows the 30-second moving dot. Keep the device and head steady; recalibrate after moving either.
               </p>
               <p className={s.notice}>
                 A ring around the gaze cursor fills while looking at a choice. A completed two-second dwell selects it. Camera frames are processed on this device; tracking can be turned off using the eye button.
