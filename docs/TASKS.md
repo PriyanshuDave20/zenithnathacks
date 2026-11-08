@@ -14,6 +14,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 | Landing demo accuracy and responsive polish | Frontend | Zach / Codex | zach/session-ui-fixes | Done: all five modes, six workflow previews, hero and privacy reviewed; body overflow, summary accuracy and mode icons fixed; checks pass |
 | Combine PRs #15, #16 and #18 | Integration / all three PR scopes | Zach / Codex | zach/combined-prs | Done: exact source heads merged, source implementations retained, 81 tests/typecheck/lint and browser guided flow pass |
 | Frontend audit repairs (13 findings) | Frontend + input UI | Zach / Codex | zach/frontend-audit-fixes | Done: all 13 frontend findings repaired; typecheck, 83 tests, lint and focused browser regressions pass |
+| How-it-works step visuals; mobile Sign in wrap, step-card height and Pause demo overlap fixes | Frontend | Zach / Claude | zach/how-it-works-visuals | Done: per-step visual cards (holder badge, caption, staggered entrance), reduced motion respected; typecheck and 83 tests pass; eye button left for a separate fix |
 | **Done** | | | | |
 | Repository sync, project orientation, shared skills and baseline verification | Tooling / docs | Zach / Codex | zach/setup-verification | Done: main current; all 13 project skills present; typecheck and 22 tests pass; lint 0 errors |
 | Scaffold, agent skills, landing page | Both | Prem | prem/landing-hero | Done |

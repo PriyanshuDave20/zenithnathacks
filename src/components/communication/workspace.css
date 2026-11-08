@@ -255,7 +255,7 @@
   border-radius: 30px 30px 8px 30px;
 }
 .sc-role {
-  font-size: 0.75em;
+  font-size: 0.8em;
   font-weight: 700;
   display: flex;
   gap: 10px;
@@ -677,7 +677,7 @@
     width: 92px;
   }
   .sc-holder {
-    font-size: 0.7em;
+    font-size: 0.8em;
     padding: 6px 10px;
   }
   .sc-header button {
@@ -738,7 +738,7 @@
   }
   .sc-footer p {
     text-align: center;
-    font-size: 0.7em;
+    font-size: 0.8em;
   }
   .sc-bubble {
     max-width: 96%;

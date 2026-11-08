@@ -167,7 +167,7 @@ export function HeroExchange() {
           <Phone3D label={label} className="w-[min(20.5rem,100%,calc((100svh-24rem)*0.48))]">
             {screen}
           </Phone3D>
-          <div className="relative z-10 -mt-6">{control}</div>
+          <div className="relative z-10 mt-4">{control}</div>
         </>
       )}
     </HeroDemo>

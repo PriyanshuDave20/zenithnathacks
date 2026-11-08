@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { steps } from "./data";
 import { Phone3D } from "./phone-3d";
 import { StepScreen } from "./step-screens";
+import { StepVisual } from "./step-visuals";
 
 /**
  * "How it works": six steps scroll normally on the left while the page's pinned phone (phone-rail.tsx)
@@ -103,7 +104,7 @@ export function Workflow() {
             </div>
             <ol
               ref={track}
-              className="-mx-4 mt-2 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:-mx-8 sm:scroll-px-8 sm:px-8 [&::-webkit-scrollbar]:hidden"
+              className="-mx-4 mt-2 flex items-start snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:-mx-8 sm:scroll-px-8 sm:px-8 [&::-webkit-scrollbar]:hidden"
             >
               {steps.map((s, i) => (
                 <li
@@ -123,6 +124,7 @@ export function Workflow() {
                   </span>
                   <h3 className="mt-3 font-display text-xl font-bold leading-[1.2] tracking-[-0.02em]">{s.title}</h3>
                   <p className="mt-2 text-base leading-relaxed text-ink-soft">{s.body}</p>
+                  <StepVisual step={s} />
                 </li>
               ))}
             </ol>
@@ -156,6 +158,7 @@ export function Workflow() {
                     {s.title}
                   </h3>
                   <p className="mt-3 max-w-[34rem] text-lg leading-relaxed text-ink-soft">{s.body}</p>
+                  <StepVisual step={s} active={active === i} />
                 </div>
               </li>
             ))}
