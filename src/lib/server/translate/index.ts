@@ -60,6 +60,7 @@ export async function translate(
   if (freeInputs.length) {
     const deadline = processingSignal(signal);
     const english = await translator({ texts: freeInputs.map((input) => input.value), from: request.context.language, to: "en", signal: deadline });
+    deadline.throwIfAborted();
     redactions += english.redactions;
     const englishInputs = freeInputs.map((input, index) => ({ ...input, value: mask(english.texts[index]) }));
     const translated = englishInputs.map((input) => input.value).join(" ");
@@ -70,6 +71,7 @@ export async function translate(
       signal: deadline,
     });
     const prepared = EnglishSummarySchema.parse(normalizeAbsentDuration(JSON.parse(raw)));
+    deadline.throwIfAborted();
     if (![prepared.summary.chiefComplaint, ...prepared.summary.symptoms, ...prepared.summary.redFlags,
       ...(prepared.summary.duration === undefined ? [] : [prepared.summary.duration])].every((value) => value.trim())) {
       throw new Error("Translation returned an empty required field.");

@@ -26,6 +26,7 @@ export async function respond(
   }
 
   const deadline = processingSignal(signal);
+  deadline.throwIfAborted();
   const raw = await model({
     system: RESPOND_PROMPT,
     user: JSON.stringify({
@@ -35,6 +36,7 @@ export async function respond(
     signal: deadline,
   });
   const response = RespondResponseSchema.parse(JSON.parse(raw));
+  deadline.throwIfAborted();
   if (Object.values(response).some((value) => !value.trim())) {
     throw new Error("Model returned an empty reply field.");
   }
