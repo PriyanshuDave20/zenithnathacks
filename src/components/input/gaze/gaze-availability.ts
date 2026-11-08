@@ -10,6 +10,7 @@ let available = false;
 let requested = false;
 let skipped = false;
 let phase: GazePhaseName = "off";
+let edgeWide = false; // the clinician said the screen edge lights up brightly: keep controls further in
 let error: string | null = null;
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((listener) => listener());
@@ -63,6 +64,13 @@ export function reopenGaze() {
   notify();
 }
 
+/** The clinician says the screen edge lights up (e.g. Mac Edge Light): keep everything further in. Kept for the whole visit. */
+export function setGazeEdgeWide(next: boolean) {
+  if (edgeWide === next) return;
+  edgeWide = next;
+  notify();
+}
+
 /** Reported by the layer. */
 export function setGazePhase(next: GazePhaseName) {
   if (phase === next) return;
@@ -87,5 +95,6 @@ export function subscribeGaze(listener: () => void) {
 export const getGazeAvailable = () => available;
 export const getGazeRequested = () => requested;
 export const getGazeSkipped = () => skipped;
+export const getGazeEdgeWide = () => edgeWide;
 export const getGazePhase = () => phase;
 export const getGazeError = () => error;

@@ -8,6 +8,7 @@ import {
   fitGazeCalibration,
   fitGazeMapping,
   gazeFeatures,
+  edgeSafePx,
   median,
   LightMonitor,
   OneEuroFilter,
@@ -505,4 +506,15 @@ test("BlinkGuard does not mistake a noisy eye-opening reading for blinks, and st
     }
   }
   assert.ok(blinks >= 15 && caught >= blinks - 1, `caught ${caught} of ${blinks} blinks`);
+});
+
+test("edgeSafePx keeps a margin that scales with the screen and widens on request", () => {
+  assert.equal(edgeSafePx(1280, 800), 64, "laptop: 8% of the shorter side");
+  assert.equal(edgeSafePx(1440, 900), 72);
+  assert.equal(edgeSafePx(1920, 1080), 86);
+  assert.equal(edgeSafePx(390, 844), 31, "phone: small, so the board still fits");
+  assert.equal(edgeSafePx(300, 300), 24, "never below 24 px");
+  assert.equal(edgeSafePx(5000, 3000), 112, "never above 112 px");
+  assert.ok(edgeSafePx(1280, 800, true) > edgeSafePx(1280, 800) * 1.5, "the wide setting is clearly further in");
+  assert.equal(edgeSafePx(1280, 800, true), 112);
 });

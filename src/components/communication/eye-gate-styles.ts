@@ -11,12 +11,18 @@ export const GATE_CSS = `
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 24px;
+  gap: 16px;
+  padding: max(24px, var(--eye-edge-v, 24px)) max(24px, var(--eye-edge, 24px));
+  overflow-y: auto;
   text-align: center;
   color: #fff;
   background: rgb(16 30 52 / 0.96);
+}
+/* Centres when there is room, scrolls from the top when there is not (justify-content: center would clip the top). */
+.sf-icu-gate::before,
+.sf-icu-gate::after {
+  content: "";
+  flex: 1 0 0;
 }
 .sf-icu-gate-label {
   font-size: clamp(1.4rem, 4vw, 2rem);
@@ -40,7 +46,8 @@ export const GATE_CSS = `
 .sc-root .sf-icu-gate .sf-icu-gate-btn {
   display: grid;
   place-items: center;
-  width: min(78vw, 56vh, 26rem);
+  /* Never taller than the room left inside the edge-safe margin once the text and buttons around it are counted. */
+  width: min(calc(100vw - 2 * max(24px, var(--eye-edge, 24px))), 22rem, max(9rem, calc(100svh - 2 * var(--eye-edge-v, 24px) - 21rem)));
   aspect-ratio: 1;
   border-radius: 9999px;
   font-size: clamp(2.4rem, 8vw, 4rem);
@@ -94,6 +101,30 @@ export const GATE_CSS = `
 .sc-root .sf-icu-gate .sf-icu-gate-quiet:hover {
   background: rgb(255 255 255 / 0.08);
   color: #fff;
+}
+.sf-icu-gate-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+.sf-icu-gate-edge {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 34rem;
+  text-align: left;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: #b9c9db;
+  cursor: pointer;
+}
+.sf-icu-gate-edge input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  accent-color: #77a0c4;
 }
 @media (prefers-reduced-motion: reduce) {
   .sf-icu-gate-count {
