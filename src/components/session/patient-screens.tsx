@@ -184,9 +184,6 @@ export function IntakeFree({
               </QuietButton>
             </div>
           ) : null}
-          <QuietButton icon={<Keyboard size={20} />} onClick={() => (rec.stop(), setTyped(rec.finalText), setTyping(true))}>
-            {t.typeInstead}
-          </QuietButton>
         </div>
       ) : null}
 
@@ -211,11 +208,16 @@ export function IntakeFree({
         </div>
       ) : null}
 
-      <ActionBar>
-        <PrimaryButton onClick={submit} disabled={!full} trailing={<ArrowRight size={22} className={lang.dir === "rtl" ? "rotate-180" : ""} />}>
+      <div className="mt-8 flex flex-col-reverse gap-3 pb-[env(safe-area-inset-bottom)] sm:flex-row sm:items-center sm:justify-end">
+        {showMic ? (
+          <QuietButton icon={<Keyboard size={20} />} onClick={() => (rec.stop(), setTyped(rec.finalText), setTyping(true))}>
+            {t.typeInstead}
+          </QuietButton>
+        ) : null}
+        <PrimaryButton className="shadow-none" onClick={submit} disabled={!full} trailing={<ArrowRight size={22} className={lang.dir === "rtl" ? "rotate-180" : ""} />}>
           <span lang={lang.code}>{t.done}</span>
         </PrimaryButton>
-      </ActionBar>
+      </div>
     </Screen>
   );
 }

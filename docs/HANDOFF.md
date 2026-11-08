@@ -1,5 +1,9 @@
 # Handoff Log
 
+### 2026-11-07 Zach / Codex · zach/session-ui-fixes (intake action layout)
+- Follow-up screenshot fix: removed the free-intake white sticky action strip and heavy finish-button shadow. Type instead and I’m finished now share a compact inline action row on desktop, stacked with the primary action first on phones. Scoped to IntakeFree; guided/read-back action bars unchanged.
+- Visually checked synthetic voice transcript at 1280px and 390px; no horizontal overflow. Typecheck, targeted eslint and 64 tests pass. Existing local config and lockfile changes preserved.
+
 ### 2026-11-07 Zach / Codex · zach/session-ui-fixes
 - Fixed white-on-white Cancel/Clear confirmation controls in the navy communication header; explicit End and clear label, navy focus treatment and high-contrast override. Cancel retains the report; confirming clears it.
 - Added localized Clear beside voice transcripts. Recognition clear detaches callbacks before aborting, then resets final/interim text, listening and errors so late results cannot restore cleared words.
