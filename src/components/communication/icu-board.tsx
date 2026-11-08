@@ -27,6 +27,7 @@ import {
   subscribeGaze,
 } from "@/components/input/gaze/gaze-availability";
 import { useIdle } from "@/components/session/use-idle";
+import { GATE_CSS } from "./eye-gate-styles";
 import type { SelectEvent } from "@/lib/contracts/input";
 import "./workspace.css";
 import { workspaceStyles as s } from "./styles";
@@ -199,6 +200,7 @@ export function IcuBoard({
         <main ref={main} tabIndex={-1} className={`${s.main} sf-icu-patient`}>
           {boardUp && !gazeSkipped && (count !== null || !gazeRequested || gazePhase === "off" || gazePhase === "starting") ? (
             <div className="sf-icu-gate" role="dialog" aria-modal="true" aria-labelledby="icu-gate-title">
+              <style>{GATE_CSS}</style>
               {count !== null ? (
                 <>
                   <h2 id="icu-gate-title" className="sf-icu-gate-label">Get ready: look at the screen</h2>
