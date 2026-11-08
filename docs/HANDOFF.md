@@ -222,6 +222,13 @@
 Newest entry first. Add one at the end of every work session (human or agent). Keep each entry short and factual.
 Do not put secrets or patient data here.
 
+
+## 2026-11-08 — Session timeout is a clinician setting (Claude, frontend)
+- Idle session clearing is now the clinician's choice: 10 min, 30 min, 1 h, 2 h or 6 h, **default 6 h** (Zach asked for ~6 h, with a way to pick another time). Chosen on the dashboard ("Session timeout" card); `src/lib/session-timeout.ts` holds the options and a `useSessionTimeout()` hook; the Eye mode board and the main workspace read it (warning 30 s before, Keep session as before).
+- Stored as one value in this browser's localStorage (`synapse.prefs.session-timeout`): a device setting, no account field, no contract change, nothing sent. If the real account backend should carry it later, move it onto the clinician profile.
+- Trade-off to know: a longer timeout keeps conversation content in browser memory, and in Eye mode keeps the webcam on, until it expires or someone taps Stop/Clear. A camera-only shorter auto-off was discussed and NOT built. Eye mode still has no explicit "wipe session" button.
+- Verified: typecheck, eslint. Not exercised in a browser (checked out in a separate worktree).
+
 ## Template
 ```
 ### YYYY-MM-DD HH:MM  <name> / <tool>  <branch>
