@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { clearFrom, describeAnswers, EMPTY_ANSWERS, nextStep, previousStep, speakableSummary, type FlowAnswers } from "./flow";
+import { clearFrom, describeAnswers, describeRows, EMPTY_ANSWERS, nextStep, previousStep, speakableSummary, type FlowAnswers } from "./flow";
 
 const a = (extra: Partial<FlowAnswers> = {}): FlowAnswers => ({ ...EMPTY_ANSWERS, ...extra });
 
@@ -57,4 +57,14 @@ test("the spoken summary reads as plain sentences", () => {
   assert.equal(speakableSummary(a({ hurts: "yes", where: "abdomen", strength: "mild" })), "I have pain in my stomach. It is mild.");
   assert.equal(speakableSummary(a({ hurts: "no", other: "none" })), "I do not have pain.");
   assert.equal(speakableSummary(a({ hurts: "yes", where: "arm", side: "both" })), "I have pain in my arm, on both sides.");
+});
+
+test("the clinician rows are labelled and only include what was answered", () => {
+  assert.deepEqual(describeRows(a({ hurts: "yes", where: "arm", side: "right", strength: "mild" })), [
+    { label: "Pain", value: "Yes" },
+    { label: "Where", value: "Arm" },
+    { label: "Side", value: "Right side" },
+    { label: "How strong", value: "A little" },
+  ]);
+  assert.deepEqual(describeRows(EMPTY_ANSWERS), []);
 });

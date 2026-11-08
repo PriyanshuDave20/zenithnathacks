@@ -84,7 +84,7 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
   // While Help is up it keeps calling until someone cancels it.
   useEffect(() => {
     if (screen !== "help") return;
-    const timer = setInterval(() => eye.say(HELP_SAY), HELP_REPEAT_MS);
+    const timer = setInterval(() => eye.say(HELP_SAY, true), HELP_REPEAT_MS);
     return () => clearInterval(timer);
   }, [screen]);
 
@@ -98,7 +98,7 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
     if (to) return eye.go(to);
     const sentence = speakableSummary(next);
     eye.say(sentence);
-    if (mode === "intake") eye.finishIntake(describeAnswers(next).join(" · "));
+    if (mode === "intake") eye.finishIntake(next, describeAnswers(next).join(" · "));
     else eye.home();
   }
 
@@ -259,7 +259,7 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
           <div className={i.board} style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
             <FlowTile id="home-needs" minHeight={96} label="I need something" onPick={(e) => { emit(e, "needs"); eye.go("needs"); }} />
             <FlowTile id="home-rest" minHeight={96} label="Rest" onPick={(e) => { emit(e, "rest"); eye.say("I would like to rest."); eye.go("rest"); }} />
-            <FlowTile id="home-help" tone="help" minHeight={96} label="Help" onPick={(e) => { emit(e, "help"); eye.say(HELP_SAY); eye.go("help"); }} />
+            <FlowTile id="home-help" tone="help" minHeight={96} label="Help" onPick={(e) => { emit(e, "help"); eye.say(HELP_SAY, true); eye.go("help"); }} />
           </div>
         </div>
       ) : (

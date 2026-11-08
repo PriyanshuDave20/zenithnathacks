@@ -32,6 +32,7 @@ import "./icu.css";
 import "./flow.css";
 import { idleMsFor, optionFor, SESSION_WARNING_MS, useSessionTimeout } from "@/lib/session-timeout";
 import { icuStyles as i } from "./styles";
+import { ClinicianBar } from "@/components/eye/clinician-bar";
 import { EyeWorkspace } from "@/components/eye/eye-workspace";
 import { describeAnswers } from "@/lib/eye/flow";
 import { eye, useEyeState } from "@/lib/eye/session";
@@ -139,12 +140,12 @@ export function IcuBoard({
               </button>
             ) : null}
             {eyeState.mode ? (
-              <button type="button" onClick={() => eye.start(eyeState.mode === "intake" ? "conversation" : "intake")}>
+              <button type="button" data-gaze-ignore onClick={() => eye.start(eyeState.mode === "intake" ? "conversation" : "intake")}>
                 {eyeState.mode === "intake" ? "Switch to conversation" : "Switch to intake"}
               </button>
             ) : null}
             {eyeState.mode ? (
-              <button type="button" onClick={eye.clear}>
+              <button type="button" data-gaze-ignore onClick={eye.clear}>
                 Clear
               </button>
             ) : null}
@@ -261,6 +262,7 @@ export function IcuBoard({
             ) : (
               <h1 className="sr-only">Eye mode questions</h1>
             )}
+            <ClinicianBar />
             <span className={s.badge}>
               {gazePhase === "on" ? "Eye control on" : "Eye control off"}
             </span>
@@ -348,6 +350,7 @@ export function IcuBoard({
               ) : null}
               <button
                 type="button"
+                data-gaze-ignore
                 className={s.primary}
                 onClick={() => setHandoff(true)}
               >
