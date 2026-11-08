@@ -210,7 +210,7 @@ export function Modes() {
           className="mt-10 flex flex-wrap gap-0.5 rounded-[1.75rem] bg-surface p-1.5 shadow-soft sm:gap-1"
         >
           {modes.map((x, i) => (
-            <button
+            <button type="button"
               key={x.id}
               ref={(el) => {
                 tabs.current[i] = el;

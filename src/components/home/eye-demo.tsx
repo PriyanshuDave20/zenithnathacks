@@ -76,7 +76,7 @@ export function EyeDemo({ compact, onChoice }: { compact: boolean; onChoice: (ch
         </span>
       </div>
       <p className="rounded-2xl bg-blue-soft p-3 text-sm font-semibold text-blue-deeper">{confirmed ? `You chose: ${choice}` : "Look at a choice. Hold for two seconds."}</p>
-      <div className="flex items-center justify-between gap-2 text-xs text-ink-soft">
+      <div className="flex items-center justify-between gap-2 text-sm text-ink-soft">
         <span>Simulated gaze · No camera</span>
         {!reduced ? <button type="button" aria-pressed={paused} onClick={() => setPaused(p => !p)} className="min-h-11 rounded-full px-3 font-semibold underline underline-offset-4">{paused ? "Play demo" : "Pause demo"}</button> : null}
       </div>
