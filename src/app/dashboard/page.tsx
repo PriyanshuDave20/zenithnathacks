@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { ClinicianGate } from "@/components/auth/server-gate";
 import type { Metadata } from "next";
 import { RequireClinician } from "@/components/auth/require-clinician";
 import { ClinicianDashboard } from "@/components/dashboard/clinician-dashboard";
@@ -9,8 +11,12 @@ export const metadata: Metadata = {
 
 export default function DashboardPage() {
   return (
-    <RequireClinician next="/dashboard">
-      <ClinicianDashboard />
-    </RequireClinician>
+    <Suspense fallback={null}>
+      <ClinicianGate next="/dashboard">
+        <RequireClinician next="/dashboard">
+          <ClinicianDashboard />
+        </RequireClinician>
+      </ClinicianGate>
+    </Suspense>
   );
 }

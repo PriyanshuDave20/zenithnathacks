@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { GET, POST } from "./route";
+import { GET, POST } from "./handler";
 
 test("speech capabilities and disabled route expose no secrets and never cache", async t => {
   const old = process.env.SPEECH_PROVIDER; process.env.SPEECH_PROVIDER = "browser";

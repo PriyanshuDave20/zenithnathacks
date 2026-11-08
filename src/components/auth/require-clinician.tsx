@@ -3,13 +3,10 @@
 import { LoadingStatus } from "@/components/ui/spinner";
 
 import { useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { Fragment, useEffect, type ReactNode } from "react";
 import { useClinician } from "./api";
 
-/**
- * Client-side gate for clinician-only pages. With the mock this is the only gate; when the account service lands,
- * Backend 1 also enforces it on the server (Next.js proxy / route checks), and this stays as the UX layer.
- */
+/** UX gate in addition to request-time server authorization. Remount on account changes. */
 export function RequireClinician({ children, next }: { children: ReactNode; next: string }) {
   const me = useClinician();
   const router = useRouter();
@@ -25,5 +22,5 @@ export function RequireClinician({ children, next }: { children: ReactNode; next
       </div>
     );
   }
-  return <>{children}</>;
+  return <Fragment key={me.id}>{children}</Fragment>;
 }

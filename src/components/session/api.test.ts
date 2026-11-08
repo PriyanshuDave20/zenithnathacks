@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test, type TestContext } from "node:test";
-import { POST as translateRoute } from "../../app/api/translate/route";
-import { POST as respondRoute } from "../../app/api/respond/route";
+import { POST as translateRoute } from "../../app/api/translate/handler";
+import { POST as respondRoute } from "../../app/api/respond/handler";
 import { STORIES } from "../../lib/server/fixtures/stories";
 import { BODY_PARTS } from "../../lib/input/body-parts";
 import { getGuidedQuestions } from "../../lib/questions/localization";
