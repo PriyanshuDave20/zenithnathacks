@@ -25,7 +25,10 @@ const CALIBRATION_LEAD_MS = 800;
 /** Below this many recorded labels the sweep must be retried: WebGazer's regression needs data. */
 const CALIBRATION_FIT_MIN = 60;
 /** Calibration labels are recorded at most this often (each one trains the regression). */
-const CALIBRATION_RECORD_GAP_MS = 60;
+const CALIBRATION_RECORD_GAP_MS = 40;
+/** After calibration, this long is spent counting live predictions; below PROBE_MIN the view is not tracking. */
+const PROBE_MS = 3000;
+const PROBE_MIN = 5;
 /** A prediction older than this means the tracker has lost the face (WebGazer emits continuously while it sees one). */
 const SIGNAL_STALE_MS = 600;
 const EDGE_ZONE = 88; // px band at the top/bottom edge that scrolls the page
@@ -169,6 +172,9 @@ export function GazeLayer() {
   const recenterOffsetRef = useRef({ x: 0, y: 0 });
   const recenterRunRef = useRef<{ start: number; reads: { x: number; y: number }[] } | null>(null);
   const [recentering, setRecentering] = useState(false);
+  // After calibration, a short probe counts live predictions; if the model is not responding
+  // (e.g. the zoomed view does not track on this camera) the layer retries with the safe view.
+  const probeRef = useRef<{ until: number; seen: number } | null>(null);
   const calibStartRef = useRef(0);
   const calibDotRef = useRef<HTMLDivElement | null>(null);
   const calibBarRef = useRef<HTMLDivElement | null>(null);
@@ -189,6 +195,7 @@ export function GazeLayer() {
     setNoFace(false);
     noFaceRef.current = false;
     predictionRef.current = null;
+    probeRef.current = null;
     recenterOffsetRef.current = { x: 0, y: 0 };
     dwellRef.current = new DwellController();
     smootherRef.current.reset();
@@ -288,6 +295,7 @@ export function GazeLayer() {
   const startCalibration = useCallback(async () => {
     // A recalibration must forget what the regression learned, or the new labels blend with the old.
     await trackerRef.current?.resetCalibration();
+    probeRef.current = null;
     dwellRef.current = new DwellController();
     smootherRef.current.reset();
     fixationRef.current.reset();
@@ -352,6 +360,30 @@ export function GazeLayer() {
       const pred = predictionRef.current;
       const fresh = pred !== null && pred.at !== lastPredAt;
       if (pred) lastPredAt = pred.at;
+
+      // Post-calibration probe: is the model actually responding? If not, retry once with the
+      // plain camera view (the zoomed one does not track on some cameras), or give up with advice.
+      if (phase === "on" && probeRef.current) {
+        if (fresh && pred) probeRef.current.seen++;
+        if (now > probeRef.current.until) {
+          const probe = probeRef.current;
+          probeRef.current = null;
+          if (probe.seen < PROBE_MIN) {
+            if (trackerRef.current?.cameraProfile === "hd") {
+              trackerRef.current?.setCameraProfile("safe");
+              setStatus("The zoomed camera view is not tracking well - retrying with the plain view. Follow the dots again.");
+              trackerRef.current?.stop();
+              void startCalibration();
+              return;
+            }
+            trackerRef.current?.stop();
+            setStatus("Eye tracking started but is not responding. Check the camera and lighting, then tap the eye button to try again.");
+            setPhase("error");
+            return;
+          }
+        }
+      }
+
       if (pred) {
         lastFeatureAt = now;
         if (noFaceRef.current) {
@@ -380,6 +412,7 @@ export function GazeLayer() {
           fixation.reset();
           setStatus(calibratedMessage);
           setTimeout(() => setStatus((current) => (current === calibratedMessage ? null : current)), 10000);
+          probeRef.current = { until: performance.now() + PROBE_MS, seen: 0 };
           setPhase("on");
           return;
         }

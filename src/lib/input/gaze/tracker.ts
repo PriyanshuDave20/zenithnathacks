@@ -10,6 +10,9 @@ import type { WebGazerInstance } from "./webgazer";
 
 export type GazePrediction = { x: number; y: number; at: number };
 
+/** "hd": 720p with a mild zoom (finer eye detail when the camera cooperates). "safe": the plain view. */
+export type GazeCameraProfile = "hd" | "safe";
+
 /** Where the WebGazer bundle and its face-mesh solution files live, relative to the site root. */
 const BUNDLE_SRC = "/webgazer/webgazer.js";
 const SOLUTION_PATH = "/mediapipe/face_mesh";
@@ -49,6 +52,20 @@ export class GazeTracker {
   private stopRequested = false;
   private predictCb: ((p: GazePrediction | null) => void) | null = null;
   private recorded = 0;
+  // "hd" asks for 720p with a mild zoom: a bigger face means finer iris landmarks. When that view
+  // does not track (some cameras misbehave zoomed, or the face ends up partly out of frame), the
+  // layer retries with "safe": the plain 640x480 view WebGazer is tuned for.
+  private profile: GazeCameraProfile = "hd";
+
+  /** Camera view to request on the next start (does nothing while the camera is running). */
+  setCameraProfile(p: GazeCameraProfile) {
+    if (this.wg) return;
+    this.profile = p;
+  }
+
+  get cameraProfile() {
+    return this.profile;
+  }
 
   /** Receives the newest prediction (viewport px) whenever WebGazer's loop emits one, or null when it cannot see a face. */
   setPredictionListener(cb: ((p: GazePrediction | null) => void) | null) {
@@ -83,16 +100,20 @@ export class GazeTracker {
     wg.saveDataAcrossSessions(false); // privacy: nothing persists between sessions or page loads
     wg.params.faceMeshSolutionPath = SOLUTION_PATH;
     // A bigger, sharper face means finer iris landmarks, which is what the eye patches are built
-    // from: ask for 720p and zoom in when the camera supports it (gracefully ignored otherwise).
-    wg.params.camConstraints = {
-      video: {
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        facingMode: "user",
-        advanced: [{ zoom: { ideal: 2 } }],
-      },
-      audio: false,
-    };
+    // from. Zoom is a request: cameras without it ignore it, and the layer falls back to the
+    // "safe" view when the zoomed one does not track.
+    wg.params.camConstraints =
+      this.profile === "safe"
+        ? { video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" }, audio: false }
+        : {
+            video: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              facingMode: "user",
+              advanced: [{ zoom: { ideal: 1.5 } }],
+            },
+            audio: false,
+          };
     wg.showVideo(false);
     wg.showPredictionPoints(false);
     wg.showFaceOverlay(false);
