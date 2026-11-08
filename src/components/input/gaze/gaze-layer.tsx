@@ -1,14 +1,17 @@
 "use client";
 
-// Webcam gaze control for the whole site (ICU stretch feature), mounted once in the root layout.
-// Opt-in only: nothing happens until the small edge toggle is pressed. While enabled, an on-page
-// gaze cursor follows where the user is looking; holding it still on a control for 2 s activates
-// it (dwell-to-select). Camera frames are processed on the device only (src/lib/input/gaze) and
-// are never uploaded, stored, or logged. Nothing here modifies the page: the cursor, calibration
-// and status layers are pointer-events-none, so the site behaves exactly as before when gaze is off.
+// Webcam gaze control, mounted once in the root layout but gated: it stays completely invisible
+// (no toggle, no layers) until the session flow requests it - which happens only when the doctor
+// selects the ICU (eye-gaze) mode. When requested, tracking starts on its own so the patient
+// never has to find a button; the small edge toggle then remains only as the doctor's off /
+// recalibrate switch. While on, an on-page gaze cursor follows where the user is looking; holding
+// it still on a control for 2 s activates it (dwell-to-select). Camera frames are processed on
+// the device only (src/lib/input/gaze) and are never uploaded, stored, or logged.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DwellController } from "@/lib/input/gaze/dwell";
+import { GAZE_CLICK_DETAIL } from "@/lib/input/gaze/gaze-click";
+import { isGazeRequested, onGazeRequest } from "@/lib/input/gaze/gaze-request";
 import {
   applyGazeMapping,
   FeatureSmoother,
@@ -35,7 +38,9 @@ const CALIBRATION_GATE = 0.6;
 const CALIBRATION_FIT_MIN = 60;
 const CALIBRATION_MAX_SAMPLES = 800;
 /** How many interactive-element centres the sweep additionally visits. */
-const HOTSPOT_LIMIT = 10;
+const HOTSPOT_LIMIT = 14;
+/** The dot rests on each hotspot - the patient's actual selectable options - while sampling. */
+const HOTSPOT_HOLD_MS = 500;
 const EDGE_ZONE = 88; // px band at the top/bottom edge that scrolls the page
 const NO_FACE_MS = 2500;
 const BLINK_GRACE_MS = 350; // a dropped prediction shorter than this holds the last gaze point
@@ -62,27 +67,26 @@ const INTERACTIVE = [
 ].join(", ");
 
 /**
- * The sweep's route: centre first, then a pinwheel over the corners, edge midpoints and the
- * centres of up to `HOTSPOT_LIMIT` visible interactive elements ("hotspots" - the places the
- * patient will actually need to look). Angular order keeps consecutive legs long, so the path
- * covers the whole viewport instead of wigglng in one corner.
+ * The sweep's route: centre first, then a pinwheel (angular order) over corners, edge midpoints
+ * and the centres of up to `HOTSPOT_LIMIT` visible interactive elements. Hotspots - the patient's
+ * actual selectable options - are tagged so the dot rests on each one while sampling.
  */
-function buildCalibrationWaypoints(): { x: number; y: number }[] {
+function buildCalibrationWaypoints(): { x: number; y: number; hotspot: boolean }[] {
   const w = window.innerWidth;
   const h = window.innerHeight;
   const inset = 0.12;
-  const pts = [
-    { x: 0.5 * w, y: 0.5 * h },
-    { x: inset * w, y: inset * h },
-    { x: 0.5 * w, y: inset * h },
-    { x: (1 - inset) * w, y: inset * h },
-    { x: (1 - inset) * w, y: 0.5 * h },
-    { x: (1 - inset) * w, y: (1 - inset) * h },
-    { x: 0.5 * w, y: (1 - inset) * h },
-    { x: inset * w, y: (1 - inset) * h },
-    { x: inset * w, y: 0.5 * h },
+  const pts: { x: number; y: number; hotspot: boolean }[] = [
+    { x: 0.5 * w, y: 0.5 * h, hotspot: false },
+    { x: inset * w, y: inset * h, hotspot: false },
+    { x: 0.5 * w, y: inset * h, hotspot: false },
+    { x: (1 - inset) * w, y: inset * h, hotspot: false },
+    { x: (1 - inset) * w, y: 0.5 * h, hotspot: false },
+    { x: (1 - inset) * w, y: (1 - inset) * h, hotspot: false },
+    { x: 0.5 * w, y: (1 - inset) * h, hotspot: false },
+    { x: inset * w, y: (1 - inset) * h, hotspot: false },
+    { x: inset * w, y: 0.5 * h, hotspot: false },
   ];
-  const picked: { x: number; y: number }[] = [];
+  const picked: { x: number; y: number; hotspot: boolean }[] = [];
   const minDist = 0.16 * Math.hypot(w, h);
   for (const el of Array.from(document.querySelectorAll(INTERACTIVE))) {
     if (picked.length >= HOTSPOT_LIMIT) break;
@@ -92,7 +96,7 @@ function buildCalibrationWaypoints(): { x: number; y: number }[] {
     const x = Math.min(Math.max(r.left + r.width / 2, 24), w - 24);
     const y = Math.min(Math.max(r.top + r.height / 2, 24), h - 24);
     if ([...pts, ...picked].some((p) => Math.hypot(p.x - x, p.y - y) < minDist)) continue;
-    picked.push({ x, y });
+    picked.push({ x, y, hotspot: true });
   }
   const c = pts[0];
   const rest = [...pts.slice(1), ...picked].sort(
@@ -106,9 +110,10 @@ function selectableTarget(el: Element | null): Element | null {
   return el.closest(INTERACTIVE);
 }
 
-/** One stare = one activation: the full pointer + click sequence, as a real press would bubble. */
+/** One stare = one activation: the full pointer + click sequence, as a real press would bubble.
+ * The detail marks it so listeners can credit the selection to the gaze channel. */
 function activate(el: Element, x: number, y: number) {
-  const init: MouseEventInit = { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, view: window, button: 0 };
+  const init: MouseEventInit = { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, view: window, button: 0, detail: GAZE_CLICK_DETAIL };
   if (typeof PointerEvent === "function") {
     el.dispatchEvent(new PointerEvent("pointerdown", init));
     el.dispatchEvent(new PointerEvent("pointerup", init));
@@ -189,6 +194,22 @@ export function GazeLayer() {
     setPhase("on");
   }, []);
 
+  // Gating: the layer exists only while the session flow requests gaze (ICU mode selected).
+  // Requesting starts tracking on its own; withdrawing stops it and clears the camera.
+  const [requested, setRequested] = useState(isGazeRequested());
+  const phaseRef = useRef(phase);
+  useEffect(() => {
+    phaseRef.current = phase; // kept in sync first, so the gating effect below reads the live phase
+  }, [phase]);
+  useEffect(() => onGazeRequest(setRequested), []);
+  useEffect(() => {
+    if (requested) {
+      if (phaseRef.current === "off" || phaseRef.current === "error") void enable();
+    } else if (phaseRef.current !== "off") {
+      disable();
+    }
+  }, [requested, enable, disable]);
+
   // The camera must go out when the layer unmounts, whatever the phase.
   useEffect(() => () => trackerRef.current?.stop(), []);
 
@@ -205,6 +226,7 @@ export function GazeLayer() {
     const waypoints = phase === "calibrating" ? buildCalibrationWaypoints() : null;
     const segCount = waypoints ? waypoints.length - 1 : 0;
     const segMs = waypoints ? CALIBRATION_MS / segCount : 0;
+    const totalMs = CALIBRATION_MS; // hotspot holds fit inside their leg, so the sweep stays 30 s
     let raf = 0;
     let last = performance.now();
     let lastFeatureAt = last;
@@ -240,8 +262,10 @@ export function GazeLayer() {
       if (phase === "calibrating" && waypoints) {
         // Drive the moving dot along the eased waypoint path and record samples while it is
         // slow enough for the eye to have settled on it (fast-transit samples carry lag).
+        // On hotspot waypoints the dot comes to a full stop for a short hold - those are the
+        // patient's actual selectable options, so they get the densest, most settled samples.
         const t = now - calibStartRef.current - CALIBRATION_LEAD_MS;
-        if (t >= CALIBRATION_MS) {
+        if (t >= totalMs) {
           mappingRef.current = samplesRef.current.length >= CALIBRATION_FIT_MIN ? fitGazeMapping(samplesRef.current) : null;
           featureSmoother.reset();
           smoother.reset();
@@ -253,19 +277,21 @@ export function GazeLayer() {
         const eased = (1 - Math.cos(Math.PI * u)) / 2;
         const a = waypoints[i];
         const b = waypoints[i + 1];
-        const dx = a.x + (b.x - a.x) * eased;
-        const dy = a.y + (b.y - a.y) * eased;
+        const onHold = waypoints[i + 1].hotspot && u >= 1 - HOTSPOT_HOLD_MS / segMs;
+        const dx = onHold ? b.x : a.x + (b.x - a.x) * eased;
+        const dy = onHold ? b.y : a.y + (b.y - a.y) * eased;
         const dot = calibDotRef.current;
         if (dot) dot.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
         const bar = calibBarRef.current;
-        if (bar) bar.style.width = `${Math.min(Math.max(t / CALIBRATION_MS, 0), 1) * 100}%`;
+        if (bar) bar.style.width = `${Math.min(Math.max(t / totalMs, 0), 1) * 100}%`;
         const timer = calibTimerRef.current;
         if (timer) {
-          const secs = Math.max(Math.ceil((CALIBRATION_MS - Math.max(t, 0)) / 1000), 0);
+          const secs = Math.max(Math.ceil((totalMs - Math.max(t, 0)) / 1000), 0);
           if (timer.textContent !== `${secs}s`) timer.textContent = `${secs}s`; // avoid a DOM write every frame
         }
         const sm = features ? featureSmoother.next(features, dt) : null;
-        if (sm && samplesRef.current.length < CALIBRATION_MAX_SAMPLES && t >= 0 && Math.sin(Math.PI * u) <= CALIBRATION_GATE) {
+        const slowEnough = onHold || Math.sin(Math.PI * u) <= CALIBRATION_GATE;
+        if (sm && samplesRef.current.length < CALIBRATION_MAX_SAMPLES && t >= 0 && slowEnough) {
           samplesRef.current.push({ features: sm, screen: { x: dx / window.innerWidth, y: dy / window.innerHeight } });
         }
         return;
@@ -328,9 +354,13 @@ export function GazeLayer() {
 
   const toggleLabel = active ? "Turn off gaze control" : "Turn on gaze control (webcam)";
 
+  // Nothing at all renders until the doctor's ICU selection requests gaze: no toggle, no video,
+  // no overlays - the site is exactly as it was for every other mode.
+  if (!requested) return null;
+
   return (
     <>
-      {/* Always present so the ref is stable; it carries no stream until gaze is enabled. */}
+      {/* Present from request onward so the ref is stable; it carries no stream until gaze is enabled. */}
       <video ref={videoRef} aria-hidden="true" muted playsInline autoPlay className="pointer-events-none fixed left-0 top-0 size-px opacity-0" />
 
       {active ? (
