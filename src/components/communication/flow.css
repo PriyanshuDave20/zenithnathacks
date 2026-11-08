@@ -426,6 +426,10 @@
   }
 }
 .sc-root .sf-icu-gate .sf-icu-gate-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
   min-height: 48px;
   padding: 0 20px;
   border-radius: 9999px;

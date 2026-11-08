@@ -4,6 +4,7 @@ import {
   applyGazeMapping,
   defaultMapping,
   FeatureSmoother,
+  fitGazeCalibration,
   fitGazeMapping,
   gazeFeatures,
   median,
@@ -156,4 +157,84 @@ test("calibration rejects non-finite input and incomplete screen coverage", () =
   assert.equal(fitGazeMapping(samples), null);
   samples[0].features.x = Infinity;
   assert.equal(fitGazeMapping(samples), null);
+});
+
+/** Deterministic pseudo-random numbers so the simulated sweeps are repeatable. */
+function rng(seed: number) {
+  let state = seed >>> 0;
+  const uniform = () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 2 ** 32;
+  };
+  const gauss = () => Math.sqrt(-2 * Math.log(uniform() + 1e-12)) * Math.cos(2 * Math.PI * uniform());
+  return { uniform, gauss };
+}
+
+/**
+ * A simulated 30 s pursuit sweep. The iris barely moves vertically inside the eye (the eyelids limit
+ * it), so reaching a full screen height needs a large raw coefficient: the case the old fixed
+ * "coefficient above 8" rule refused even when the data was good.
+ */
+function sweep(seed: number, o: { kx: number; ky: number; ka: number; noise: number; outliers: number }) {
+  const { uniform, gauss } = rng(seed);
+  const way = [[.5,.5],[.1,.1],[.9,.1],[.9,.9],[.1,.9],[.1,.5],[.9,.5],[.5,.1],[.5,.9],[.3,.3],[.7,.3],[.7,.7],[.3,.7],[.5,.5]];
+  const out: { features: { x: number; y: number; a: number; p: number }; screen: { x: number; y: number } }[] = [];
+  let drift = 0;
+  for (let f = 0; f < 1800; f++) {
+    const t = (f / 1800) * (way.length - 1);
+    const i = Math.min(Math.floor(t), way.length - 2);
+    const u = t - i;
+    if (Math.sin(Math.PI * u) > 0.6) continue; // recorded only while the dot is slow
+    const e = (1 - Math.cos(Math.PI * u)) / 2;
+    const sx = way[i][0] + (way[i + 1][0] - way[i][0]) * e;
+    const sy = way[i][1] + (way[i + 1][1] - way[i][1]) * e;
+    drift += gauss() * 0.0006;
+    let fx = -o.kx * (sx - 0.5) + drift + gauss() * o.noise;
+    let fy = o.ky * (sy - 0.5) + gauss() * o.noise * 0.7;
+    if (uniform() < o.outliers) {
+      fx += gauss() * 0.15;
+      fy += gauss() * 0.08;
+    }
+    out.push({ features: { x: fx, y: fy, a: 0.26 + o.ka * (sy - 0.5) + gauss() * o.noise * 0.4, p: 0 }, screen: { x: sx, y: sy } });
+  }
+  return out;
+}
+
+/** The refusal reason, or "accepted". */
+const outcome = (fit: ReturnType<typeof fitGazeCalibration>) => (fit.mapping ? "accepted" : fit.reason);
+
+function medianError(mapping: NonNullable<ReturnType<typeof fitGazeMapping>>, samples: ReturnType<typeof sweep>) {
+  const errors = samples.map((s) => {
+    const p = applyGazeMapping(mapping, s.features);
+    return Math.hypot(p.x - s.screen.x, p.y - s.screen.y);
+  });
+  return median(errors)!;
+}
+
+test("calibration accepts a realistic webcam sweep and the map is accurate on fresh data", () => {
+  for (const o of [
+    { kx: 0.25, ky: 0.09, ka: 0.06, noise: 0.008, outliers: 0.02 }, // good light
+    { kx: 0.25, ky: 0.09, ka: 0.06, noise: 0.015, outliers: 0.04 }, // typical webcam
+    { kx: 0.2, ky: 0.05, ka: 0.04, noise: 0.012, outliers: 0.03 }, // small vertical iris travel
+  ]) {
+    for (let seed = 1; seed <= 5; seed++) {
+      const fit = fitGazeCalibration(sweep(seed, o));
+      assert.ok(fit.mapping, `refused a usable sweep (seed ${seed}): ${JSON.stringify(fit)}`);
+      assert.ok(medianError(fit.mapping, sweep(seed + 100, o)) < 0.16, "map should track the dot on a fresh sweep");
+    }
+  }
+});
+
+test("calibration still refuses data that carries no gaze signal, and says why", () => {
+  // The eyes did not follow the dot at all: features unrelated to where the dot was.
+  const noise = sweep(7, { kx: 0, ky: 0, ka: 0, noise: 0.04, outliers: 0.05 });
+  assert.equal(outcome(fitGazeCalibration(noise)), "too-noisy");
+  // A frozen signal (no face, stuck camera).
+  assert.equal(outcome(fitGazeCalibration(sweep(8, { kx: 0, ky: 0, ka: 0, noise: 0, outliers: 0 }))), "no-spread");
+  // Too few moments of a face.
+  assert.equal(outcome(fitGazeCalibration(sweep(9, { kx: 0.25, ky: 0.09, ka: 0.06, noise: 0.01, outliers: 0 }).slice(0, 3))), "few-samples");
+});
+
+test("a very unsteady sweep is refused with a clear reason, not accepted as accurate", () => {
+  assert.equal(outcome(fitGazeCalibration(sweep(11, { kx: 0.25, ky: 0.09, ka: 0.06, noise: 0.05, outliers: 0.15 }))), "too-noisy");
 });

@@ -18,6 +18,7 @@ import {
   getGazePhase,
   getGazeRequested,
   getGazeSkipped,
+  reopenGaze,
   requestGazeStart,
   setGazeAvailable,
   skipGaze,
@@ -211,6 +212,7 @@ export function IcuBoard({
                     {gazeError ? "Try again" : "Ready"}
                   </button>
                   <button type="button" className="sf-icu-gate-quiet" onClick={skipGaze}>Use touch or keyboard instead</button>
+                  <Link href="/start" className="sf-icu-gate-quiet">Back to setup</Link>
                 </>
               )}
             </div>
@@ -223,6 +225,11 @@ export function IcuBoard({
             <span className={s.badge}>
               {gazePhase === "on" ? "Eye control on" : "Eye control off"}
             </span>
+            {gazeSkipped && gazePhase !== "on" ? (
+              <button type="button" className={s.quiet} onClick={reopenGaze}>
+                Set up eye control
+              </button>
+            ) : null}
           </div>
           <div className={i.layout}>
             <section className={s.panel} aria-labelledby="icu-prompt">

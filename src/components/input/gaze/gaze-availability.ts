@@ -48,6 +48,13 @@ export function skipGaze() {
   notify();
 }
 
+/** Bring the ready step back after it was skipped, so eye control can still be set up. */
+export function reopenGaze() {
+  if (!skipped) return;
+  skipped = false;
+  notify();
+}
+
 /** Reported by the layer. */
 export function setGazePhase(next: GazePhaseName) {
   if (phase === next) return;

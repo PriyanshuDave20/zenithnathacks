@@ -13,11 +13,13 @@ import { DwellController } from "@/lib/input/gaze/dwell";
 import {
   applyGazeMapping,
   FeatureSmoother,
-  fitGazeMapping,
+  fitGazeCalibration,
   gazeFeatures,
   SmoothedPoint,
   type CalibrationSample,
   type GazeFeatures,
+  type GazeFit,
+  type GazeFitFailure,
   type GazeMapping,
 } from "@/lib/input/gaze/gaze-math";
 import { GazeTracker } from "@/lib/input/gaze/tracker";
@@ -121,6 +123,23 @@ function activate(el: Element, x: number, y: number) {
   const click = new MouseEvent("click", init);
   Object.defineProperty(click, "synapseInputChannel", { value: "gaze" });
   el.dispatchEvent(click);
+}
+
+const FAIR_MESSAGE = "Eye control is on, but accuracy is approximate. Brighter even light and a steady head help; tap Recalibrate to try again.";
+
+/** What to tell the person when calibration is refused: each reason has a different fix. */
+function calibrationFailureMessage(reason: GazeFitFailure, samples: number, error?: number) {
+  switch (reason) {
+    case "few-samples":
+      return `The camera only caught your face for part of the sweep (${samples} usable moments). Sit centred facing the camera, in even light, with your whole face in view.`;
+    case "coverage":
+    case "no-spread":
+      return "Your eyes barely moved across the screen. Follow the dot with your eyes, not your head, and try again.";
+    case "too-noisy":
+      return `Tracking was too unsteady to trust${error ? ` (about ${Math.round(error * 100)}% off)` : ""}. Try brighter, even light from the front, sit about an arm's length away, and keep your head still.`;
+    default:
+      return "Calibration needs another try. Keep your head steady, use even lighting, and follow the dot for the full sweep.";
+  }
 }
 
 function cameraDenied(e: unknown) {
@@ -332,15 +351,24 @@ export function GazeLayer() {
         // slow enough for the eye to have settled on it (fast-transit samples carry lag).
         const t = now - calibStartRef.current - CALIBRATION_LEAD_MS;
         if (t >= CALIBRATION_MS) {
-          mappingRef.current = samplesRef.current.length >= CALIBRATION_FIT_MIN ? fitGazeMapping(samplesRef.current) : null;
-          if (!mappingRef.current) {
+          const fit: GazeFit =
+            samplesRef.current.length >= CALIBRATION_FIT_MIN
+              ? fitGazeCalibration(samplesRef.current)
+              : { mapping: null, reason: "few-samples" };
+          mappingRef.current = fit.mapping;
+          if (!fit.mapping) {
             trackerRef.current?.stop();
-            setStatus("Calibration needs another try. Keep your head steady, use even lighting, and follow the dot for the full sweep.");
+            setStatus(calibrationFailureMessage(fit.reason, samplesRef.current.length, fit.medianError));
             setPhase("error");
             return;
           }
           featureSmoother.reset();
           smoother.reset();
+          // Usable but approximate: turn it on and say so, rather than sending the person round again.
+          if (fit.quality === "fair") {
+            setStatus(FAIR_MESSAGE);
+            setTimeout(() => setStatus((current) => (current === FAIR_MESSAGE ? null : current)), 15000);
+          }
           setPhase("on");
           return;
         }

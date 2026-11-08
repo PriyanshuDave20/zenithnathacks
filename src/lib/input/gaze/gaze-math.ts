@@ -94,62 +94,143 @@ export type CalibrationSample = { features: GazeFeatures; screen: ScreenPoint };
 /** Horizontal: [x, 1]. Vertical: [y, a, p, 1] — the three vertical cues, weighted by calibration. */
 export type GazeMapping = { x: [number, number]; y: [number, number, number, number] };
 
+/** Why a calibration was refused: each one maps to a different instruction for the person. */
+export type GazeFitFailure = "few-samples" | "invalid" | "coverage" | "no-spread" | "too-noisy" | "degenerate";
+
+export type GazeFit =
+  | {
+      mapping: GazeMapping;
+      /** "good" tracks closely; "fair" works but is approximate, and the person should be told. */
+      quality: "good" | "fair";
+      /** Median distance between where the map says the person looked and where the dot was, held-out, as a fraction of the screen. */
+      medianError: number;
+    }
+  | { mapping: null; reason: GazeFitFailure; medianError?: number };
+
+const MIN_SAMPLES = 4;
+const CV_MIN_SAMPLES = 40; // below this there is too little data to hold some back
+const CV_FOLDS = 4;
+const RIDGE = 0.02; // relative to the data: in standardised units a coefficient of 1 means "one feature spread = one screen"
+const GOOD_MEDIAN = 0.15;
+const GOOD_P80 = 0.3;
+const FAIR_MEDIAN = 0.21;
+
+/** Least squares in standardised units, with a light ridge penalty; coefficients are mapped back to raw units. */
+function fitStandardised(rows: number[][], target: number[]): { coef: number[]; intercept: number; z: number[] } | null {
+  const n = rows.length;
+  const k = rows[0].length;
+  const mean = new Array(k).fill(0);
+  for (const r of rows) for (let j = 0; j < k; j++) mean[j] += r[j] / n;
+  const sd = new Array(k).fill(0);
+  for (const r of rows) for (let j = 0; j < k; j++) sd[j] += (r[j] - mean[j]) ** 2 / n;
+  for (let j = 0; j < k; j++) sd[j] = Math.sqrt(sd[j]);
+  // A cue that never moved cannot be fitted: leave it out (its coefficient is 0) rather than amplify noise.
+  const used = sd.map((v) => v > 1e-6);
+  const cols = used.flatMap((u, j) => (u ? [j] : []));
+  if (!cols.length) return null;
+  const tMean = target.reduce((a, b) => a + b, 0) / n;
+  const m = cols.length;
+  const ata: number[][] = Array.from({ length: m }, () => new Array(m).fill(0));
+  const atb = new Array(m).fill(0);
+  for (let i = 0; i < n; i++) {
+    const z = cols.map((j) => (rows[i][j] - mean[j]) / sd[j]);
+    for (let a = 0; a < m; a++) {
+      atb[a] += z[a] * (target[i] - tMean);
+      for (let b = 0; b < m; b++) ata[a][b] += z[a] * z[b];
+    }
+  }
+  for (let a = 0; a < m; a++) ata[a][a] += RIDGE * n;
+  const w = solve(ata, atb);
+  if (!w || w.some((v) => !Number.isFinite(v))) return null;
+  const z = new Array(k).fill(0);
+  const coef = new Array(k).fill(0);
+  cols.forEach((j, idx) => {
+    z[j] = w[idx];
+    coef[j] = w[idx] / sd[j];
+  });
+  const intercept = tMean - coef.reduce((acc, c, j) => acc + c * mean[j], 0);
+  return { coef, intercept, z };
+}
+
+type FitModel = { mapping: GazeMapping; z: number[] };
+
+/** Fit both axes, then drop the worst few percent (a blink mid-sweep, a head jerk) and fit again. */
+function fitRobust(samples: CalibrationSample[]): FitModel | null {
+  const build = (set: CalibrationSample[]): FitModel | null => {
+    const fx = fitStandardised(set.map((s) => [s.features.x]), set.map((s) => s.screen.x));
+    const fy = fitStandardised(set.map((s) => [s.features.y, s.features.a, s.features.p]), set.map((s) => s.screen.y));
+    if (!fx || !fy) return null;
+    return {
+      mapping: { x: [fx.coef[0], fx.intercept], y: [fy.coef[0], fy.coef[1], fy.coef[2], fy.intercept] },
+      z: [...fx.z, ...fy.z],
+    };
+  };
+  const first = build(samples);
+  if (!first) return null;
+  const errors = samples.map((s) => errorOf(first.mapping, s));
+  const mid = median(errors) ?? 0;
+  const cut = Math.max(mid * 2.5, 0.15);
+  const keep = samples.filter((_, i) => errors[i] <= cut);
+  // Never throw away more than a fifth: if that is not enough the data is simply noisy.
+  if (keep.length >= samples.length * 0.8 && keep.length < samples.length && keep.length >= MIN_SAMPLES) return build(keep) ?? first;
+  return first;
+}
+
+function errorOf(mapping: GazeMapping, s: CalibrationSample) {
+  const p = applyGazeMapping(mapping, s.features);
+  return Math.hypot(p.x - s.screen.x, p.y - s.screen.y);
+}
+
 /**
- * Least-squares map from gaze features to a normalised screen point, fitted on the calibration
- * samples with a light ridge penalty (a vertical cue with little spread must not blow its
- * coefficient up). Returns null when the samples do not span the screen or the fit is wild —
- * then the caller keeps the steadier default mapping.
+ * Map from gaze features to a normalised screen point, fitted on a calibration sweep. The decision
+ * to accept it rests on held-out error (hold some of the sweep back, fit on the rest, measure on
+ * what was held back), not on how well it reproduces the data it was fitted to. It refuses only when
+ * the signal cannot be used, and says which kind of problem it was; a usable-but-approximate
+ * calibration comes back as "fair" so the person can be told rather than sent round again.
  */
-export function fitGazeMapping(samples: CalibrationSample[]): GazeMapping | null {
-  if (samples.length < 4) return null;
-  if (samples.some(s => [...Object.values(s.features), s.screen.x, s.screen.y].some(v => !Number.isFinite(v)))) return null;
-  const xs = samples.map(s => s.screen.x), ys = samples.map(s => s.screen.y);
-  if (Math.max(...xs) - Math.min(...xs) < 0.5 || Math.max(...ys) - Math.min(...ys) < 0.25) return null;
-  // A cue that never moved during calibration cannot be fitted (the ridge would just predict
-  // the mean): require the horizontal feature and at least one vertical cue to have spread.
+export function fitGazeCalibration(samples: CalibrationSample[]): GazeFit {
+  if (samples.length < MIN_SAMPLES) return { mapping: null, reason: "few-samples" };
+  if (samples.some((s) => [...Object.values(s.features), s.screen.x, s.screen.y].some((v) => !Number.isFinite(v)))) {
+    return { mapping: null, reason: "invalid" };
+  }
+  const xs = samples.map((s) => s.screen.x);
+  const ys = samples.map((s) => s.screen.y);
+  if (Math.max(...xs) - Math.min(...xs) < 0.5 || Math.max(...ys) - Math.min(...ys) < 0.25) return { mapping: null, reason: "coverage" };
   const spread = (pick: (s: CalibrationSample) => number) => {
     const v = samples.map(pick);
     return Math.max(...v) - Math.min(...v);
   };
-  if (spread((s) => s.features.x) < 1e-6) return null;
-  if (spread((s) => s.features.y) + spread((s) => s.features.a) + spread((s) => s.features.p) < 1e-6) return null;
-  const cx = fitLinear(
-    samples.map((s) => [s.features.x, 1]),
-    samples.map((s) => s.screen.x),
-    [1e-3, 0],
-  );
-  const cy = fitLinear(
-    samples.map((s) => [s.features.y, s.features.a, s.features.p, 1]),
-    samples.map((s) => s.screen.y),
-    [1e-3, 1e-3, 1e-3, 0],
-  );
-  if (!cx || !cy) return null;
-  const mapping: GazeMapping = { x: [cx[0], cx[1]], y: [cy[0], cy[1], cy[2], cy[3]] };
-  for (const c of [...mapping.x, ...mapping.y]) if (Math.abs(c) > 8) return null;
-  // Pursuit calibration produces hundreds of samples and a few outliers (blink mid-sweep, a
-  // head movement): require 90% of samples to land near their targets, not every one.
-  let close = 0;
-  for (const s of samples) {
-    const p = applyGazeMapping(mapping, s.features);
-    if (Math.abs(p.x - s.screen.x) <= 0.22 && Math.abs(p.y - s.screen.y) <= 0.22) close++;
-  }
-  if (close / samples.length < 0.9) return null;
-  return mapping;
-}
+  // A horizontal feature that never moved, or no vertical cue that moved, means the eyes were not followed.
+  if (spread((s) => s.features.x) < 1e-6) return { mapping: null, reason: "no-spread" };
+  if (spread((s) => s.features.y) + spread((s) => s.features.a) + spread((s) => s.features.p) < 1e-6) return { mapping: null, reason: "no-spread" };
 
-/** Normal equations with per-term ridge penalties; null when singular. */
-function fitLinear(rows: number[][], target: number[], penalty: number[]): number[] | null {
-  const n = rows[0].length;
-  const ata: number[][] = Array.from({ length: n }, () => new Array(n).fill(0));
-  const atb = new Array(n).fill(0);
-  for (let i = 0; i < rows.length; i++) {
-    for (let r = 0; r < n; r++) {
-      atb[r] += rows[i][r] * target[i];
-      for (let c = 0; c < n; c++) ata[r][c] += rows[i][r] * rows[i][c];
+  const model = fitRobust(samples);
+  if (!model) return { mapping: null, reason: "degenerate" };
+  // In standardised units a coefficient says "screens per feature spread"; anything this large is a fit chasing noise.
+  if (model.z.some((v) => Math.abs(v) > 2)) return { mapping: null, reason: "degenerate" };
+
+  const held: number[] = [];
+  if (samples.length >= CV_MIN_SAMPLES) {
+    // Time-ordered blocks, interleaved, so each fold covers the whole sweep and neighbours do not leak.
+    const chunk = Math.max(5, Math.floor(samples.length / 16));
+    for (let fold = 0; fold < CV_FOLDS; fold++) {
+      const train = samples.filter((_, i) => Math.floor(i / chunk) % CV_FOLDS !== fold);
+      const test = samples.filter((_, i) => Math.floor(i / chunk) % CV_FOLDS === fold);
+      const m = train.length >= MIN_SAMPLES ? fitRobust(train) : null;
+      if (!m) continue;
+      for (const s of test) held.push(errorOf(m.mapping, s));
     }
   }
-  for (let r = 0; r < n; r++) ata[r][r] += penalty[r];
-  return solve(ata, atb);
+  const errors = held.length ? held : samples.map((s) => errorOf(model.mapping, s));
+  const med = median(errors) ?? 1;
+  const p80 = [...errors].sort((a, b) => a - b)[Math.floor(errors.length * 0.8)] ?? 1;
+  if (med > FAIR_MEDIAN) return { mapping: null, reason: "too-noisy", medianError: med };
+  return { mapping: model.mapping, quality: med <= GOOD_MEDIAN && p80 <= GOOD_P80 ? "good" : "fair", medianError: med };
+}
+
+/** Same fit, for callers that only want the map: null when the calibration was refused. */
+export function fitGazeMapping(samples: CalibrationSample[]): GazeMapping | null {
+  return fitGazeCalibration(samples).mapping;
 }
 
 /** Gaussian elimination with partial pivoting; null when singular. */
