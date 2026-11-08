@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   applyGazeMapping,
+  BlinkGuard,
   defaultMapping,
   FeatureSmoother,
   fitGazeCalibration,
@@ -237,4 +238,90 @@ test("calibration still refuses data that carries no gaze signal, and says why",
 
 test("a very unsteady sweep is refused with a clear reason, not accepted as accurate", () => {
   assert.equal(outcome(fitGazeCalibration(sweep(11, { kx: 0.25, ky: 0.09, ka: 0.06, noise: 0.05, outliers: 0.15 }))), "too-noisy");
+});
+
+/**
+ * A blink as the tracker sees it at ~30 fps: the eye opening collapses and the iris reading is pushed
+ * down by the closing lid, before the eye is shut enough for the old frame filter to drop it.
+ */
+function blinkFrames() {
+  const open = { x: 0.1, y: 0.0, a: 0.26, p: 0 };
+  const dip = [0.24, 0.19, 0.13, 0.1, 0.12, 0.18, 0.23, 0.26];
+  const frames = [] as { f: typeof open; t: number }[];
+  let t = 0;
+  for (let i = 0; i < 12; i++, t += 33) frames.push({ f: open, t });
+  for (const a of dip) {
+    frames.push({ f: { x: 0.1, y: 0.04 * (1 - (a - 0.1) / 0.16) + 0.0, a, p: 0 }, t });
+    t += 33;
+  }
+  for (let i = 0; i < 12; i++, t += 33) frames.push({ f: open, t });
+  return frames;
+}
+
+test("BlinkGuard keeps the pointer still through a blink and passes open-eye frames untouched", () => {
+  // Gaze at the middle of the screen: this map puts the open-eye features at (0.5, 0.5).
+  const map = { x: [-4, 0.9] as [number, number], y: [2.5, 4, 0, -0.54] as [number, number, number, number] };
+  const run = (guarded: boolean) => {
+    const guard = new BlinkGuard();
+    const smoother = new FeatureSmoother(0.3, 0.735, 0.06);
+    let last = { x: 0.5, y: 0.5 };
+    let worst = 0;
+    let passed = 0;
+    for (const { f, t } of blinkFrames()) {
+      const fed = guarded ? guard.next(f, t) : f;
+      if (fed) {
+        passed++;
+        last = applyGazeMapping(map, smoother.next(fed, 33));
+      }
+      worst = Math.max(worst, Math.hypot(last.x - 0.5, last.y - 0.5));
+    }
+    return { worst, passed };
+  };
+  const without = run(false);
+  const withGuard = run(true);
+  assert.ok(without.worst > 0.3, `the blink should throw an unguarded pointer off (${without.worst.toFixed(2)})`);
+  assert.ok(withGuard.worst < 0.05, `the guarded pointer should stay put through a blink (${withGuard.worst.toFixed(3)})`);
+  assert.ok(withGuard.passed < without.passed, "blink frames are dropped");
+
+  // Plain open-eye frames pass through unchanged.
+  const guard = new BlinkGuard();
+  const open = { x: 0.1, y: 0, a: 0.26, p: 0 };
+  for (let i = 0; i < 20; i++) assert.deepEqual(guard.next(open, i * 33), open);
+});
+
+test("BlinkGuard learns a narrower normal instead of ignoring the eyes forever", () => {
+  const guard = new BlinkGuard();
+  const wide = { x: 0, y: 0, a: 0.26, p: 0 };
+  for (let i = 0; i < 20; i++) guard.next(wide, i * 33);
+  // Looking down narrows the eyes and they stay narrow: the first frames look like a blink, then it is accepted.
+  const narrow = { x: 0, y: 0.03, a: 0.15, p: 0 };
+  let accepted = -1;
+  for (let i = 0; i < 60; i++) {
+    if (guard.next(narrow, 700 + i * 33) && accepted < 0) accepted = i;
+  }
+  assert.ok(accepted > 0, "a blink is ignored at first");
+  assert.ok(accepted < 50, "but a lasting narrowing is adopted within about a second and a half");
+  assert.ok(guard.next(narrow, 5000), "and keeps being accepted");
+});
+
+test("BlinkGuard does not freeze the pointer when the person simply looks lower", () => {
+  // Looking from the top to the bottom of the screen narrows the eyes ~20% and they stay that way.
+  for (const glanceFrames of [3, 6, 12]) {
+    const guard = new BlinkGuard();
+    let t = 0;
+    for (let i = 0; i < 12; i++) guard.next({ x: 0, y: -0.04, a: 0.29, p: 0 }, t++ * 33);
+    let ignored = 0;
+    for (let i = 1; i <= glanceFrames; i++) {
+      const k = i / glanceFrames;
+      if (!guard.next({ x: 0, y: -0.04 + 0.08 * k, a: 0.29 - 0.06 * k, p: 0 }, t++ * 33)) ignored++;
+    }
+    for (let i = 0; i < 12; i++) if (!guard.next({ x: 0, y: 0.04, a: 0.23, p: 0 }, t++ * 33)) ignored++;
+    assert.ok(ignored <= 9, `a ${glanceFrames}-frame glance should resume within about 0.3 s, ignored ${ignored} frames`);
+    assert.ok(guard.next({ x: 0, y: 0.04, a: 0.23, p: 0 }, t * 33), "and tracking continues afterwards");
+  }
+  // Steady looking with ordinary sensor noise never loses a frame.
+  const steady = new BlinkGuard();
+  let dropped = 0;
+  for (let i = 0; i < 600; i++) if (!steady.next({ x: 0, y: 0, a: 0.26 + Math.sin(i * 12.9898) * 0.003, p: 0 }, i * 33)) dropped++;
+  assert.equal(dropped, 0);
 });

@@ -14,6 +14,7 @@ import {
   Shield,
 } from "@/components/home/icons";
 import {
+  cancelGazeRequest,
   getGazeError,
   getGazePhase,
   getGazeRequested,
@@ -22,6 +23,7 @@ import {
   requestGazeStart,
   setGazeAvailable,
   skipGaze,
+  stopGaze,
   subscribeGaze,
 } from "@/components/input/gaze/gaze-availability";
 import { useIdle } from "@/components/session/use-idle";
@@ -122,6 +124,11 @@ export function IcuBoard({
           </Link>
           <span className={s.holder}>Eye mode</span>
           <div className={s.headerActions}>
+            {gazeRequested && !handoff && !reviewed && !expired ? (
+              <button type="button" onClick={stopGaze}>
+                Stop eye control
+              </button>
+            ) : null}
             <button
               type="button"
               aria-pressed={contrast}
@@ -202,6 +209,7 @@ export function IcuBoard({
                 <>
                   <h2 id="icu-gate-title" className="sf-icu-gate-label">Starting the camera…</h2>
                   <p className="sf-icu-gate-note">Allow camera access if your browser asks. Calibration begins next: the patient follows the dot for 30 seconds.</p>
+                  <button type="button" className="sf-icu-gate-quiet" onClick={cancelGazeRequest}>Cancel</button>
                 </>
               ) : (
                 <>

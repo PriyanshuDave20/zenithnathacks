@@ -12,6 +12,7 @@ import { cancelGazeRequest, getGazeAvailable, getGazeRequested, setGazeError, se
 import { DwellController } from "@/lib/input/gaze/dwell";
 import {
   applyGazeMapping,
+  BlinkGuard,
   FeatureSmoother,
   fitGazeCalibration,
   gazeFeatures,
@@ -41,7 +42,7 @@ const CALIBRATION_MAX_SAMPLES = 800;
 const HOTSPOT_LIMIT = 10;
 const EDGE_ZONE = 88; // px band at the top/bottom edge that scrolls the page
 const NO_FACE_MS = 2500;
-const BLINK_GRACE_MS = 350; // a dropped prediction shorter than this holds the last gaze point
+const BLINK_GRACE_MS = 600; // a dropped prediction shorter than this holds the last gaze point (a blink plus its settle)
 
 /** Elements a gaze dwell may activate. Kept broad so the whole site works, not one page. */
 const INTERACTIVE = [
@@ -167,6 +168,8 @@ export function GazeLayer() {
   // tuning (0.75/0.55) after "too rigid" -> revert -> "a little more rigid".
   const featureSmootherRef = useRef(new FeatureSmoother(0.3, 0.735, 0.06));
   const smootherRef = useRef(new SmoothedPoint(0.2, 0.539, 0.02, 2));
+  // Drops the frames of a blink, so closing eyelids cannot drag the pointer.
+  const blinkGuardRef = useRef(new BlinkGuard());
   const mappingRef = useRef<GazeMapping | null>(null);
   const samplesRef = useRef<CalibrationSample[]>([]);
   const calibStartRef = useRef(0);
@@ -192,6 +195,7 @@ export function GazeLayer() {
     setUnstable(false);
     mappingRef.current = null;
     dwellRef.current = new DwellController();
+    blinkGuardRef.current.reset();
     samplesRef.current = [];
     calibStartRef.current = performance.now();
     if (!trackerRef.current) trackerRef.current = new GazeTracker();
@@ -217,6 +221,7 @@ export function GazeLayer() {
     generationRef.current++;
     trackerRef.current?.stop();
     dwellRef.current = new DwellController();
+    blinkGuardRef.current.reset();
     smootherRef.current.reset();
     mappingRef.current = null;
     setStatus(null);
@@ -273,6 +278,7 @@ export function GazeLayer() {
     calibStartRef.current = performance.now();
     mappingRef.current = null;
     dwellRef.current = new DwellController();
+    blinkGuardRef.current.reset();
     setStatus(null);
     setPhase("calibrating");
   }, []);
@@ -325,7 +331,7 @@ export function GazeLayer() {
         }
         return;
       }
-      const features = gazeFeatures(landmarks);
+      const features = blinkGuardRef.current.next(gazeFeatures(landmarks), now);
       if (features) {
         lastFeatureAt = now;
         if (noFaceRef.current) {

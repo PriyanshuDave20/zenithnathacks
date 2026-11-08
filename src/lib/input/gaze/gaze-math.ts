@@ -311,6 +311,118 @@ export class SmoothedPoint {
 }
 
 /** Same adaptive smoothing for the raw feature vector (x, y, a, p), before the screen mapping. */
+/**
+ * Blink guard. While a lid closes and reopens the iris reading shifts and the eye-opening cue
+ * collapses, but the frame is still "valid" (the eye is not shut yet), and the vertical map leans on
+ * the eye opening, so the pointer is yanked. A blink is the eye opening falling fast: within about
+ * 150 ms it drops a few percent below its own recent peak, far quicker than looking down narrows the
+ * eyes. From the first such frame this drops everything until the eye has recovered to its pre-blink
+ * opening, then a short settle while the iris steadies. The pointer holds still through the blink.
+ *
+ * Two backstops: an opening far below the person's long-run normal also counts (a blink that began
+ * before we saw it), and a narrowing that outlasts any blink (squinting, tiredness) is adopted as the
+ * new normal instead of being ignored forever.
+ */
+export class BlinkGuard {
+  private baseline = 0;
+  private recent: { t: number; a: number }[] = [];
+  private blinkPeak = 0; // the opening before the blink began
+  private blinkMin = 0; // the lowest opening seen since it began
+  private blinkPrev = 0;
+  private stableFrames = 0;
+  private blinkStart = -1;
+  private settleUntil = -1;
+
+  constructor(
+    private fastDrop = 0.93, // this fraction of the recent peak or lower: the lid is closing
+    private dropRatio = 0.68, // this fraction of the long-run normal or lower: closed or nearly
+    private settleMs = 140, // keep ignoring frames this long after the lid has reopened
+    private sustainedMs = 700, // longer than any blink: the eyes are simply narrower now
+    private windowMs = 150,
+    private deepDip = 0.8, // a blink dips below this fraction of the peak; looking down does not
+  ) {}
+
+  /** The features unchanged for an open eye, or null while a blink is closing, closed or reopening. */
+  next(f: GazeFeatures | null, nowMs: number): GazeFeatures | null {
+    if (!f) {
+      // Eyes shut, or the face was lost: treat as part of a blink, and let the reopening settle.
+      if (this.baseline > 0 && this.blinkStart < 0) this.begin(this.peak(nowMs) || this.baseline, nowMs);
+      this.settleUntil = nowMs + this.settleMs;
+      return null;
+    }
+    if (this.baseline === 0) this.baseline = f.a;
+    else if (f.a >= this.baseline) this.baseline += (f.a - this.baseline) * 0.2;
+
+    if (this.blinkStart >= 0) {
+      this.blinkMin = Math.min(this.blinkMin, f.a);
+      const deep = this.blinkMin < this.blinkPeak * this.deepDip;
+      this.stableFrames = Math.abs(f.a - this.blinkPrev) <= this.blinkPeak * 0.02 ? this.stableFrames + 1 : 0;
+      this.blinkPrev = f.a;
+      if (f.a >= this.blinkPeak * 0.93) {
+        this.blinkStart = -1; // recovered; the settle window below holds a little longer
+        this.settleUntil = nowMs + this.settleMs;
+        this.recent = [];
+        return null;
+      }
+      // A blink passes through its lowest point in a frame or two; a look-down settles and stays
+      // there. A shallow change settles quickly; a deeper one must hold longer, and only counts while
+      // the eye is clearly still open.
+      const settled = deep ? this.stableFrames >= 5 && f.a > this.blinkPeak * 0.5 : this.stableFrames >= 3;
+      if (settled) {
+        // The opening settled at a new level: the person looked somewhere else (down narrows the
+        // eyes). Resume at once and take it as the new normal.
+        this.baseline = f.a;
+        this.blinkStart = -1;
+        this.recent = [];
+        return f;
+      }
+      if (nowMs - this.blinkStart > this.sustainedMs) {
+        // Longer than any blink: the eyes are simply narrower now.
+        this.baseline = f.a / ((1 + this.dropRatio) / 2);
+        this.blinkStart = -1;
+        this.recent = [];
+      } else {
+        return null;
+      }
+    }
+
+    this.recent = this.recent.filter((r) => nowMs - r.t <= this.windowMs);
+    const peak = this.peak(nowMs);
+    if ((peak > 0 && f.a < peak * this.fastDrop) || f.a < this.baseline * this.dropRatio) {
+      this.begin(Math.max(peak, f.a), nowMs);
+      return null;
+    }
+    this.recent.push({ t: nowMs, a: f.a });
+    if (f.a < this.baseline) this.baseline += (f.a - this.baseline) * 0.002; // slow drift down while open
+    return nowMs < this.settleUntil ? null : f;
+  }
+
+  private begin(peak: number, nowMs: number) {
+    this.blinkPeak = peak;
+    this.blinkMin = peak;
+    this.blinkPrev = peak;
+    this.stableFrames = 0;
+    this.blinkStart = nowMs;
+  }
+
+  private peak(nowMs: number) {
+    let best = 0;
+    for (const r of this.recent) if (nowMs - r.t <= this.windowMs && r.a > best) best = r.a;
+    return best;
+  }
+
+  reset() {
+    this.baseline = 0;
+    this.recent = [];
+    this.blinkPeak = 0;
+    this.blinkMin = 0;
+    this.blinkPrev = 0;
+    this.stableFrames = 0;
+    this.blinkStart = -1;
+    this.settleUntil = -1;
+  }
+}
+
 export class FeatureSmoother {
   private f: GazeFeatures | null = null;
 

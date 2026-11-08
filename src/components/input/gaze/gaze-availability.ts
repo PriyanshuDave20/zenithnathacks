@@ -48,6 +48,14 @@ export function skipGaze() {
   notify();
 }
 
+/** The person has finished communicating: camera and tracking off now. Setup can be reopened from the board. */
+export function stopGaze() {
+  if (!requested && skipped) return;
+  requested = false;
+  skipped = true;
+  notify();
+}
+
 /** Bring the ready step back after it was skipped, so eye control can still be set up. */
 export function reopenGaze() {
   if (!skipped) return;
