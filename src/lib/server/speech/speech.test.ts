@@ -26,6 +26,7 @@ test("Azure synthesis redacts identifiers, escapes SSML and uses bounded no-stor
     assert.ok(init.signal);
     const headers = new Headers(init.headers);
     assert.equal(headers.get("X-Microsoft-OutputFormat"), "audio-24khz-48kbitrate-mono-mp3");
+    assert.equal(headers.get("User-Agent"), "Synapse-Synthetic-Demo");
     assert.match(String(init.body), /&lt;break\/&gt; &amp;/);
     assert.match(String(init.body), /\[removed\]/);
     assert.doesNotMatch(String(init.body), /780-555-0100/);

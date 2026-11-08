@@ -57,6 +57,7 @@ export async function synthesizeSpeech(text: string, language: string, signal?: 
         "Ocp-Apim-Subscription-Key": config.key,
         "Content-Type": "application/ssml+xml",
         "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3",
+        "User-Agent": "Synapse-Synthetic-Demo",
       },
       body: `<speak version="1.0" xml:lang="${voice.language}"><voice name="${voice.name}">${escapeXml(safe)}</voice></speak>`,
       cache: "no-store", credentials: "omit", redirect: "error",
