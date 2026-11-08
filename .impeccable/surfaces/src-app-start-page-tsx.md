@@ -2,23 +2,28 @@
 version: 1
 slug: "src-app-start-page-tsx"
 primary_target: "src/app/start/page.tsx"
-related_targets: []
+related_targets:
+  - "src/components/communication/workspace.tsx"
+  - "src/components/communication/workspace.css"
+  - "src/components/communication/motion.tsx"
 ---
 
-# Session flow (/start)
+# Communication workspace (/start)
 
-Mode: Operate. Users: a clinician and a patient sharing one device (phone, tablet, or laptop) at the bedside or in an exam room, often anxious, tired, or reading in a second language; patients may be Deaf/HoH, low literacy, or unable to speak. Task: get from Start to a usable, understood exchange in seconds. Pinned by docs/PRODUCT.md and the team: stages start -> intake (free-form or guided) -> patient confirms read-back -> handoff -> clinician review -> clinician reply -> patient response with teach-back (loops) -> end. Session state in memory only; always-visible Clear; idle timeout wipes it. Model failures fall back to typed text and never block the visit. Built against src/lib/mocks via src/components/session/api.ts. Fluid on every platform: phone portrait first, tablet, desktop, keyboard, touch, reduced motion, RTL.
+Mode: Operate. A clinician and patient share one phone, tablet, or laptop at the bedside or in an exam room. Patients may use another language, be Deaf/HoH, have low literacy, or be unable to speak. The task is to build a checked exchange through speech, pictures, or text, then review the communication recap. This replaces the earlier setup-and-question wizard with a conversation workspace. The user-supplied Akash system spec and ASCII wireframe fix this composition within the established Synapse identity.
+
+Implementation: `src/components/communication/workspace.tsx`, its scoped stylesheet, and `motion.tsx`; `/start` retains the existing clinician-account gate. Translation and reply calls use the unchanged mock adapter in `src/components/session/api.ts`. There are four mock languages: English, Spanish, Arabic, and Simplified Chinese. This is a synthetic demonstration, not a full translation service.
 
 ## Direction contract
 
-THESIS: One device, two people, one turn at a time. Every screen belongs to whoever is holding it and says so; the handoff is a ritual screen, not a modal. Refuses the dashboard/form-wizard template.
+THESIS: One device, two people, a visible conversation. Keep the checked messages beside the next message on wide screens, with a compact, persistent accessibility rail and a clear holder indicator. Clinical review remains a separate turn: the navy handoff replaces the workspace and hides the summary until the holder chooses “I’m the clinician.” This is a holder assertion, not authentication.
 
-OWN-WORLD: DESIGN.md as built on the home page: navy session bar with holder pill (Clinician navy / Patient blue-soft) and Clear, clinic-white work surface, patient-language content in tailed bubbles, large pill choices and picture tiles, navy clinician summary sheet, logo light blue only on navy. Figtree for what people read and answer, Noto Sans for interface.
+OWN-WORLD: Inherit `DESIGN.md`: navy header and raised-navy controls, white and cool-blue work surfaces, deep-blue actions, rounded panels, pill choices, and opposing tailed speech bubbles. Figtree headings sit over Noto Sans interface and message text, with inherited Arabic and Chinese font families. The user-requested black/yellow high-contrast mode is a scoped accessibility override on this workspace; it does not recolor the global system. Preserve root `DESIGN.md` and `.impeccable/design.json`.
 
-STORY: The clinician picks language, mode, and path in two taps; the patient says it their way in their own language and confirms the read-back; the clinician reads a structured summary beside the original and back-translation, replies, and the patient confirms they understood; End clears everything.
+STORY: Choose speaker, patient language, and communication mode in place. The patient speaks, points, or types; a read-back must be confirmed before the message enters the conversation. The clinician can add a reply through the same composer. Pass to clinician hides the workspace behind a navy handoff, then opens patient recap and clinician summary side by side. Reply returns to the composer; teach-back records yes, no, or unsure against the latest reply. Clear and End require confirmation and remove the conversation from memory.
 
-FIRST VIEWPORT: Start screen. Navy session bar (mark, "New session", Clear). Clinician holder pill. Language choices as large pills, communication mode as four large choices with icons, path (Speak freely / Answer questions) auto-defaulted by mode, one full-width "Pass to patient" primary at the bottom of the viewport within thumb reach.
+FIRST VIEWPORT: Sticky navy header with Synapse, holder, and Clear; accessibility rail beneath it. The rail exposes modes, 100/125/150% text, high contrast, and eligible read-aloud controls. At 1000px and below it collapses into a persistent “Accessibility · mode · size” row with an expandable, height-limited control area. The main area introduces the conversation and synthetic-demo status, then shows a conversation log and input panel in a 1.4:1 split above 1000px; below that, the panels stack. Sticky footer actions provide interpreter guidance and Pass to clinician. No developer inspector or device-preview controls belong in this patient flow.
 
-FORM: Pinned brief: stages and behavior fixed by docs/PRODUCT.md and the team, so no concept-seed roll ran; position 1 of 1; seed: none (pinned brief, no roll). Roll waived by the user (Zach, 2026-11-07, verbatim: "waive it").
+FORM: Ordinary extension of the incumbent world. The supplied spec fixes the composition; no new world or concept roll. Preserve the existing concept-roll waiver: Zach, 2026-11-07, verbatim “waive it”; position 1 of 1; seed: none (pinned brief, no roll).
 
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+FINISH: Surface implementation and limits are documented in `docs/COMMUNICATION_UI.md`. Browser review and project checks belong to the implementation handoff. Keep synthetic/demo language visible. Do not imply that the 0–10 pain control produces structured severity, that a manual sound cue detects the room, that interpreter guidance contacts anyone, or that the recap generates diagnoses, vitals, medication, or orders. Content lives in browser memory, clears on route hiding/pagehide, and clears after the five-minute idle window (warning during its final 30 seconds). Respect reduced motion and patient `lang`/`dir`.
