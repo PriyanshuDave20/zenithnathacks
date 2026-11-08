@@ -46,7 +46,9 @@ export function authOptions(config: AuthConfig): BetterAuthOptions {
       ipAddress: { disableIpTracking: true },
     },
     databaseHooks: {
-      user: { create: { before: async (user) => ({ data: { ...user, image: null } }) } },
+      user: { create: { before: async (user) => ({ data: {
+        ...user, name: user.name.trim().slice(0, 120) || "Clinician", image: null,
+      } }) } },
       session: { create: { before: async (session) => ({ data: { ...session, ipAddress: null, userAgent: null } }) } },
       account: {
         create: { before: async (account) => ({ data: {
