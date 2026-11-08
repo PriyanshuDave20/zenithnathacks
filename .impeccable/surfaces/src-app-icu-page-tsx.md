@@ -12,7 +12,7 @@ related_targets:
 
 # Eye communication board (/icu)
 
-Mode: Operate. The clinician setup defaults to Eye mode and hands off to an English six-choice board. Patient can enable the site-wide eye control, complete nine-point calibration, then dwell for two seconds on Yes, No, Pain, Help, Move me, or Take a break. Tap and keyboard remain available. No camera starts without opt-in.
+Mode: Operate. The clinician setup defaults to Eye mode and hands off to an English six-choice board. Patient can enable the site-wide eye control, complete 30-second moving-dot calibration, then dwell for two seconds on Yes, No, Pain, Help, Move me, or Take a break. Tap and keyboard remain available. No camera starts without opt-in.
 
 THESIS: One clear choice at a time, with room to rest. All six choices remain within reach, confirmed selection is explicit, and guidance is collapsed.
 
@@ -24,4 +24,4 @@ INPUT: Small gaze cursor carries the actual dwell ring; hover does not pretend t
 
 LANDING: The Eye example is a camera-free scripted demonstration with an automatic cursor, two-second dwell, confirmed message and clinician preview. Pause/Play, reduced-motion static example and hidden/offscreen suspension are supported.
 
-VERIFICATION: 64 tests pass, lint has zero errors. Dependency install/typecheck and live-camera/mobile/desktop visual verification remain pending; no accuracy guarantee.
+VERIFICATION: 64 tests pass, lint has zero errors. Typecheck passes; live-camera/mobile/desktop visual verification remains pending; no accuracy guarantee.

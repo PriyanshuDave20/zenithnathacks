@@ -1,5 +1,12 @@
 # Handoff Log
 
+### 2026-11-07 Zach / Codex · zach/eye-mode-showcase (pursuit calibration integration)
+- Installed MediaPipe is now present. Merged latest fetched zenith/gaze-tracking through 6294390: 30-second pursuit sweep covering viewport and visible interactive hotspots. Preserved automatic landing demo, Eye selected in clinician setup, gaze channel marking, roll/blink validation, fresh-frame timing, look-away rearm, smaller cursor and Recalibrate control.
+- Resolved overlap in gaze-layer, gaze-math and both team logs. Fit now requires 90% of pursuit samples within 22% of their targets and enough screen coverage; invalid fits require retry. Calibration begins after model startup, pauses over hidden/background gaps and uses camera-frame timing for smoothing. Disabled/ignored targets are excluded from calibration hotspots. Updated board guidance to the new sweep.
+- Checked: npm run typecheck, all 64 tests and diff whitespace pass; full lint 0 errors/188 existing bundled-skill warnings. Browser host still unavailable; localhost:3000 is not reachable from this session, so no visual/live-camera signoff.
+- Preserved local .codex/config.toml and npm's package-lock.json devOptional metadata change outside the commit.
+- Next: run the local app, visually check Eye demo at desktop/390px and clinician setup → patient board → clinician review; test the 30-second sweep with a real webcam. No measured accuracy claim.
+
 ### 2026-11-07 Zach / Codex · zach/eye-mode-showcase (gaze integration)
 - Merged fetched origin/zenith/gaze-tracking at dc4a3e5 (merge 8ce2670), preserving both handoff histories. A fresh fetch failed DNS, so later remote updates are unverified. Existing .codex/config.toml remains untouched/uncommitted.
 - Landing Eye mode now plays a synthetic Pain → Yes → Take a break sequence automatically: small moving cursor, two-second dwell ring, confirmed choice mirrored to clinician review. Pause/Play, reduced-motion still, hidden/offscreen suspension, responsive mobile/desktop playback; no camera or real input events in the demo.
@@ -85,6 +92,10 @@ Do not put secrets or patient data here.
 - Notes: `/start` now runs on `src/components/communication/` (PR #5). The old `src/components/session/*` screens are no longer imported anywhere, so edit the communication components, not session. Graphify graph: `~/.graphify/zenithnathacks/graphify-out/graph.json` (rebuild after big changes).
 - Checked: typecheck, 48 tests, lint 0 errors. Browser at 390x844: search by alias, no match, Enter-to-pick (Arabic), and the in-session dropdown.
 - Touched: `communication/{session-setup.tsx,language-search.ts,workspace.tsx,flow.css,workspace.css}`, `src/lib/mocks/data.ts`, docs.
+### 2026-11-07  zenith / Claude  zenith/gaze-tracking (calibration v3: 30s pursuit sweep over page + hotspots)
+- Done: replaced the 9-dot hold calibration with a 30-second moving dot the user follows. The path is centre first, then a pinwheel (angular order) over corners, edge midpoints and the centres of up to 10 visible interactive elements ("hotspots", via the same INTERACTIVE selector dwell uses), legs eased so the dot slows at every waypoint. Samples are recorded only while the dot is slow (eased-phase sin <= 0.6) because pursuit tracking lags a fast target and would bias the fit; features are recorded already-smoothed so calibration matches the runtime pipeline. Hundreds of samples feed the same ridge fit; its validation is now fraction-based (90% of samples within 0.35 of target) so a few blinks mid-sweep don't nulify the calibration; below 60 usable samples the default mapping is kept. Overlay shows a progress bar, a per-second countdown (DOM writes only when the integer second changes) and Skip.
+- Checked: typecheck, 56 tests, lint 0 errors. Live-webcam pass of the sweep still pending.
+- Touched: `src/components/input/gaze/gaze-layer.tsx` (waypoint builder + sweep in the rAF loop; the timer-chain effect is gone), `src/lib/input/gaze/gaze-math.ts` (fraction-based fit validation). No other lanes.
 
 ### 2026-11-07  zenith / Claude  zenith/gaze-tracking (calibration v2: vertical cues, 9 points, ridge fit)
 - Done: fixed "vertical doesn't move" + "too rigid" reported in the live webcam test. Root cause: the old vertical feature (iris vs. the moving lids) saturates, so the fit learned almost no vertical gain, and the fit validation then rejected the whole mapping and fell back to a rigid default.

@@ -126,10 +126,14 @@ export function fitGazeMapping(samples: CalibrationSample[]): GazeMapping | null
   if (!cx || !cy) return null;
   const mapping: GazeMapping = { x: [cx[0], cx[1]], y: [cy[0], cy[1], cy[2], cy[3]] };
   for (const c of [...mapping.x, ...mapping.y]) if (Math.abs(c) > 8) return null;
+  // Pursuit calibration produces hundreds of samples and a few outliers (blink mid-sweep, a
+  // head movement): require 90% of samples to land near their targets, not every one.
+  let close = 0;
   for (const s of samples) {
     const p = applyGazeMapping(mapping, s.features);
-    if (Math.abs(p.x - s.screen.x) > 0.22 || Math.abs(p.y - s.screen.y) > 0.22) return null;
+    if (Math.abs(p.x - s.screen.x) <= 0.22 && Math.abs(p.y - s.screen.y) <= 0.22) close++;
   }
+  if (close / samples.length < 0.9) return null;
   return mapping;
 }
 

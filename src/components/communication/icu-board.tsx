@@ -194,7 +194,7 @@ export function IcuBoard({
               </p>
               <h3>Eye control</h3>
               <p>
-                Use the eye button at the screen edge to enable the camera and complete the nine-point calibration. Keep the device and head steady; recalibrate after moving either.
+                Use the eye button at the screen edge to enable the camera and complete the 30-second moving-dot calibration. Keep the device and head steady; recalibrate after moving either.
               </p>
               <p className={s.notice}>
                 A ring around the gaze cursor fills while looking at a choice. A completed two-second dwell selects it. Camera frames are processed on this device; tracking can be turned off using the eye button.
