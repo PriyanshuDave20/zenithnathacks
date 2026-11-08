@@ -14,14 +14,33 @@ export class GazeTracker {
   private video: HTMLVideoElement | null = null;
   private lastFrameTime = -1;
   private detectErrors = 0;
+  private starting: Promise<void> | null = null;
+  private stopRequested = false;
 
-  /** Ask for the camera and load the face model. Throws with a plain message on failure. */
-  async start(video: HTMLVideoElement): Promise<void> {
-    this.stream = await navigator.mediaDevices.getUserMedia({
+  /** Ask for the camera and load the face model. Idempotent: concurrent calls share one start
+   * (React Strict Mode double-invokes the auto-start effect in dev), and a stop() while starting
+   * cancels the remainder instead of leaking a camera stream. Throws with a plain message. */
+  start(video: HTMLVideoElement): Promise<void> {
+    if (this.starting) return this.starting;
+    if (this.landmarker) return Promise.resolve();
+    this.stopRequested = false;
+    this.starting = this.begin(video).finally(() => {
+      this.starting = null;
+    });
+    return this.starting;
+  }
+
+  private async begin(video: HTMLVideoElement): Promise<void> {
+    const stream = await navigator.mediaDevices.getUserMedia({
       video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
       audio: false,
     });
-    video.srcObject = this.stream;
+    if (this.stopRequested) {
+      stream.getTracks().forEach((t) => t.stop());
+      return;
+    }
+    this.stream = stream;
+    video.srcObject = stream;
     video.muted = true;
     video.playsInline = true;
     await video.play();
@@ -36,7 +55,13 @@ export class GazeTracker {
     });
     // CPU delegate on purpose: the GPU/WebGL path throws intermittently mid-run on some
     // machines ("finishProcessing" errors), and XNNPACK CPU keeps ~30 fps with none of that.
-    this.landmarker = await FaceLandmarker.createFromOptions(fileset, options("CPU"));
+    const landmarker = await FaceLandmarker.createFromOptions(fileset, options("CPU"));
+    if (this.stopRequested) {
+      landmarker.close();
+      stream.getTracks().forEach((t) => t.stop());
+      return;
+    }
+    this.landmarker = landmarker;
     this.video = video;
   }
 
