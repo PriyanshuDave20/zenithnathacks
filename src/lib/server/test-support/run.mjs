@@ -15,6 +15,8 @@ const tests = [
   "src/lib/input/gaze/gaze-math.test.ts",
   "src/lib/input/gaze/dwell.test.ts",
   "src/lib/server/redact.test.ts",
+  "src/lib/server/metrics.test.ts",
+  "src/app/api/metrics/route.test.ts",
   "src/lib/server/llm.test.ts",
   "src/lib/server/providers/nvidia.test.ts",
   "src/lib/server/translation/translation.test.ts",
