@@ -14,6 +14,10 @@ export async function run(): Promise<void> {
     if (translated.translated.startsWith("Mock provider:") || reply.patientText.startsWith("Mock provider:")) {
       throw new Error("Synthetic live smoke test did not use the selected provider.");
     }
+    if (story.translateResponse.summary.symptoms.length > 0
+      && (!translated.summary.symptoms.length || translated.summary.chiefComplaint.trim().toLowerCase() === "not stated")) {
+      throw new Error("Synthetic live summary omitted the reported concern.");
+    }
     console.info(JSON.stringify({ language: story.translateRequest.context.language, schemaValid: true, elapsedMs: Date.now() - started }));
   }
 }

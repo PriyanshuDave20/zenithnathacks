@@ -50,8 +50,12 @@ The explicit maintenance commands use only the public source catalog:
 # Reuse current packs, or use --force to replace a language with a new Azure draft.
 npm run questions:translate -- es ar zh-Hans
 npm run questions:translate -- ar --force
-# Generate/reuse prebuilt voice clips; no patient text can be supplied to this command.
-npm run speech:generate -- en es ar zh-Hans
+# Generate/reuse public voice clips, publishing each language when it completes.
+# Run sequentially to stay within the shared Speech resource's request limit.
+npm run speech:generate -- zh-Hans
+npm run speech:generate -- ar
+npm run speech:generate -- en
+npm run speech:generate -- es
 # Check the complete text pipeline with checked-in synthetic fixtures, without body logs.
 npm run llm:smoke
 ```
@@ -63,6 +67,13 @@ audio is synthesized per request and never written into this directory.
 The public generator deduplicates identical wording, reuses existing clips and
 paces new synthesis calls for F0's request limits. Initial generation takes minutes
 per language and can be resumed; it is never run by a route, startup or patient flow.
+Completed files are reused without `--force`. Each successful command publishes
+that language atomically and retains other completed languages. Reload an open
+app tab after generation so it fetches the updated public manifest. Guided Read
+aloud should fetch a local `/speech/<language>-<hash>.mp3` without posting to
+`/api/speech`; dynamic free-text read-aloud still uses the speech API.
+If a local production server was already running during generation, restart it
+afterward so Next.js discovers the new public files.
 
 Microsoft currently lists 2 million characters/month for Translator F0 and
 500,000 neural TTS characters/month for Speech F0. A back-translation and multiple
