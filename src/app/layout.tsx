@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Figtree, Noto_Sans, Noto_Sans_Arabic, Noto_Sans_SC } from "next/font/google";
-import { ColourVision } from "@/components/accessibility/colour-vision";
 import { GazeLayer } from "@/components/input/gaze/gaze-layer";
 import "./globals.css";
 
@@ -39,13 +38,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      suppressHydrationWarning // the script below sets data-cvd before React starts
       className={`${figtree.variable} ${notoSans.variable} ${notoArabic.variable} ${notoSC.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {/* First paint: apply the clinician's colour-blind setting before anything is drawn (a device setting, read locally). */}
-        <script dangerouslySetInnerHTML={{ __html: 'try{var p=JSON.parse(localStorage.getItem("synapse.prefs.a11y")||"{}");document.documentElement.dataset.cvd=p.colourBlind===true?"on":"off"}catch(e){}' }} />
-        <ColourVision />
         {children}
         <GazeLayer />
       </body>

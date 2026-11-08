@@ -30,8 +30,9 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Clinician accessibility (dashboard "Accessibility"). Theme and contrast are set on <html> by HubTheme only while a
-   clinician hub page is open; the colour-blind switch is device-wide. All of it is tokens, so components follow. */
+/* Clinician hub dark theme: set on <html> by HubTheme only while a clinician hub page is open (a header button picks
+   Automatic, Light or Dark). Contrast and colour-blind modes are per-visit options on the patient form instead.
+   All of it is tokens, so components follow. */
 :root[data-theme="dark"] {
   color-scheme: dark;
   --ground: #0a1322;
@@ -55,38 +56,13 @@
 :root[data-theme="dark"] .on-navy.rounded-sheet {
   box-shadow: inset 0 0 0 1px #2b4263;
 }
-:root[data-contrast="high"] {
-  --ink: #000;
-  --ink-soft: #1c2b3c;
-  --line: #51657d;
-  --blue-soft: #d2e1f1;
-  --blue-deep: #1a4a73;
-  --blue-deeper: #0f3252;
-  --on-navy-soft: #e6eef7;
-}
-:root[data-theme="dark"][data-contrast="high"] {
-  --ground: #000;
-  --ground-2: #000;
-  --surface: #000;
-  --ink: #fff;
-  --ink-soft: #dbe6f2;
-  --line: #8fa6c0;
-  --blue-soft: #0b2540;
-  --blue-deeper: #bcd9f2;
-}
-:root[data-contrast="high"] :focus-visible {
-  outline-width: 4px;
-}
-:root[data-contrast="high"] .rounded-sheet.bg-surface {
-  outline: 2px solid var(--line);
-}
-/* Colour-blind friendly: red alerts become a vermillion-orange that stays distinct for red-green types, and a selected
+/* Colour-blind friendly (a per-visit option on the patient form, set on that visit's root element): red alerts become a vermillion-orange that stays distinct for red-green types, and a selected
    option gets a tick as well as a fill, so state never depends on hue alone. */
-:root[data-cvd="on"] {
+[data-cvd="on"] {
   --alert: #b84a00;
   --alert-deep: #7a2f00;
 }
-:root[data-cvd="on"] [role="radiogroup"] label:has(input:checked)::before {
+[data-cvd="on"] [role="radiogroup"] label:has(input:checked)::before {
   content: "";
   display: inline-block;
   width: 1em;

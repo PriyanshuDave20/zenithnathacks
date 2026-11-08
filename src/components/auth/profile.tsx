@@ -2,6 +2,7 @@
 
 import { HomeLink } from "@/components/auth/home-link";
 import { HubTheme } from "@/components/accessibility/hub-theme";
+import { ThemeToggle } from "@/components/accessibility/theme-toggle";
 
 import { LoadingStatus } from "@/components/ui/spinner";
 
@@ -92,9 +93,12 @@ function ProfileForm({ me }: { me: ClinicianProfile }) {
             <SynapseMark className="h-9 w-auto" />
           </HomeLink>
           <span className="font-display text-lg font-bold">Profile</span>
+          <span className="ms-auto">
+            <ThemeToggle />
+          </span>
           <Link
             href="/start"
-            className="press ms-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-blue px-5 text-base font-semibold text-navy hover:bg-white"
+            className="press inline-flex min-h-11 items-center gap-2 rounded-full bg-blue px-5 text-base font-semibold text-navy hover:bg-white"
           >
             Start a session <ArrowRight size={18} />
           </Link>

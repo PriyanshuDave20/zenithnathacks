@@ -9,8 +9,8 @@ import { signOut, useClinician } from "@/components/auth/api";
 import { initials } from "@/components/auth/auth-ui";
 import { SESSION_TIMEOUT_OPTIONS, setSessionTimeout, useSessionTimeout } from "@/lib/session-timeout";
 import { COPY_OPTIONS, setSummaryPrefs, useSummaryPrefs } from "@/lib/summary-prefs";
-import { setA11yPrefs, useA11yPrefs, type ContrastPref, type ThemePref } from "@/lib/accessibility-prefs";
 import { HubTheme } from "@/components/accessibility/hub-theme";
+import { ThemeToggle } from "@/components/accessibility/theme-toggle";
 import { SetupCheck } from "./setup-check";
 
 const roles = { doctor: "Doctor", nurse: "Nurse", other: "Clinician" };
@@ -21,7 +21,6 @@ export function ClinicianDashboard() {
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const timeout = useSessionTimeout();
-  const a11y = useA11yPrefs();
   const prefs = useSummaryPrefs();
   const [prefsSaved, setPrefsSaved] = useState(false);
   const savePrefs = (patch: Parameters<typeof setSummaryPrefs>[0]) => {
@@ -59,6 +58,7 @@ export function ClinicianDashboard() {
             <button type="button" onClick={onSignOut} disabled={signingOut} className="press min-h-11 rounded-full px-3 text-sm font-semibold text-on-navy-soft hover:bg-navy-raised hover:text-white disabled:cursor-wait disabled:opacity-60 sm:px-4 sm:text-base">
               {signingOut ? "Signing out…" : "Sign out"}
             </button>
+            <ThemeToggle />
           </nav>
         </div>
       </header>
@@ -103,46 +103,6 @@ export function ClinicianDashboard() {
             </Link>
           </section>
         </div>
-
-        <section aria-labelledby="a11y-title" className="mt-6 min-w-0 rounded-sheet bg-surface p-7 sm:p-8">
-          <h2 id="a11y-title" className="font-display text-xl font-semibold">Accessibility</h2>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
-            Appearance and contrast change this clinician hub. Patients keep their own display controls inside a session. Colour-blind friendly colours apply across the app on this device. Saved on this device only.
-          </p>
-          <div className="mt-5 grid gap-6 lg:grid-cols-2">
-            <fieldset className="min-w-0">
-              <legend className="text-base font-semibold">Appearance</legend>
-              <div role="radiogroup" aria-label="Appearance" className="mt-2 flex flex-wrap gap-2">
-                {([["auto", "Automatic"], ["light", "Light"], ["dark", "Dark"]] as [ThemePref, string][]).map(([id, label]) => (
-                  <label key={id} className="press relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-5 text-base font-semibold ring-1 ring-line has-[:checked]:bg-ink has-[:checked]:text-ground has-[:checked]:ring-ink has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-deeper">
-                    <input type="radio" name="a11y-theme" value={id} checked={a11y.theme === id} onChange={() => setA11yPrefs({ theme: id })} className="absolute inset-0 size-full cursor-pointer opacity-0" />
-                    {label}
-                  </label>
-                ))}
-              </div>
-              <p className="mt-2 text-sm text-ink-soft">Automatic follows this device.</p>
-            </fieldset>
-            <fieldset className="min-w-0">
-              <legend className="text-base font-semibold">Contrast</legend>
-              <div role="radiogroup" aria-label="Contrast" className="mt-2 flex flex-wrap gap-2">
-                {([["auto", "Automatic"], ["standard", "Standard"], ["high", "High"]] as [ContrastPref, string][]).map(([id, label]) => (
-                  <label key={id} className="press relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-5 text-base font-semibold ring-1 ring-line has-[:checked]:bg-ink has-[:checked]:text-ground has-[:checked]:ring-ink has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-deeper">
-                    <input type="radio" name="a11y-contrast" value={id} checked={a11y.contrast === id} onChange={() => setA11yPrefs({ contrast: id })} className="absolute inset-0 size-full cursor-pointer opacity-0" />
-                    {label}
-                  </label>
-                ))}
-              </div>
-              <p className="mt-2 text-sm text-ink-soft">High uses stronger text, borders and focus outlines.</p>
-            </fieldset>
-          </div>
-          <label className="mt-6 flex min-h-11 max-w-xl cursor-pointer items-start gap-3 text-base">
-            <input type="checkbox" checked={a11y.colourBlind} onChange={(event) => setA11yPrefs({ colourBlind: event.target.checked })} className="mt-1 size-5 shrink-0" />
-            <span>
-              Colour-blind friendly colours
-              <span className="mt-1 block text-sm text-ink-soft">Red alerts become orange and chosen options get a tick, so nothing depends on colour alone.</span>
-            </span>
-          </label>
-        </section>
 
         <section aria-labelledby="timeout-title" className="mt-6 min-w-0 rounded-sheet bg-surface p-7 sm:p-8">
           <h2 id="timeout-title" className="font-display text-xl font-semibold">Session timeout</h2>

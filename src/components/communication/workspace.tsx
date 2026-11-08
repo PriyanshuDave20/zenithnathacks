@@ -213,6 +213,8 @@ export function CommunicationWorkspace() {
   const [severity, setSeverity] = useState<number | null>(null);
   const [scale, setScale] = useState(1);
   const [highContrast, setHighContrast] = useState(false);
+  // Colour-blind friendly colours for this visit only (set on the patient form like the other display options).
+  const [colourBlind, setColourBlind] = useState(false);
   const [audio, setAudio] = useState(false);
   const [flipped, setFlipped] = useState(false);
   const [help, setHelp] = useState(false);
@@ -638,6 +640,7 @@ export function CommunicationWorkspace() {
   return (
     <div
       className={`${s.root} ${highContrast ? s.high : ""} ${mode === "deaf_hoh" ? s.caption : ""}`}
+      data-cvd={colourBlind ? "on" : undefined}
       style={{ "--scale": scale } as CSSProperties}
     >
       <header className={s.header}>
@@ -725,6 +728,13 @@ export function CommunicationWorkspace() {
                 >
                   High contrast
                 </button>
+                <button
+                  type="button"
+                  aria-pressed={colourBlind}
+                  onClick={() => setColourBlind(!colourBlind)}
+                >
+                  Colour-blind friendly
+                </button>
                 {canAudio ? (
                   <button
                     type="button"
@@ -791,6 +801,13 @@ export function CommunicationWorkspace() {
                   onClick={() => setHighContrast(!highContrast)}
                 >
                   High contrast
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={colourBlind}
+                  onClick={() => setColourBlind(!colourBlind)}
+                >
+                  Colour-blind friendly
                 </button>
                 {mode !== "deaf_hoh" && setupMode !== "icu" ? (
                   <button
