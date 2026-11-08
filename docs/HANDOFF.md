@@ -15,6 +15,12 @@ Do not put secrets or patient data here.
 
 ## Entries
 
+### 2026-11-08  Zach / Claude  zach/landing-workflow
+- Done: the landing page's "How it works" phone now shows the real session flow instead of the old mock-up. Six steps (same slots, same pinned phone and swing): 1 clinician setup (language, communication mode, start path, Male/Female body diagram, Pass to patient); 2 patient taps where it hurts ("Pregunta 1 de 5 · ¿Dónde le duele?" with the real body drawing and a chest spot, chip, Siguiente); 3 read-back ("¿Es esto lo que quiso decir?", Sí, es correcto / No, decirlo otra vez); 4 clinician summary (chief complaint, duration and pain, chest-pain flag, body map, patient's words, Patient confirmed, Reply to patient); 5 reply + teach-back; 6 Session cleared / Start a new conversation. Step titles and bodies in `home/data.ts` rewritten to match; step id `handoff` became `readback`.
+- New `BodyPicture` export in `src/components/input/body-diagram.tsx` (one read-only view, no labels) so the landing phone uses the real drawing. Hero and modes demos are unchanged (they still use `languages` / `summary` from `data.ts`).
+- Process: impeccable polish (surface brief: Persuade, six steps on one pinned phone, preserved), apple-design (one causal moment per screen: the spot pops in with the app's spring, static under reduced motion). The ui-ux-pro-max query returned nothing specific.
+- Checked: typecheck, tests, eslint; Chrome desktop, all six pinned-phone screens; 390px frame, steps 1, 2 and 4, with no horizontal overflow.
+
 ### 2026-11-08  Zach / Claude  zach/body-figure-choice
 - Done: female body drawing added (traced from Zach's `Gemini_Generated_Image_4uiyqs4uiyqs4uiy.jpeg`, not committed; same 240x480 scale as the male one, so spots keep their positions across figures). The clinician chooses on the setup screen: "Which body diagram should they see?" Male / Female (Male default, hidden for ICU). The choice flows to the guided intake diagram, the composer diagram, each conversation bubble's map and the clinician summary map.
 - Privacy: the figure choice is display only. It lives in workspace state (browser memory), is not part of any API request, contract or summary, and is never stored.
