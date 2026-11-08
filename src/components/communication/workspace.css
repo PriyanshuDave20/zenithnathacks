@@ -471,6 +471,12 @@
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  justify-content: flex-end;
+}
+/* Buttons keep their full label and never overlap: wrap to a new line before shrinking. */
+.sc-actions > button {
+  flex: 0 0 auto;
+  max-width: 100%;
 }
 .sc-handoff {
   min-height: calc(100dvh - 140px);

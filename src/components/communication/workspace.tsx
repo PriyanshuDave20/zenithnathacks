@@ -1706,7 +1706,7 @@ export function CommunicationWorkspace() {
       ) : null}
       {(stage === "conversation" || stage === "summary") &&
       isClinicianRole(role) ? (
-        <footer className={s.footer}>
+        <footer key={stage} className={s.footer}>
           <div className={s.footerInner}>
             <p>
               <Shield size={16} /> No patient data stored. Communication aid,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { clamp, ease, heartbeat, journeyPoint, mix, monitorPoint, type Stage } from "./heartbeat-geometry";
+import { ROUTE, clamp, ease, heartbeat, journeyPoint, mix, monitorPoint, type Stage } from "./heartbeat-geometry";
 
 /** Scroll-driven snake climb, followed by a compact reading-progress heartbeat. */
 export function HeartbeatJourney() {
@@ -18,6 +18,19 @@ export function HeartbeatJourney() {
     const white = css.getPropertyValue("--ground").trim();
     const mist = css.getPropertyValue("--blue-soft").trim();
     const navy = css.getPropertyValue("--navy").trim();
+    const rgb = (hex: string) => {
+      const v = hex.replace("#", "");
+      const n = parseInt(v.length === 3 ? v.split("").map((c) => c + c).join("") : v, 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    };
+    const tint = (a: string, b: string, t: number) => {
+      const [r1, g1, b1] = rgb(a);
+      const [r2, g2, b2] = rgb(b);
+      return `rgb(${Math.round(mix(r1, r2, t))} ${Math.round(mix(g1, g2, t))} ${Math.round(mix(b1, b2, t))})`;
+    };
+    // The load sequence: the staff rises, the finial settles, then the snake slithers up from the foot.
+    let t0 = -1;
+    let introDone = scrollY > 40;
     let width = 0;
     let height = 0;
     let raf = 0;
@@ -38,7 +51,8 @@ export function HeartbeatJourney() {
       const r = slot!.getBoundingClientRect();
       const copy = document.querySelector<HTMLElement>("[data-emblem-copy]")?.getBoundingClientRect();
       const phone = document.querySelector<HTMLElement>("[data-phone-rail] figure")?.getBoundingClientRect();
-      const staffHeight = clamp((phone?.height || height * 0.7) * 0.58, 290, 400);
+      // Tall enough to read as the page's emblem, but never taller than the room under the header.
+      const staffHeight = Math.min(clamp((phone?.height || height * 0.7) * 0.9, 360, 600), Math.max(300, height - 64 - 190));
       const copyCenter = copy ? copy.top + scrollY + copy.height / 2 : height / 2;
       const phoneCenter = phone ? phone.top + phone.height / 2 : height / 2;
       const gap = phone && copy ? phone.left - copy.right : 176;
@@ -46,7 +60,9 @@ export function HeartbeatJourney() {
         x: phone && copy ? (copy.right + phone.left) / 2 : r.left + r.width / 2,
         top: (copyCenter + phoneCenter) / 2 - staffHeight / 2,
         height: staffHeight,
-        radius: clamp(gap * 0.18, 23, 36),
+        // The coil, head and heartbeat rings are all capped by the measured gap, so the emblem
+        // grows taller without ever reaching the copy or the pinned phone.
+        radius: clamp(gap * 0.2, 26, 50),
       };
       lastPaint = "";
       requestPaint();
@@ -70,7 +86,7 @@ export function HeartbeatJourney() {
       const pulse = live && !reducedMotion;
       const maxScroll = document.documentElement.scrollHeight - innerHeight;
       const progress = maxScroll > 0 ? clamp(scrollY / maxScroll) : 0;
-      const launchDistance = innerHeight * 0.48;
+      const launchDistance = innerHeight * 0.7;
       const travel = clamp(scrollY / launchDistance);
       const phase = reducedMotion ? (travel > 0.02 ? 1 : 0) : travel;
       const rect = slot!.getBoundingClientRect();
@@ -83,9 +99,18 @@ export function HeartbeatJourney() {
       const entryProgress = clamp((entryX - startX) / pathLength);
       const readingProgress = hasEmblem ? clamp((scrollY - launchDistance) / Math.max(1, maxScroll - launchDistance)) : progress;
       const monitorProgress = mix(entryProgress, 1, readingProgress);
-      const stage: Stage = { ...origin, dockX: origin.x, dockY };
+      const animating = live && !reducedMotion;
+      if (t0 < 0) t0 = time;
+      if (!animating) introDone = true;
+      const introP = introDone ? 1 : clamp((time - t0 - 120) / 2100);
+      if (introP >= 1) introDone = true;
+      // Idle life fades out as the page scrolls; it only exists while the emblem stands alone in the hero.
+      const idle = animating && introDone ? 1 - ease(0, 0.1, phase) : 0;
+      const sway = idle * 0.22 * Math.sin(time / 1500);
+      const stage: Stage = { ...origin, dockX: origin.x, dockY, sway };
       const docked = hasEmblem ? ease(0.86, 1, phase) : ease(0.01, 0.15, phase);
-      const stamp = [phase, progress, stage.x, stage.top, width, height, pulse && !reducedMotion && phase > 0.65 ? Math.round(time / 40) : 0].join(":");
+      const bucket = animating ? Math.round(time / 33) : 0;
+      const stamp = [phase, progress, stage.x, stage.top, stage.height, width, height, bucket, introDone ? 1 : Math.round(introP * 200)].join(":");
       if (stamp === lastPaint) return;
       lastPaint = stamp;
       ctx!.clearRect(0, 0, width, height);
@@ -93,13 +118,16 @@ export function HeartbeatJourney() {
       if (hasEmblem && phase < 1) {
         // Resample by physical length. Parameter-space interpolation would stretch the body
         // hundreds of pixels when it reached the horizontal part of the route.
-        const route = Array.from({ length: 650 }, (_, i) => journeyPoint(i / 649 * 2.15, stage));
+        const route = Array.from({ length: 650 }, (_, i) => journeyPoint(i / 649 * ROUTE, stage));
         const lengths = [0];
         for (let i = 1; i < route.length; i++) lengths.push(lengths[i - 1] + Math.hypot(route[i].x - route[i - 1].x, route[i].y - route[i - 1].y));
-        const start = lengths[Math.round(0.84 / 2.15 * 649)];
-        const originalLength = start - lengths[Math.round(0.06 / 2.15 * 649)];
-        const bodyLength = originalLength * mix(1, 0.15, ease(0.16, 0.75, phase));
-        const headDistance = mix(start, lengths[649] + originalLength * 0.15, phase);
+        const start = lengths[Math.round(0.92 / ROUTE * 649)];
+        const originalLength = start - lengths[Math.round(0.06 / ROUTE * 649)];
+        const bodyLength = originalLength * mix(1, 0.15, ease(0.34, 0.88, phase));
+        // Intro: the head climbs from the foot to its resting place; the body trails and is simply not drawn below the foot.
+        const slither = 1 - (1 - ease(0, 1, clamp((introP - 0.3) / 0.7))) ** 3;
+        const headBase = mix(0, start, slither);
+        const headDistance = mix(headBase, lengths[649] + originalLength * 0.15, phase);
         const pointAt = (distance: number) => {
           let lo = 0;
           let hi = 649;
@@ -111,71 +139,180 @@ export function HeartbeatJourney() {
           const t = clamp((distance - lengths[i - 1]) / Math.max(0.0001, lengths[i] - lengths[i - 1]));
           return { x: mix(route[i - 1].x, route[i].x, t), y: mix(route[i - 1].y, route[i].y, t), z: mix(route[i - 1].z, route[i].z, t) };
         };
-        const points = Array.from({ length: 200 }, (_, i) => {
+        const rawPoints = Array.from({ length: 200 }, (_, i) => {
           const body = i / 199;
-          return { ...pointAt(headDistance - body * bodyLength), body };
+          const d = headDistance - body * bodyLength;
+          return { ...pointAt(d), body, d };
         });
-        const bodyAlpha = 1 - ease(0.87, 1, phase);
+        // Mid-launch the body turns into the heartbeat: it thins to the ECG's weight and the QRS profile
+        // grows along it, so what reaches the header is already the pulse, not a snake fading out.
+        const morph = ease(0.3, 0.86, phase);
+        const points = morph <= 0 ? rawPoints : rawPoints.map((p, i) => {
+          const before = rawPoints[Math.max(0, i - 1)];
+          const after = rawPoints[Math.min(rawPoints.length - 1, i + 1)];
+          const dx = after.x - before.x;
+          const dy = after.y - before.y;
+          const len = Math.hypot(dx, dy) || 1;
+          const amp = heartbeat(1 - 2 * p.body) * 11 * morph * Math.sin(Math.PI * p.body);
+          return { ...p, x: p.x - (dy / len) * amp, y: p.y + (dx / len) * amp };
+        });
+        const bodyAlpha = 1 - ease(0.93, 1, phase);
+        // Staff first: it rises from the foot (ease-out expo), then the finial settles on top.
+        const reveal = introDone ? 1 : 1 - 2 ** (-9 * clamp(introP / 0.42));
+        const finial = introDone ? 1 : ease(0.3, 0.5, introP);
+        // The staff is drawn up with the snake: one wipe from the foot to the crown, so shaft, knots and foot
+        // leave together instead of fading at different rates. A short alpha tail removes the last pixels.
+        const poleAlpha = 1 - ease(0.78, 0.86, phase);
+        const bottom = stage.top + stage.height;
         const renderBody = (front: boolean) => {
           for (let i = points.length - 1; i > 0; i--) {
             const p = points[i];
-            if ((p.z >= 0) !== front) continue;
-            const thickness = mix(2, 13, Math.sin((1 - p.body) * Math.PI / 2)) * mix(1, 0.18, docked);
-            line([p, points[i - 1]], front ? blue : dark, thickness, bodyAlpha);
-            if (front) {
-              const next = points[i - 1];
-              const length = Math.hypot(next.x - p.x, next.y - p.y) || 1;
-              const nx = -(next.y - p.y) / length;
-              const ny = (next.x - p.x) / length;
-              const offset = thickness * 0.2;
-              const highlight = [{ x: p.x + nx * offset, y: p.y + ny * offset }, { x: next.x + nx * offset, y: next.y + ny * offset }];
-              line(highlight, mist, thickness * 0.2, bodyAlpha * 0.42 * (1 - docked));
+            if ((p.z >= 0) !== front || p.d <= 0) continue;
+            const next = points[i - 1];
+            const thickness = mix(mix(3, 21, Math.sin((1 - p.body) * Math.PI / 2)), 2.6, morph);
+            const segAlpha = bodyAlpha * clamp(p.d / 70);
+            // Head end is bright signal blue; the tail settles into the deeper blue.
+            const colour = front ? tint(blue, dark, p.body * 0.32 * (1 - morph)) : tint(dark, blue, morph);
+            line([p, next], colour, thickness, segAlpha);
+            if (!front) continue;
+            const length = Math.hypot(next.x - p.x, next.y - p.y) || 1;
+            const nx = -(next.y - p.y) / length;
+            const ny = (next.x - p.x) / length;
+            const offset = thickness * 0.2;
+            line([{ x: p.x + nx * offset, y: p.y + ny * offset }, { x: next.x + nx * offset, y: next.y + ny * offset }], mist, thickness * 0.2, segAlpha * 0.42 * (1 - morph));
+            // Belly scutes: fine cross-ticks along the body read as scales without adding a texture layer.
+            if (i % 5 === 0 && thickness > 6) {
+              const half = thickness * 0.42;
+              line([{ x: p.x - nx * half, y: p.y - ny * half }, { x: p.x + nx * half, y: p.y + ny * half }], navy, 1.1, segAlpha * 0.2 * (1 - morph));
             }
           }
         };
 
         renderBody(false);
         // The staff stays upright. It disappears only after the snake has cleared it.
-        const poleAlpha = 1 - ease(0.45, 0.72, phase);
-        // A slender, softly capped staff, scaled to its neighbouring phone rather than the page.
         ctx!.save();
         ctx!.globalAlpha = poleAlpha;
-        const staffFinish = ctx!.createLinearGradient(stage.x - 5, 0, stage.x + 5, 0);
+        const clipTop = bottom + 20 - (stage.height + 70) * reveal;
+        // The wipe trails the snake's tail: nothing below where the tail has climbed to is left standing.
+        // `lead` is the tail's resting height above the foot plus the foot's own margin, so at rest the
+        // line sits exactly under the foot and the staff is whole.
+        const tail = rawPoints[rawPoints.length - 1];
+        // The gap below the tail starts at the resting margin and closes to a few pixels within the first stretch of scroll.
+        const lead = mix(stage.height * 0.06 + 24, 6, ease(0, 0.12, phase));
+        const followTail = Math.max(stage.top - 56, tail.y + lead);
+        const wipeLine = mix(bottom + 24, Math.min(bottom + 24, followTail), ease(0, 0.02, phase));
+        const clipBottom = Math.min(clipTop + stage.height + 70, wipeLine);
+        ctx!.beginPath();
+        ctx!.rect(0, clipTop, width, Math.max(0, clipBottom - clipTop));
+        ctx!.clip();
+        const staffFinish = ctx!.createLinearGradient(stage.x - 6, 0, stage.x + 6, 0);
         staffFinish.addColorStop(0, blue);
         staffFinish.addColorStop(0.3, mist);
         staffFinish.addColorStop(0.52, white);
         staffFinish.addColorStop(1, blue);
         ctx!.fillStyle = staffFinish;
+        // Shaft, slightly tapered toward the top.
         ctx!.beginPath();
-        ctx!.roundRect(stage.x - 5, stage.top - 12, 10, stage.height + 26, 5);
+        ctx!.moveTo(stage.x - 6, bottom);
+        ctx!.lineTo(stage.x - 4.5, stage.top);
+        ctx!.quadraticCurveTo(stage.x, stage.top - 3, stage.x + 4.5, stage.top);
+        ctx!.lineTo(stage.x + 6, bottom);
+        ctx!.quadraticCurveTo(stage.x, bottom + 4, stage.x - 6, bottom);
         ctx!.fill();
-        line([{ x: stage.x - 1.6, y: stage.top - 6 }, { x: stage.x - 1.6, y: stage.top + stage.height + 7 }], white, 1.1, poleAlpha * 0.55);
+        line([{ x: stage.x - 1.8, y: stage.top + 2 }, { x: stage.x - 2.2, y: bottom - 2 }], white, 1.1, poleAlpha * 0.55);
+        // Three knots, like a staff cut from a branch.
+        for (const f of [0.22, 0.47, 0.71]) {
+          ctx!.beginPath();
+          ctx!.ellipse(stage.x, stage.top + stage.height * f, 7.5, 3.2, 0, 0, Math.PI * 2);
+          ctx!.fill();
+          ctx!.strokeStyle = navy;
+          ctx!.globalAlpha = poleAlpha * 0.22;
+          ctx!.lineWidth = 1;
+          ctx!.stroke();
+          ctx!.globalAlpha = poleAlpha;
+        }
+        // Foot.
+        ctx!.beginPath();
+        ctx!.roundRect(stage.x - 10, bottom - 1, 20, 8, 4);
+        ctx!.fill();
         ctx!.restore();
+
+        // Finial: a small orb on two collars. It lands after the shaft has risen.
+        if (finial > 0) {
+          ctx!.save();
+          // The orb dissolves as the snake lifts off, so the head never passes a half-hidden ball.
+          ctx!.globalAlpha = poleAlpha * finial * (1 - ease(0.005, 0.07, phase));
+          const cx = stage.x;
+          const cy = stage.top - 15 - (1 - finial) * 14;
+          ctx!.translate(cx, cy);
+          ctx!.scale(mix(0.55, 1, finial), mix(0.55, 1, finial));
+          ctx!.translate(-cx, -cy);
+          ctx!.fillStyle = staffFinish;
+          ctx!.beginPath();
+          ctx!.roundRect(cx - 8, cy + 11, 16, 3, 1.5);
+          ctx!.roundRect(cx - 6.5, cy + 15.5, 13, 3, 1.5);
+          ctx!.fill();
+          const orb = ctx!.createRadialGradient(cx - 3, cy - 3.5, 1, cx, cy, 11);
+          orb.addColorStop(0, white);
+          orb.addColorStop(0.45, mist);
+          orb.addColorStop(1, blue);
+          ctx!.fillStyle = orb;
+          ctx!.beginPath();
+          ctx!.arc(cx, cy, 10, 0, Math.PI * 2);
+          ctx!.fill();
+          ctx!.beginPath();
+          ctx!.moveTo(cx - 3.2, cy - 8.6);
+          ctx!.quadraticCurveTo(cx, cy - 22, cx + 3.2, cy - 8.6);
+          ctx!.fill();
+          ctx!.restore();
+        }
+
         renderBody(true);
 
         const head = points[0];
         const neck = pointAt(headDistance - 3);
-        ctx!.save();
-        ctx!.translate(head.x, head.y);
-        ctx!.rotate(Math.atan2(head.y - neck.y, head.x - neck.x));
-        ctx!.globalAlpha = 1 - docked;
-        ctx!.fillStyle = blue;
-        ctx!.beginPath();
-        ctx!.ellipse(2, 0, 11, 7, 0, 0, Math.PI * 2);
-        ctx!.fill();
-        ctx!.strokeStyle = mist;
-        ctx!.lineWidth = 1;
-        ctx!.globalAlpha = (1 - docked) * 0.45;
-        ctx!.beginPath();
-        ctx!.ellipse(1, -1, 7, 3.5, 0, Math.PI * 1.1, Math.PI * 1.8);
-        ctx!.stroke();
-        ctx!.globalAlpha = 1 - docked;
-        ctx!.fillStyle = navy;
-        ctx!.beginPath();
-        ctx!.arc(6, -2.6, 1.2, 0, Math.PI * 2);
-        ctx!.fill();
-        ctx!.restore();
-
+        const headAlpha = (1 - ease(0.5, 0.8, phase)) * clamp(headDistance / 70);
+        if (headAlpha > 0) {
+          ctx!.save();
+          ctx!.translate(head.x, head.y);
+          ctx!.rotate(Math.atan2(head.y - neck.y, head.x - neck.x));
+          ctx!.scale(mix(1, 0.4, morph), mix(1, 0.4, morph));
+          ctx!.globalAlpha = headAlpha;
+          // Drawn in the body's own units: the rear is a round cap exactly as wide and as blue as the
+          // neck, so the head grows out of the body instead of sitting on it.
+          const hw = mix(3, 21, 1) / 2;
+          ctx!.globalAlpha = headAlpha;
+          const skin = ctx!.createLinearGradient(-hw, 0, hw * 2, 0);
+          skin.addColorStop(0, blue);
+          skin.addColorStop(0.5, blue);
+          skin.addColorStop(1, tint(blue, dark, 0.25));
+          ctx!.fillStyle = skin;
+          ctx!.beginPath();
+          ctx!.moveTo(0, -hw);
+          ctx!.bezierCurveTo(hw * 0.9, -hw * 1.2, hw * 1.7, -hw * 0.5, hw * 2, 0);
+          ctx!.bezierCurveTo(hw * 1.7, hw * 0.5, hw * 0.9, hw * 1.2, 0, hw);
+          ctx!.arc(0, 0, hw, Math.PI / 2, Math.PI * 1.5);
+          ctx!.closePath();
+          ctx!.fill();
+          ctx!.strokeStyle = mist;
+          ctx!.lineWidth = 1.2;
+          ctx!.lineCap = "round";
+          ctx!.globalAlpha = headAlpha * 0.5;
+          ctx!.beginPath();
+          ctx!.moveTo(hw * 0.1, -hw * 0.8);
+          ctx!.bezierCurveTo(hw * 0.9, -hw * 1.0, hw * 1.4, -hw * 0.5, hw * 1.6, -hw * 0.15);
+          ctx!.stroke();
+          ctx!.globalAlpha = headAlpha;
+          ctx!.fillStyle = navy;
+          ctx!.beginPath();
+          ctx!.ellipse(hw * 0.85, -hw * 0.38, hw * 0.21, hw * 0.25, 0, 0, Math.PI * 2);
+          ctx!.fill();
+          ctx!.fillStyle = white;
+          ctx!.beginPath();
+          ctx!.arc(hw * 0.93, -hw * 0.46, hw * 0.075, 0, Math.PI * 2);
+          ctx!.fill();
+          ctx!.restore();
+        }
       }
 
       if (docked > 0) {
@@ -216,7 +353,7 @@ export function HeartbeatJourney() {
     function frame(time: number) {
       raf = 0;
       draw(time);
-      if (live && !motion.matches && scrollY > innerHeight * 0.4128) requestPaint();
+      if (live && !motion.matches) requestPaint();
     }
     function visibility() {
       visible = !document.hidden;
@@ -229,6 +366,7 @@ export function HeartbeatJourney() {
     }
     function playback(event: Event) {
       live = (event as CustomEvent<boolean>).detail;
+      if (!live) introDone = true;
       lastPaint = "";
       requestPaint();
     }

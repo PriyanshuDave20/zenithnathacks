@@ -17,6 +17,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 | Combine PRs #15, #16 and #18 | Integration / all three PR scopes | Zach / Codex | zach/combined-prs | Done: exact source heads merged, source implementations retained, 81 tests/typecheck/lint and browser guided flow pass |
 | Frontend audit repairs (13 findings) | Frontend + input UI | Zach / Codex | zach/frontend-audit-fixes | Done: all 13 frontend findings repaired; typecheck, 83 tests, lint and focused browser regressions pass |
 | How-it-works step visuals; mobile Sign in wrap, step-card height and Pause demo overlap fixes | Frontend | Zach / Claude | zach/how-it-works-visuals | Done: per-step visual cards (holder badge, caption, staggered entrance), reduced motion respected; typecheck and 83 tests pass; eye button left for a separate fix |
+| Hero staff and snake emblem rebuild; clinician footer hardening | Frontend | Zach / Claude | zach/hero-emblem-animation | Done: taller staff, shaded snake, one fluid corkscrew exit that morphs into the header ECG, staff wipe follows the tail; reduced motion/Pause demo show the finished emblem; typecheck and 83 tests pass; real reduced-motion and 1280px not checked |
 | **Done** | | | | |
 | Repository sync, project orientation, shared skills and baseline verification | Tooling / docs | Zach / Codex | zach/setup-verification | Done: main current; all 13 project skills present; typecheck and 22 tests pass; lint 0 errors |
 | Scaffold, agent skills, landing page | Both | Prem | prem/landing-hero | Done |
