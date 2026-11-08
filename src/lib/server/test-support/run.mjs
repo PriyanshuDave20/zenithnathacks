@@ -13,6 +13,7 @@ const tests = [
   "src/lib/input/body-parts.test.ts",
   "src/lib/server/redact.test.ts",
   "src/lib/server/llm.test.ts",
+  "src/lib/server/providers/nvidia.test.ts",
   "src/lib/server/translate/translate.test.ts",
   "src/app/api/translate/route.test.ts",
   "src/lib/server/respond/respond.test.ts",
