@@ -140,6 +140,12 @@ export class GazeTracker {
     }
   }
 
+  /** Pixel geometry of the actual video, independent of CSS mirroring or display size. */
+  get frameAspectRatio() {
+    return this.video && this.video.videoWidth > 0 && this.video.videoHeight > 0
+      ? this.video.videoWidth / this.video.videoHeight : 1;
+  }
+
   /** True when inference keeps failing (bad lighting, unsupported camera) — the UI can say so. */
   get unhealthy() {
     return this.detectErrors > 60;

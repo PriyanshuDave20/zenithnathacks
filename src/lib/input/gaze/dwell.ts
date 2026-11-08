@@ -9,9 +9,11 @@ export type DwellConfig = {
   durationMs: number;
   /** Minimum cooldown after firing. The fired target also requires looking away to rearm. */
   cooldownMs: number;
+  /** Brief excursions pause rather than discard progress; no time is earned off target. */
+  jitterGraceMs?: number;
 };
 
-export const DEFAULT_DWELL: DwellConfig = { radius: 56, durationMs: 2000, cooldownMs: 900 };
+export const DEFAULT_DWELL: DwellConfig = { radius: 56, durationMs: 2000, cooldownMs: 900, jitterGraceMs: 250 };
 
 export type DwellState = {
   /** The target key currently accumulating, or null. */
@@ -22,34 +24,77 @@ export type DwellState = {
 
 export class DwellController {
   private target: string | null = null;
-  private start = 0;
+  private elapsed = 0;
+  private lastAt: number | null = null;
+  private lastInput: string | null = null;
+  private offSince = -1;
   private blockedUntil = 0;
   private firedTarget: string | null = null;
+  private awaySince = -1;
 
   constructor(private cfg: DwellConfig = DEFAULT_DWELL) {}
 
   /**
-   * Feed the current gaze target key each frame (null when the gaze is on nothing selectable or
-   * no face is seen). Passing a different key, or null, restarts the dwell from zero.
+   * Brief jitter pauses the active target's clock. A sustained move starts a fresh dwell.
+   * `valid=false` is a blink/tracking loss: it cannot count as looking away to rearm.
    */
-  update(now: number, target: string | null): DwellState {
-    if (target !== this.firedTarget) this.firedTarget = null;
-    if (target && target === this.firedTarget) return { target: null, progress: 0 };
-    if (now < this.blockedUntil) return { target: null, progress: 0 };
-    if (target !== this.target) {
-      this.target = target;
-      this.start = now;
+  update(now: number, input: string | null, valid = true): DwellState {
+    const grace = this.cfg.jitterGraceMs ?? DEFAULT_DWELL.jitterGraceMs!;
+    const dt = this.lastAt === null ? 0 : Math.max(0, now - this.lastAt);
+    const previousInput = this.lastInput;
+    const target = valid ? input : null;
+    this.lastAt = now;
+    this.lastInput = target;
+
+    if (this.firedTarget) {
+      if (!valid || target === this.firedTarget) this.awaySince = -1;
+      else {
+        if (this.awaySince < 0) this.awaySince = now;
+        if (now - this.awaySince >= grace) this.firedTarget = null;
+      }
+      if (target === this.firedTarget) return { target: null, progress: 0 };
     }
-    const progress = target ? Math.min((now - this.start) / this.cfg.durationMs, 1) : 0;
-    return { target, progress };
+    if (now < this.blockedUntil) {
+      this.lastInput = null;
+      return { target: null, progress: 0 };
+    }
+
+    if (target && target === this.target) {
+      if (this.offSince >= 0) {
+        if (now - this.offSince > grace) this.elapsed = 0;
+        // Returning from an excursion never earns the time spent away, even if it was brief.
+        this.offSince = -1;
+      } else if (previousInput === target) this.elapsed += dt;
+    } else if (this.target) {
+      if (this.offSince < 0) this.offSince = now;
+      if (now - this.offSince >= grace) {
+        this.target = target;
+        this.elapsed = 0;
+        this.offSince = -1;
+      }
+    } else {
+      this.target = target;
+      this.elapsed = 0;
+      this.offSince = -1;
+    }
+    return { target: this.target, progress: this.target ? Math.min(this.elapsed / this.cfg.durationMs, 1) : 0 };
   }
 
-  /** Call right after activating a target; blocks new dwells for the cooldown period. */
+  /** Hard interruption (hidden page, invalid head pose, recenter): discard dwell, keep rearm lock. */
+  interrupt(now: number) {
+    this.target = null;
+    this.elapsed = 0;
+    this.lastAt = now;
+    this.lastInput = null;
+    this.offSince = -1;
+    this.awaySince = -1;
+  }
+
+  /** Call right after activating a target; requires cooldown and a sustained valid look away. */
   fired(now: number) {
     this.firedTarget = this.target;
     this.blockedUntil = now + this.cfg.cooldownMs;
-    this.target = null;
-    this.start = now;
+    this.interrupt(now);
   }
 
   get config() {

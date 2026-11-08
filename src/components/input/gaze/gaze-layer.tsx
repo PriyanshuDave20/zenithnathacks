@@ -13,6 +13,8 @@ import { DwellController } from "@/lib/input/gaze/dwell";
 import {
   applyGazeMapping,
   BlinkGuard,
+  BlinkSafeBuffer,
+  calibrationFixation,
   edgeSafePx,
   FeatureSmoother,
   FixationFilter,
@@ -40,18 +42,13 @@ import { GazeTracker } from "@/lib/input/gaze/tracker";
 type Phase = "off" | "starting" | "calibrating" | "on" | "error";
 
 const RING_C = 2 * Math.PI * 22;
-/** The calibration sweep: the dot moves for this long while the eye follows it. */
+/** Nine stationary calibration targets share this duration. */
 const CALIBRATION_MS = 30000;
 /** The dot rests at the centre first, so the eye can settle before the sweep starts. */
 const CALIBRATION_LEAD_MS = 800;
-/** Record only while the dot is slow (sin of the eased segment phase) - the eye tracks a
- * moving target with lag, so fast-transit samples would teach a biased mapping. */
-const CALIBRATION_GATE = 0.6;
 /** Below this many usable samples calibration must be retried. */
 const CALIBRATION_FIT_MIN = 60;
 const CALIBRATION_MAX_SAMPLES = 800;
-/** How many interactive-element centres the sweep additionally visits. */
-const HOTSPOT_LIMIT = 10;
 const EDGE_ZONE = 88; // px band at the top/bottom edge that scrolls the page
 const NO_FACE_MS = 2500;
 const BLINK_GRACE_MS = 600; // a dropped prediction shorter than this holds the last gaze point (a blink plus its settle)
@@ -78,10 +75,8 @@ const INTERACTIVE = [
 ].join(", ");
 
 /**
- * The sweep's route: centre first, then a pinwheel over the corners, edge midpoints and the
- * centres of up to `HOTSPOT_LIMIT` visible interactive elements ("hotspots" - the places the
- * patient will actually need to look). Angular order keeps consecutive legs long, so the path
- * covers the whole viewport instead of wigglng in one corner.
+ * Nine fixed targets, centre first, then the corners and edge midpoints. No moving pursuit:
+ * each target stays put for ~3.3 seconds, with the first second ignored for eye travel.
  */
 function buildCalibrationWaypoints(): { x: number; y: number }[] {
   const w = window.innerWidth;
@@ -102,24 +97,7 @@ function buildCalibrationWaypoints(): { x: number; y: number }[] {
     { x: insetX * w, y: (1 - insetY) * h },
     { x: insetX * w, y: 0.5 * h },
   ];
-  const picked: { x: number; y: number }[] = [];
-  const minDist = 0.16 * Math.hypot(w, h);
-  for (const el of Array.from(document.querySelectorAll(INTERACTIVE))) {
-    if (picked.length >= HOTSPOT_LIMIT) break;
-    if (!selectableTarget(el)) continue;
-    const r = el.getBoundingClientRect();
-    if (r.width < 8 || r.height < 8) continue;
-    if (r.bottom < 0 || r.top > h || r.right < 0 || r.left > w) continue;
-    const x = Math.min(Math.max(r.left + r.width / 2, safe), w - safe);
-    const y = Math.min(Math.max(r.top + r.height / 2, safe), h - safe);
-    if ([...pts, ...picked].some((p) => Math.hypot(p.x - x, p.y - y) < minDist)) continue;
-    picked.push({ x, y });
-  }
-  const c = pts[0];
-  const rest = [...pts.slice(1), ...picked].sort(
-    (a, b) => Math.atan2(a.y - c.y, a.x - c.x) - Math.atan2(b.y - c.y, b.x - c.x),
-  );
-  return [c, ...rest];
+  return pts;
 }
 
 function selectableTarget(el: Element | null): Element | null {
@@ -163,9 +141,9 @@ function gazeCandidates(): { el: Element; box: GazeBox }[] {
 }
 
 const POSTURE_HINT: Record<Exclude<PostureVerdict, "ok">, string> = {
-  moved: "Your head has moved since you calibrated. Sit back where you were, or tap Recenter.",
-  distance: "You are nearer or further from the screen than when you calibrated. Sit back where you were, or tap Recenter.",
-  turned: "Your head has turned since you calibrated. Face the screen, or tap Recenter.",
+  moved: "Selection paused: your head or device moved. Return to your calibrated position, or tap Recenter.",
+  distance: "Selection paused: your distance from the screen changed. Return to your calibrated position, or tap Recenter.",
+  turned: "Selection paused: your head has turned. Face the screen as before, or tap Recenter.",
 };
 const LIGHT_HINT: Record<Exclude<LightVerdict, "ok">, string> = {
   changed: "The lighting has changed since you calibrated. Tap Recalibrate for the best accuracy.",
@@ -179,18 +157,18 @@ const goodMessage = (error: number) =>
   `Calibrated: typical error about ${percent(error)}% of the screen. If the pointer drifts to one side, tap Recenter and look at the dot.`;
 
 /** What to tell the person when calibration is refused: each reason has a different fix. */
-function calibrationFailureMessage(reason: GazeFitFailure, samples: number, error?: number, dark = false) {
+function calibrationFailureMessage(reason: GazeFitFailure, samples: number, error?: number, dark = false, axisError?: { x: number; y: number }) {
   const darkNote = dark ? " It also looks quite dark in front of the camera: add light facing you." : "";
   switch (reason) {
     case "few-samples":
-      return `The camera only caught your face for part of the sweep (${samples} usable moments). Sit centred facing the camera, in even light, with your whole face in view.${darkNote}`;
+      return `The camera only caught your eyes for part of calibration (${samples} usable moments). Sit centred facing the camera, in even light, with your whole face in view.${darkNote}`;
     case "coverage":
     case "no-spread":
-      return "Your eyes barely moved across the screen. Follow the dot with your eyes, not your head, and try again.";
+      return "The camera could not measure enough eye movement. Look at each dot until it moves, keeping your head still, and try again.";
     case "too-noisy":
-      return `Tracking was too unsteady to trust${error ? ` (about ${Math.round(error * 100)}% off)` : ""}. Try brighter, even light from the front, sit about an arm's length away, and keep your head still.${darkNote}`;
+      return `Calibration could not match your gaze to the dots${axisError ? ` (horizontal error ${percent(axisError.x)}%, vertical ${percent(axisError.y)}%)` : error ? ` (about ${percent(error)}% off)` : ""}. Look at each stationary dot until it moves, keeping your head still, then try again.${darkNote}`;
     default:
-      return "Calibration needs another try. Keep your head steady, use even lighting, and follow the dot for the full sweep.";
+      return "Calibration needs another try. Keep your head steady and look at each dot until it moves.";
   }
 }
 
@@ -222,6 +200,7 @@ export function GazeLayer() {
   const smootherRef = useRef(new OneEuroFilter(0.3, 0.002, 0.5));
   // Drops the frames of a blink, so closing eyelids cannot drag the pointer.
   const blinkGuardRef = useRef(new BlinkGuard());
+  const blinkBufferRef = useRef(new BlinkSafeBuffer());
   // A steady look is averaged over a longer window, so tracking jitter does not decide which button is chosen.
   const fixationRef = useRef(new FixationFilter());
   const stickyTargetRef = useRef<Element | null>(null);
@@ -242,6 +221,7 @@ export function GazeLayer() {
   const calibDotRef = useRef<HTMLDivElement | null>(null);
   const calibBarRef = useRef<HTMLDivElement | null>(null);
   const calibTimerRef = useRef<HTMLSpanElement | null>(null);
+  const calibDotTimerRef = useRef<HTMLSpanElement | null>(null);
   const elementKeysRef = useRef(new WeakMap<Element, number>());
   const nextKeyRef = useRef(1);
   const noFaceRef = useRef(false);
@@ -262,6 +242,7 @@ export function GazeLayer() {
     mappingRef.current = null;
     dwellRef.current = new DwellController();
     blinkGuardRef.current.reset();
+    blinkBufferRef.current.reset();
     fixationRef.current.reset();
     stickyTargetRef.current = null;
     recenterRef.current = null;
@@ -297,6 +278,7 @@ export function GazeLayer() {
     trackerRef.current?.stop();
     dwellRef.current = new DwellController();
     blinkGuardRef.current.reset();
+    blinkBufferRef.current.reset();
     fixationRef.current.reset();
     stickyTargetRef.current = null;
     recenterRef.current = null;
@@ -363,6 +345,7 @@ export function GazeLayer() {
     mappingRef.current = null;
     dwellRef.current = new DwellController();
     blinkGuardRef.current.reset();
+    blinkBufferRef.current.reset();
     fixationRef.current.reset();
     stickyTargetRef.current = null;
     recenterRef.current = null;
@@ -396,8 +379,7 @@ export function GazeLayer() {
   useEffect(() => () => { generationRef.current++; trackerRef.current?.stop(); }, []);
 
   // The render loop: face landmarks -> gaze point -> cursor -> dwell -> activation.
-  // While calibrating, the same loop also drives the moving dot the user follows and records
-  // (smoothed features, dot position) samples for the fit.
+  // During calibration the loop places stationary targets and records settled, blink-filtered readings.
   useEffect(() => {
     if (phase !== "calibrating" && phase !== "on") return;
     const dwell = dwellRef.current;
@@ -406,12 +388,12 @@ export function GazeLayer() {
     smoother.reset();
     featureSmoother.reset();
     const waypoints = phase === "calibrating" ? buildCalibrationWaypoints() : null;
-    const segCount = waypoints ? waypoints.length - 1 : 0;
-    const segMs = waypoints ? CALIBRATION_MS / segCount : 0;
     let raf = 0;
     let last = performance.now();
     let lastFeatureAt = last;
+    let lastCalibrationSampleAt = -Infinity;
     let lastSmoothed: GazeFeatures | null = null;
+    blinkBufferRef.current.reset();
 
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
@@ -421,7 +403,7 @@ export function GazeLayer() {
 
       if (phase === "calibrating" && (document.hidden || elapsed > 250)) calibStartRef.current += elapsed;
       if (document.hidden) {
-        dwell.update(now, null);
+        dwell.interrupt(now);
         lastSmoothed = null;
         return;
       }
@@ -429,12 +411,22 @@ export function GazeLayer() {
       const landmarks = trackerRef.current?.detect(now);
       if (landmarks === undefined) {
         if (now - lastFeatureAt > BLINK_GRACE_MS) {
-          dwell.update(now, null);
+          dwell.interrupt(now);
           ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
         }
         return;
       }
-      const features = blinkGuardRef.current.next(gazeFeatures(landmarks), now);
+      const observed = blinkGuardRef.current.next(gazeFeatures(landmarks, trackerRef.current?.frameAspectRatio ?? 1), now);
+      const reading = blinkBufferRef.current.next(observed, now);
+      const features = reading?.features ?? null;
+      // A blink or tracking loss invalidates filter history too: otherwise the old fixation and
+      // pre-blink offset keep pulling the recovered pointer back for up to 700 ms.
+      if (!observed) {
+        featureSmoother.reset();
+        smoother.reset();
+        fixationRef.current.reset();
+        stickyTargetRef.current = null;
+      }
       if (features) {
         lastFeatureAt = now;
         if (noFaceRef.current) {
@@ -456,7 +448,8 @@ export function GazeLayer() {
 
       // Posture and light. During calibration collect the reference; afterwards notice when the head has
       // moved or the room has changed, which is what makes the pointer drift to one side.
-      const posture = features && landmarks ? postureOf(landmarks) : null;
+      const posture = observed && landmarks ? postureOf(landmarks) : null;
+      let postureOutside = false;
       if (features && landmarks) {
         const sampleLight = () => {
           if (now - lastLumaRef.current <= 400) return null;
@@ -468,11 +461,15 @@ export function GazeLayer() {
           const level = sampleLight();
           if (level !== null) lightRef.current.addReference(level);
         } else if (posture && !recenterRef.current) {
+          const immediate = postureRef.current.outside(posture);
+          postureOutside = immediate !== "ok";
           const pv = postureRef.current.next(posture, now);
+          // Explain immediately why selection pauses, rather than waiting 1.5 seconds.
+          const warning = postureOutside ? immediate : pv;
           const level = sampleLight();
           if (level !== null) lightVerdictRef.current = lightRef.current.next(level, now);
           const lv = lightVerdictRef.current;
-          const next = pv !== "ok" ? POSTURE_HINT[pv] : lv !== "ok" ? LIGHT_HINT[lv] : null;
+          const next = warning !== "ok" ? POSTURE_HINT[warning] : lv !== "ok" ? LIGHT_HINT[lv] : null;
           if (next !== hintRef.current) {
             hintRef.current = next;
             setHint(next);
@@ -482,8 +479,7 @@ export function GazeLayer() {
 
       const cursor = cursorRef.current;
       if (phase === "calibrating" && waypoints) {
-        // Drive the moving dot along the eased waypoint path and record samples while it is
-        // slow enough for the eye to have settled on it (fast-transit samples carry lag).
+        // Hold each dot still and record only after the eyes have had time to settle.
         const t = now - calibStartRef.current - CALIBRATION_LEAD_MS;
         if (t >= CALIBRATION_MS) {
           const fit: GazeFit =
@@ -493,7 +489,7 @@ export function GazeLayer() {
           mappingRef.current = fit.mapping;
           if (!fit.mapping) {
             trackerRef.current?.stop();
-            setStatus(calibrationFailureMessage(fit.reason, samplesRef.current.length, fit.medianError, lightRef.current.isDark));
+            setStatus(calibrationFailureMessage(fit.reason, samplesRef.current.length, fit.medianError, lightRef.current.isDark, fit.axisError));
             setPhase("error");
             return;
           }
@@ -510,15 +506,16 @@ export function GazeLayer() {
           setPhase("on");
           return;
         }
-        const i = Math.min(Math.floor(Math.max(t, 0) / segMs), segCount - 1);
-        const u = t < 0 ? 0 : Math.min((t - i * segMs) / segMs, 1);
-        const eased = (1 - Math.cos(Math.PI * u)) / 2;
-        const a = waypoints[i];
-        const b = waypoints[i + 1];
-        const dx = a.x + (b.x - a.x) * eased;
-        const dy = a.y + (b.y - a.y) * eased;
+        const fixation = calibrationFixation(t, waypoints.length, CALIBRATION_MS);
+        const { x: dx, y: dy } = waypoints[fixation.index];
         const dot = calibDotRef.current;
         if (dot) dot.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+        const dotTimer = calibDotTimerRef.current;
+        if (dotTimer) {
+          const remaining = ((fixation.index + 1) * CALIBRATION_MS) / waypoints.length - t;
+          const label = `${Math.max(1, Math.ceil(remaining / 1000))}s`;
+          if (dotTimer.textContent !== label) dotTimer.textContent = label;
+        }
         const bar = calibBarRef.current;
         if (bar) bar.style.width = `${Math.min(Math.max(t / CALIBRATION_MS, 0), 1) * 100}%`;
         const timer = calibTimerRef.current;
@@ -526,9 +523,13 @@ export function GazeLayer() {
           const secs = Math.max(Math.ceil((CALIBRATION_MS - Math.max(t, 0)) / 1000), 0);
           if (timer.textContent !== `${secs}s`) timer.textContent = `${secs}s`; // avoid a DOM write every frame
         }
-        const sm = features ? featureSmoother.next(features, featureDt) : null;
-        if (sm && samplesRef.current.length < CALIBRATION_MAX_SAMPLES && t >= 0 && Math.sin(Math.PI * u) <= CALIBRATION_GATE) {
-          samplesRef.current.push({ features: sm, screen: { x: dx / window.innerWidth, y: dy / window.innerHeight } });
+        const sampleT = (reading?.at ?? now) - calibStartRef.current - CALIBRATION_LEAD_MS;
+        const sampleFixation = calibrationFixation(sampleT, waypoints.length, CALIBRATION_MS);
+        if (features && sampleFixation.collect && reading && reading.at - lastCalibrationSampleAt >= 40 && samplesRef.current.length < CALIBRATION_MAX_SAMPLES) {
+          lastCalibrationSampleAt = reading.at;
+          const target = waypoints[sampleFixation.index];
+          // Raw blink-filtered readings at a stationary target; no pursuit/filter lag to fit.
+          samplesRef.current.push({ features, screen: { x: target.x / window.innerWidth, y: target.y / window.innerHeight } });
         }
         return;
       }
@@ -537,20 +538,20 @@ export function GazeLayer() {
       // Blink grace: a dropped prediction for a moment (a blink) holds the last known gaze
       // instead of snapping the cursor; dwell still resets, so a blink cannot confirm a choice.
       const held = !features && lastSmoothed && now - lastFeatureAt <= BLINK_GRACE_MS;
-      if (!features && !held) {
-        lastSmoothed = null;
-        dwell.update(now, null);
-        cursor.style.opacity = "0.25";
-        ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
-        return;
+      if (!features) {
+        if (!held) lastSmoothed = null;
+        const paused = dwell.update(now, null, false);
+        if (ringRef.current) ringRef.current.style.strokeDashoffset = String(RING_C * (1 - paused.progress));
+        cursor.style.opacity = held ? "1" : "0.25";
+        return; // held points must not be added repeatedly to the fixation history
       }
 
-      const smoothed = features ? featureSmoother.next(features, featureDt) : lastSmoothed!;
-      if (features) lastSmoothed = smoothed;
+      const smoothed = featureSmoother.next(features, featureDt);
+      lastSmoothed = smoothed;
       const point = applyGazeMapping(mappingRef.current, smoothed);
       const x = point.x * window.innerWidth;
       const y = point.y * window.innerHeight;
-      const p0 = smoother.next({ x, y }, dt);
+      const p0 = smoother.next({ x, y }, featureDt);
       const jump = clampNum(Math.min(window.innerWidth, window.innerHeight) * 0.12, 60, 140);
       const p = fixationRef.current.next(p0, now, jump);
       cursor.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
@@ -585,8 +586,19 @@ export function GazeLayer() {
           }
           setRecentering(false);
         }
-        dwell.update(now, null);
+        dwell.interrupt(now);
         ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
+        return;
+      }
+
+      // A still-head calibration cannot predict the correction for an unseen head/device pose.
+      // Keep Recenter available by touch, but never dwell-select with an invalid mapping.
+      if (postureOutside) {
+        dwell.interrupt(now);
+        ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
+        stickyTargetRef.current = null;
+        fixationRef.current.reset();
+        cursor.style.opacity = "0.25";
         return;
       }
 
@@ -628,7 +640,7 @@ export function GazeLayer() {
         }
       }
 
-      if (state.progress >= 1 && target && key) {
+      if (state.progress >= 1 && target && key && state.target === key) {
         const box = target.getBoundingClientRect();
         activate(target, box.left + box.width / 2, box.top + box.height / 2);
         dwell.fired(now);
@@ -678,7 +690,7 @@ export function GazeLayer() {
       {phase === "calibrating" ? (
         <dialog ref={calibrationDialog} aria-modal="true" aria-label="Gaze calibration" onCancel={(event) => { event.preventDefault(); cancelCalibration(); }} className="fixed inset-0 z-[70] m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-navy/90 text-white">
           <p className="mx-auto mt-[max(4rem,10svh)] max-w-md px-6 text-center text-lg font-semibold leading-snug">
-            Follow the dot with your eyes for 30 seconds. Keep your head still and let your eyes do the moving.
+            Look at the dot and hold your gaze until it moves to the next position. Keep your head still. This takes 30 seconds.
           </p>
           <div aria-hidden="true" className="mx-auto mt-6 h-1.5 w-56 overflow-hidden rounded-full bg-white/15">
             <div ref={calibBarRef} className="h-full w-0 rounded-full bg-blue" />
@@ -693,6 +705,7 @@ export function GazeLayer() {
             style={{ transform: "translate3d(-100px, -100px, 0)" }}
           >
             <span className="block size-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue shadow-lift ring-4 ring-white/80" />
+            <span ref={calibDotTimerRef} className="absolute left-0 top-6 -translate-x-1/2 whitespace-nowrap text-sm font-semibold tabular-nums text-on-navy-soft">4s</span>
           </div>
           <button
             type="button"
