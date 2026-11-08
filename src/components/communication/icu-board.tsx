@@ -48,6 +48,7 @@ export function IcuBoard({
   // The conversation lives in memory (src/lib/eye/session.ts) so going back and forth keeps it; Clear wipes it.
   const eyeState = useEyeState();
   const [contrast, setContrast] = useState(false);
+  const [colourBlind, setColourBlind] = useState(false); // this visit only
   const [handoff, setHandoff] = useState(false);
   const [reviewed, setReviewed] = useState(false);
   useEffect(
@@ -126,7 +127,7 @@ export function IcuBoard({
     window.scrollTo({ top: 0 });
   }, [handoff, reviewed, expired]);
   return (
-    <div className={`${s.root} ${contrast ? s.high : ""}`}>
+    <div className={`${s.root} ${contrast ? s.high : ""}`} data-cvd={colourBlind ? "on" : undefined}>
       <header className={s.header} data-gaze-ignore>
         <div className={s.headerInner} style={{ paddingInline: "max(24px, var(--eye-edge, 24px))", paddingTop: "max(8px, var(--eye-edge-v, 8px))" }}>
           <Link href="/start" aria-label="Back to communication workspace">
@@ -155,6 +156,9 @@ export function IcuBoard({
               onClick={() => setContrast(!contrast)}
             >
               High contrast
+            </button>
+            <button type="button" aria-pressed={colourBlind} onClick={() => setColourBlind(!colourBlind)}>
+              Colour-blind friendly
             </button>
           </div>
         </div>

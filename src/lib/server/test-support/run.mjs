@@ -31,6 +31,7 @@ const tests = [
   "src/components/session/speech-playback.test.ts",
   "src/components/session/cloud-speech.test.ts",
   "src/lib/eye/flow.test.ts",
+  "src/lib/theme-pref.test.ts",
 ];
 
 try {

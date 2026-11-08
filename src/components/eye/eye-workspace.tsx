@@ -216,10 +216,10 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
   return (
     <section className={s.panel} aria-labelledby="icu-prompt">
       <style>{`
-        .eye-help-banner{grid-column:1/-1;margin:0;padding:28px;border-radius:20px;background:#9b1c1c;color:#fff;font-size:2.2rem;font-weight:800;line-height:1.15;text-align:center}
+        .eye-help-banner{grid-column:1/-1;margin:0;padding:28px;border-radius:20px;background:var(--alert-deep,#9b1c1c);color:#fff;font-size:2.2rem;font-weight:800;line-height:1.15;text-align:center}
         .eye-help-banner small{display:block;margin-top:10px;font-size:1.05rem;font-weight:500;opacity:.9}
         @media (prefers-reduced-motion: no-preference){.eye-help-banner{animation:eye-help-flash 1.1s ease-in-out infinite}}
-        @keyframes eye-help-flash{50%{background:#c62828}}
+        @keyframes eye-help-flash{50%{background:var(--alert,#c62828)}}
       `}</style>
       <div className={s.panelHead}>
         <div>

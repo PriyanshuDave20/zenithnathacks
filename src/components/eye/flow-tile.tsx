@@ -28,7 +28,7 @@ export function FlowTile({
     tone === "strong"
       ? { background: "var(--action)", color: "#fff", borderColor: "var(--action)" }
       : tone === "help"
-        ? { background: "#9b1c1c", color: "#fff", borderColor: "#9b1c1c" }
+        ? { background: "var(--alert-deep, #9b1c1c)", color: "#fff", borderColor: "var(--alert-deep, #9b1c1c)" }
         : null;
   return (
     <button

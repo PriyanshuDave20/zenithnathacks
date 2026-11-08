@@ -1,6 +1,8 @@
 "use client";
 
 import { HomeLink } from "@/components/auth/home-link";
+import { HubTheme } from "@/components/accessibility/hub-theme";
+import { ThemeToggle } from "@/components/accessibility/theme-toggle";
 
 import { LoadingStatus } from "@/components/ui/spinner";
 
@@ -84,15 +86,19 @@ function ProfileForm({ me }: { me: ClinicianProfile }) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-ground">
+      <HubTheme />
       <header className="on-navy sticky top-0 z-30 border-b border-white/10 bg-navy/92 pt-[env(safe-area-inset-top)] text-white backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-4 sm:px-6">
           <HomeLink className="rounded-lg" aria-label="Synapse home">
             <SynapseMark className="h-9 w-auto" />
           </HomeLink>
           <span className="font-display text-lg font-bold">Profile</span>
+          <span className="ms-auto">
+            <ThemeToggle />
+          </span>
           <Link
             href="/start"
-            className="press ms-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-blue px-5 text-base font-semibold text-navy hover:bg-white"
+            className="press inline-flex min-h-11 items-center gap-2 rounded-full bg-blue px-5 text-base font-semibold text-navy hover:bg-white"
           >
             Start a session <ArrowRight size={18} />
           </Link>

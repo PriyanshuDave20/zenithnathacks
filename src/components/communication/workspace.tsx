@@ -45,6 +45,8 @@ import "./workspace.css";
 import { workspaceStyles as s } from "./styles";
 import { EkgLoader, VoiceBars } from "./motion";
 import { SessionSetup, type SetupMode } from "./session-setup";
+import { ScaleSlider as ScaleControl } from "@/components/session/scale-slider";
+import { getSummaryPrefs } from "@/lib/summary-prefs";
 import {
   IntakeFree,
   IntakeGuided,
@@ -189,6 +191,9 @@ export function CommunicationWorkspace() {
   const [role, setRole] = useState<"patient" | "clinician">("clinician");
   const [setupMode, setSetupMode] = useState<SetupMode>("icu");
   const [patientPath, setPatientPath] = useState<"free" | "guided">("free");
+  // How this clinician likes to read and copy the summary (dashboard "How I read summaries"). Read once when the visit
+  // starts; this page only renders in the browser (it sits behind the sign-in check), so it cannot disagree with the server.
+  const [summaryPrefs] = useState(getSummaryPrefs);
   // Which body drawing the patient and clinician see. Display only: not sent or stored.
   const [bodyFigure, setBodyFigure] = useState<BodyFigure>("male");
   // The patient's last submitted report, kept so a failed translation can be retried or shown as-is.
@@ -208,6 +213,8 @@ export function CommunicationWorkspace() {
   const [severity, setSeverity] = useState<number | null>(null);
   const [scale, setScale] = useState(1);
   const [highContrast, setHighContrast] = useState(false);
+  // Colour-blind friendly colours for this visit only (set on the patient form like the other display options).
+  const [colourBlind, setColourBlind] = useState(false);
   const [audio, setAudio] = useState(false);
   const [flipped, setFlipped] = useState(false);
   const [help, setHelp] = useState(false);
@@ -576,11 +583,24 @@ export function CommunicationWorkspace() {
   const flags = [
     ...new Set(turns.flatMap((t) => t.translation?.summary.redFlags ?? [])),
   ];
+  // "Flags to check" can lead the summary (clinician setting); they are never hidden.
+  const flagsBlock = flags.length ? (
+                  <div className={s.flags}>
+                    <h3>
+                      <Alert size={20} /> Flags to check
+                    </h3>
+                    <ul>
+                      {flags.map((f) => (
+                        <li key={f}>{f}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null;
   // Every spot from every patient report, so overlapping reports read as one heat map.
   const allSpots = useMemo(() => turns.flatMap((t) => t.spots ?? []), [turns]);
   const bodyParts = spotParts(bodySpots);
   async function copySummary() {
-    const content = turns
+    const conversation = turns
       .map((t) =>
         t.translation
           ? `Patient report (demo): ${t.translation.translated}\nOriginal: ${t.original}\nBack-translation: ${t.translation.backTranslation}`
@@ -589,6 +609,19 @@ export function CommunicationWorkspace() {
             : `Clinician: ${t.original}\nTeach-back: ${t.understood ?? "Not checked"}`,
       )
       .join("\n\n");
+    // What goes on the clipboard follows the clinician's setting. Same facts as the screen, English, no identifiers.
+    const summaryText = [
+      "Synapse summary (communication aid, demo; confirm with the patient)",
+      `Chief complaint: ${latestPatient?.translation?.summary.chiefComplaint ?? "Not stated"}`,
+      `Symptoms: ${symptomList.join(", ") || "Not stated"}`,
+      `Duration: ${latestPatient?.translation?.summary.duration ?? "Not stated"}`,
+      allSpots.length ? `Where it hurts: ${spotLabels(allSpots)}` : null,
+      flags.length ? `Flags to check: ${flags.join("; ")}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const content =
+      summaryPrefs.copy === "summary" ? summaryText : summaryPrefs.copy === "both" ? `${summaryText}\n\n${conversation}` : conversation;
     try {
       await navigator.clipboard.writeText(content);
       setCopied("Copied. Review before adding to any record.");
@@ -607,6 +640,7 @@ export function CommunicationWorkspace() {
   return (
     <div
       className={`${s.root} ${highContrast ? s.high : ""} ${mode === "deaf_hoh" ? s.caption : ""}`}
+      data-cvd={colourBlind ? "on" : undefined}
       style={{ "--scale": scale } as CSSProperties}
     >
       <header className={s.header}>
@@ -694,6 +728,13 @@ export function CommunicationWorkspace() {
                 >
                   High contrast
                 </button>
+                <button
+                  type="button"
+                  aria-pressed={colourBlind}
+                  onClick={() => setColourBlind(!colourBlind)}
+                >
+                  Colour-blind friendly
+                </button>
                 {canAudio ? (
                   <button
                     type="button"
@@ -760,6 +801,13 @@ export function CommunicationWorkspace() {
                   onClick={() => setHighContrast(!highContrast)}
                 >
                   High contrast
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={colourBlind}
+                  onClick={() => setColourBlind(!colourBlind)}
+                >
+                  Colour-blind friendly
                 </button>
                 {mode !== "deaf_hoh" && setupMode !== "icu" ? (
                   <button
@@ -1314,53 +1362,19 @@ export function CommunicationWorkspace() {
                                   }[language]
                                 }
                               </h3>
-                              <div style={{ display: "grid", gap: "0.5rem", maxWidth: "30rem" }}>
-                                <output
-                                  htmlFor="pain-slider"
-                                  aria-live="polite"
-                                  style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.1, minHeight: "2.2rem" }}
-                                >
-                                  {severity === null
-                                    ? {
-                                        en: "Slide to choose",
-                                        es: "Deslice para elegir",
-                                        ar: "حرّك للاختيار",
-                                        "zh-Hans": "滑动选择",
-                                      }[language]
-                                    : severity}
-                                </output>
-                                <input
-                                  id="pain-slider"
-                                  type="range"
-                                  min={0}
-                                  max={10}
-                                  step={1}
-                                  // A slider always sits somewhere; the number reads "slide to choose" until first used.
-                                  value={severity ?? 0}
-                                  disabled={busy}
-                                  aria-labelledby="pain-question"
-                                  onChange={(event) => setSeverity(Number(event.target.value))}
-                                  onPointerDown={(event) => {
-                                    // Pressing the thumb at 0 fires no change event, so a press counts as answering 0.
-                                    if (severity === null && Number(event.currentTarget.value) === 0) setSeverity(0);
-                                  }}
-                                  dir="ltr"
-                                  style={{
-                                    width: "100%",
-                                    height: "2.75rem",
-                                    accentColor: "var(--color-blue-deeper, #1d4f91)",
-                                    cursor: busy ? "not-allowed" : "pointer",
-                                  }}
-                                />
-                                <div
-                                  aria-hidden="true"
-                                  dir="ltr"
-                                  style={{ display: "flex", justifyContent: "space-between", fontSize: "0.95rem", opacity: 0.8 }}
-                                >
-                                  <span>0</span>
-                                  <span>10</span>
-                                </div>
-                              </div>
+                              <ScaleControl
+                                value={severity}
+                                onChange={setSeverity}
+                                label={
+                                  {
+                                    en: "Pain: 0 is none, 10 is the worst",
+                                    es: "Dolor: 0 es nada, 10 es el peor",
+                                    ar: "الألم: ٠ لا ألم، ١٠ أسوأ ألم",
+                                    "zh-Hans": "疼痛：0为不痛，10为最痛",
+                                  }[language]
+                                }
+                                locale={language}
+                              />
                             </div>
                             {[guidedQuestions[1], guidedQuestions[4]].map((q) => (
                               <div key={q.id}>
@@ -1574,6 +1588,7 @@ export function CommunicationWorkspace() {
               </section>
               <section className={`${s.sheet} ${s.clinical}`}>
                 <h2>Clinician summary</h2>
+                {summaryPrefs.flagsFirst ? flagsBlock : null}
                 <dl>
                   <dt>Chief complaint · latest report</dt>
                   <dd>
@@ -1601,19 +1616,9 @@ export function CommunicationWorkspace() {
                     </p>
                   </div>
                 ) : null}
-                {flags.length ? (
-                  <div className={s.flags}>
-                    <h3>
-                      <Alert size={20} /> Flags to check
-                    </h3>
-                    <ul>
-                      {flags.map((f) => (
-                        <li key={f}>{f}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-                <h3>Original & read-back</h3>
+                {summaryPrefs.flagsFirst ? null : flagsBlock}
+                <details open={summaryPrefs.detail === "full"}>
+                  <summary style={{ cursor: "pointer", minHeight: 44, fontWeight: 700, padding: "10px 0" }}>Original & read-back</summary>
                 {turns
                   .filter((t) => t.translation)
                   .map((t) => (
@@ -1630,6 +1635,8 @@ export function CommunicationWorkspace() {
                       ))}
                     </div>
                   ))}
+                </details>
+                {/* Untranslated words are the only record of what the patient said: never collapsed, whatever the setting. */}
                 {turns
                   .filter((t) => t.role === "patient" && !t.translation)
                   .map((t) => (
