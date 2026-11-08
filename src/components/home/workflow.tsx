@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { steps } from "./data";
 import { Phone3D } from "./phone-3d";
 import { StepScreen } from "./step-screens";
+import { StepVisual } from "./step-visuals";
 
 /**
  * "How it works": six steps scroll normally on the left while the page's pinned phone (phone-rail.tsx)
@@ -32,7 +33,14 @@ export function Workflow() {
     return () => io.disconnect();
   }, []);
 
-  const goTo = (i: number) => cards.current[i]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+  const goTo = (i: number) => {
+    const root = track.current, card = cards.current[i];
+    if (!root || !card) return;
+    root.scrollTo({
+      left: root.scrollLeft + card.getBoundingClientRect().left - root.getBoundingClientRect().left - 16,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+    });
+  };
   const mPass = steps.slice(0, mActive + 1).reduce((n, s, i) => (i > 0 && s.holder !== steps[i - 1].holder ? n + 1 : n), 0);
 
   useEffect(() => {
@@ -68,7 +76,7 @@ export function Workflow() {
           <div className="lg:hidden">
             <Phone3D
               label={`Step ${mActive + 1}: ${steps[mActive].title}`}
-              className="w-[min(17rem,100%,calc((100svh-27rem)*0.48))]"
+              className="w-[min(17rem,100%,max(12.5rem,calc((100svh-27rem)*0.48)))]"
               swing={mPass}
               swingDir={steps[mActive].holder === "Patient" ? -1 : 1}
             >
@@ -84,10 +92,10 @@ export function Workflow() {
                   onClick={() => goTo(i)}
                   aria-label={`Step ${i + 1}: ${s.title}`}
                   aria-current={mActive === i ? "step" : undefined}
-                  className="grid min-h-11 min-w-8 place-items-center"
+                  className="grid min-h-11 min-w-11 place-items-center"
                 >
                   <span
-                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                    className={`h-1.5 rounded-full transition-[width,background-color] duration-500 ${
                       i === mActive ? "w-8 bg-blue-deep" : "w-1.5 bg-line"
                     }`}
                   />
@@ -96,7 +104,7 @@ export function Workflow() {
             </div>
             <ol
               ref={track}
-              className="-mx-4 mt-2 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:-mx-8 sm:scroll-px-8 sm:px-8 [&::-webkit-scrollbar]:hidden"
+              className="-mx-4 mt-2 flex items-start snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:-mx-8 sm:scroll-px-8 sm:px-8 [&::-webkit-scrollbar]:hidden"
             >
               {steps.map((s, i) => (
                 <li
@@ -116,6 +124,7 @@ export function Workflow() {
                   </span>
                   <h3 className="mt-3 font-display text-xl font-bold leading-[1.2] tracking-[-0.02em]">{s.title}</h3>
                   <p className="mt-2 text-base leading-relaxed text-ink-soft">{s.body}</p>
+                  <StepVisual step={s} />
                 </li>
               ))}
             </ol>
@@ -149,6 +158,7 @@ export function Workflow() {
                     {s.title}
                   </h3>
                   <p className="mt-3 max-w-[34rem] text-lg leading-relaxed text-ink-soft">{s.body}</p>
+                  <StepVisual step={s} active={active === i} />
                 </div>
               </li>
             ))}

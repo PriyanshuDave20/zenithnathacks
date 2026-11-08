@@ -1,27 +1,59 @@
-// The only place the session UI talks to the backend. Today it calls the frontend mocks; when
-// Backend 1's routes land, replace each body with fetch("/api/...") and keep the shapes from docs/API.md.
+// Browser adapter for the stateless API routes. The server still uses its offline mock provider.
+import { z } from "zod";
 import {
-  mockMetrics,
-  mockRespond,
-  mockTranslate,
+  RespondRequestSchema,
+  RespondResponseSchema,
+  TranslateRequestSchema,
+  TranslateResponseSchema,
   type MetricsEvent,
   type RespondRequest,
   type RespondResponse,
   type TranslateRequest,
   type TranslateResponse,
-} from "@/lib/mocks";
+} from "../../lib/contracts";
 
-export const USING_MOCKS = true;
+/** Refers to browser mock calls, not the server's model provider. */
+export const USING_MOCKS = false;
+
+async function post<T>(path: string, body: unknown, schema: z.ZodType<T>): Promise<T> {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+    credentials: "omit",
+    signal: AbortSignal.timeout(30_000),
+  });
+  // Keep server error bodies and validation details out of UI errors and logs.
+  if (!response.ok) throw new Error("Communication is unavailable. Please try again.");
+  let bodyJson: unknown;
+  try {
+    bodyJson = await response.json();
+  } catch {
+    throw new Error("Communication returned an invalid response.");
+  }
+  const parsed = schema.safeParse(bodyJson);
+  if (!parsed.success) throw new Error("Communication returned an invalid response.");
+  return parsed.data;
+}
 
 export function translate(req: TranslateRequest): Promise<TranslateResponse> {
-  return mockTranslate(req);
+  const request = TranslateRequestSchema.parse(req);
+  // Keep choices as IDs: converting them to text would incorrectly invoke the model.
+  return post("/api/translate", request, TranslateResponseSchema);
 }
 
 export function respond(req: RespondRequest): Promise<RespondResponse> {
-  return mockRespond(req);
+  return post("/api/respond", RespondRequestSchema.parse(req), RespondResponseSchema);
 }
 
-/** Anonymous counts only; never content. Failures are swallowed so metrics can never block a visit. */
+/** Shared sentinel convention in the reply prompt; never infer support from a UI phrase list. */
+export function isReplyUnavailable(response: RespondResponse): boolean {
+  return response.patientText === "Translation unavailable."
+    || response.patientText === "Mock provider: no translated reply available.";
+}
+
+/** Metrics remain disabled until their route and anonymous sink are implemented. */
 export function track(event: MetricsEvent): void {
-  mockMetrics(event).catch(() => {});
+  void event;
 }

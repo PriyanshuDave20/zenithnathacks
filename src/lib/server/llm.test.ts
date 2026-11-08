@@ -75,9 +75,17 @@ test("ordinary text prompts return deterministic canned text without echoing inp
   assert.doesNotMatch(first, /synthetic prompt/);
 });
 
+test("an already cancelled request rejects before either provider can run", async (t) => {
+  const controller = new AbortController();
+  controller.abort("Synthetic private abort reason");
+  const fetchMock = t.mock.method(globalThis, "fetch", () => { throw new Error("Must not fetch"); });
+  await assert.rejects(callModel({ system, user: "Synthetic content", signal: controller.signal }), { message: "Translation provider is unavailable." });
+  assert.equal(fetchMock.mock.callCount(), 0);
+});
+
 test("invalid tasks and unknown providers fail without exposing content", async (t) => {
   for (const user of [JSON.stringify({ task: "unknown", request: "secret" }), JSON.stringify({ task: "respond", request: {} })]) {
-    await assert.rejects(callModel({ system, user }), { message: "Mock provider expects a valid translate or respond task." });
+    await assert.rejects(callModel({ system, user }), { message: "Mock provider expects a valid synthetic task." });
   }
   const previousProvider = process.env.LLM_PROVIDER;
   process.env.LLM_PROVIDER = "secret-unconfigured-provider";
@@ -86,6 +94,6 @@ test("invalid tasks and unknown providers fail without exposing content", async 
     else process.env.LLM_PROVIDER = previousProvider;
   });
   await assert.rejects(callModel({ system, user: "secret" }), {
-    message: "LLM provider is not configured. Only the mock provider is available.",
+    message: "LLM provider is not configured.",
   });
 });

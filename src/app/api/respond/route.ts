@@ -18,7 +18,7 @@ export async function POST(request: Request): Promise<Response> {
   if (!parsed.success) return error(400, "invalid_request", "Provide a valid respond request.");
 
   try {
-    return Response.json(await respond(parsed.data), { headers });
+    return Response.json(await respond(parsed.data, undefined, undefined, request.signal), { headers });
   } catch (cause) {
     if (cause instanceof InvalidRespondInputError) return error(400, "invalid_request", cause.message);
     // Never expose provider exceptions, schema details, or message content.

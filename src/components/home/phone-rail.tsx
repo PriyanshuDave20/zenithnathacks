@@ -7,7 +7,7 @@ import { Panel, modes } from "./modes";
 import { ScreenBar } from "./phone";
 import { Phone3D } from "./phone-3d";
 import { useModesState } from "./rail-store";
-import { Keyboard } from "./icons";
+import { Captions, Handoff, Keyboard, Mic, PictoChest } from "./icons";
 import { PrivacyScreen, StepScreen } from "./step-screens";
 
 /**
@@ -21,17 +21,18 @@ import { PrivacyScreen, StepScreen } from "./step-screens";
  * Small screens keep their own in-flow phones in each section.
  */
 /** The input bar at the foot of the modes screen, in each mode's own way of answering. */
-const COMPOSER: Record<string, string> = {
-  language: "Speak or type",
-  deaf: "Type an answer",
-  literacy: "Tap a picture",
-  mute: "Tap to speak",
+const COMPOSER = {
+  language: { label: "Speak or type", Icon: Mic },
+  deaf: { label: "Type an answer", Icon: Captions },
+  literacy: { label: "Tap where it hurts", Icon: PictoChest },
+  mute: { label: "Choose a phrase", Icon: Keyboard },
+  eye: { label: "Pass to clinician", Icon: Handoff },
 };
 
 export function PhoneRail() {
   const [screen, setScreen] = useState("hero");
   const [swing, setSwing] = useState(0);
-  const { mode, lang, setLang } = useModesState();
+  const { mode, lang, setLang, eyeChoice, setEyeChoice } = useModesState();
   const current = useRef("hero");
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export function PhoneRail() {
   const holder =
     stepIndex >= 0 ? steps[stepIndex].holder : screen === "modes" || screen === "hero" ? "Patient" : "Clinician";
   const m = modes[mode];
+  const composer = COMPOSER[m.id];
 
   return (
     <div data-phone-rail className="pointer-events-none absolute inset-0 z-10 hidden lg:block">
@@ -76,7 +78,7 @@ export function PhoneRail() {
                       {steps.map((s, i) => (
                         <span
                           key={s.id}
-                          className={`h-1.5 rounded-full transition-all duration-500 ${
+                          className={`h-1.5 rounded-full transition-[width,background-color] duration-500 ${
                             i === stepIndex ? "w-8 bg-blue-deep" : "w-1.5 bg-line"
                           }`}
                         />
@@ -88,13 +90,13 @@ export function PhoneRail() {
                   content = (
                     <>
                       <ScreenBar holder="Patient" step={m.short} />
-                      <div className="min-h-0 flex-1 overflow-hidden px-4 pt-4">
-                        <Panel mode={m.id} lang={lang} setLang={setLang} compact />
+                      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4">
+                        <Panel mode={m.id} lang={lang} setLang={setLang} eyeChoice={eyeChoice} setEyeChoice={setEyeChoice} compact />
                       </div>
                       <div className="px-4 pb-5 pt-3">
                         <span className="flex min-h-12 min-w-0 items-center gap-2 whitespace-nowrap rounded-full px-4 text-base text-ink-soft ring-1 ring-line">
-                          <Keyboard size={18} className="shrink-0" />
-                          <span className="truncate">{COMPOSER[m.id]}</span>
+                          <span aria-hidden="true" className="shrink-0"><composer.Icon size={18} /></span>
+                          <span className="truncate">{composer.label}</span>
                         </span>
                       </div>
                     </>
@@ -109,7 +111,7 @@ export function PhoneRail() {
                   <>
                     <Phone3D
                       label={label}
-                      className="w-[min(20.5rem,calc((100svh-12rem)*0.48))]"
+                      className="w-[min(20.5rem,calc((100svh-17rem)*0.48))]"
                       swing={swing}
                       swingDir={holder === "Patient" ? -1 : 1}
                     >

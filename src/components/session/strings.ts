@@ -18,9 +18,17 @@ type Strings = {
   back: string;
   questionOf: (n: number, t: number) => string;
   readAloud: string;
+  speechLoading: string;
+  speechReady: string;
+  speechUnavailable: string;
+  speechFailed: string;
+  speechAudioLoading: string;
+  speechAudioReady: string;
+  speechBrowserReady: string;
   working: string;
   isThisRight: string;
   yesRight: string;
+  shareUntranslated: string;
   tryAgain: string;
   passToClinician: string;
   clinicianSays: string;
@@ -60,9 +68,17 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     back: "Back",
     questionOf: (n, t) => `Question ${n} of ${t}`,
     readAloud: "Read aloud",
+    speechLoading: "Loading this device’s voices…",
+    speechReady: "The voice is ready. Tap the audio button again.",
+    speechUnavailable: "A voice for this language isn’t available. Ask the clinician to add this language’s voice in the device’s speech settings, then try again.",
+    speechFailed: "Read aloud couldn’t start. Tap again, or ask the clinician to check this language’s voice in the device’s speech settings.",
+    speechAudioLoading: "Preparing the voice…",
+    speechAudioReady: "The audio is ready. Tap the speak button again to listen.",
+    speechBrowserReady: "The natural voice is unavailable. Tap the speak button again to try this device’s voice.",
     working: "One moment…",
     isThisRight: "Is this what you meant?",
     yesRight: "Yes, that's right",
+    shareUntranslated: "Share without translation",
     tryAgain: "No, try again",
     passToClinician: "Pass the device to the clinician",
     clinicianSays: "Your clinician says",
@@ -100,9 +116,17 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     back: "Atrás",
     questionOf: (n, t) => `Pregunta ${n} de ${t}`,
     readAloud: "Leer en voz alta",
+    speechLoading: "Cargando las voces de este dispositivo…",
+    speechReady: "La voz está lista. Toque el botón de audio otra vez.",
+    speechUnavailable: "No hay una voz disponible para este idioma. Pida al personal médico que añada una voz para este idioma en los ajustes de voz del dispositivo y vuelva a intentarlo.",
+    speechFailed: "No se pudo iniciar la lectura. Toque otra vez o pida al personal médico que revise la voz de este idioma en los ajustes del dispositivo.",
+    speechAudioLoading: "Preparando la voz…",
+    speechAudioReady: "El audio está listo. Toque el botón de voz otra vez para escuchar.",
+    speechBrowserReady: "La voz natural no está disponible. Toque el botón de voz otra vez para probar la voz de este dispositivo.",
     working: "Un momento…",
     isThisRight: "¿Es esto lo que quiso decir?",
     yesRight: "Sí, es correcto",
+    shareUntranslated: "Compartir sin traducción",
     tryAgain: "No, decirlo otra vez",
     passToClinician: "Pase el dispositivo al personal médico",
     clinicianSays: "El personal médico dice",
@@ -140,9 +164,17 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     back: "رجوع",
     questionOf: (n, t) => `السؤال ${n} من ${t}`,
     readAloud: "اقرأ بصوت عالٍ",
+    speechLoading: "جارٍ تحميل أصوات هذا الجهاز…",
+    speechReady: "الصوت جاهز. اضغط على زر الصوت مرة أخرى.",
+    speechUnavailable: "لا يتوفر صوت لهذه اللغة. اطلب من الطاقم الطبي إضافة صوت لهذه اللغة في إعدادات النطق بالجهاز، ثم حاول مرة أخرى.",
+    speechFailed: "تعذر بدء القراءة بصوت عالٍ. اضغط مرة أخرى أو اطلب من الطاقم الطبي التحقق من صوت هذه اللغة في إعدادات النطق بالجهاز.",
+    speechAudioLoading: "جارٍ تحضير الصوت…",
+    speechAudioReady: "الصوت جاهز. اضغط على زر النطق مرة أخرى للاستماع.",
+    speechBrowserReady: "الصوت الطبيعي غير متاح. اضغط على زر النطق مرة أخرى لتجربة صوت هذا الجهاز.",
     working: "لحظة من فضلك…",
     isThisRight: "هل هذا ما قصدته؟",
     yesRight: "نعم، صحيح",
+    shareUntranslated: "المشاركة بدون ترجمة",
     tryAgain: "لا، سأعيد",
     passToClinician: "سلّم الجهاز إلى الطاقم الطبي",
     clinicianSays: "يقول الطاقم الطبي",
@@ -180,9 +212,17 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     back: "返回",
     questionOf: (n, t) => `第 ${n} 题，共 ${t} 题`,
     readAloud: "朗读",
+    speechLoading: "正在加载此设备的语音…",
+    speechReady: "语音已准备好。请再次点击语音按钮。",
+    speechUnavailable: "此语言的语音不可用。请医护人员在设备的语音设置中添加此语言的语音，然后重试。",
+    speechFailed: "无法开始朗读。请再次点击，或请医护人员检查设备语音设置中此语言的语音。",
+    speechAudioLoading: "正在准备语音…",
+    speechAudioReady: "音频已准备好。请再次点击朗读按钮收听。",
+    speechBrowserReady: "自然语音暂时不可用。请再次点击朗读按钮，尝试此设备的语音。",
     working: "请稍候…",
     isThisRight: "这是您想表达的意思吗？",
     yesRight: "对，没错",
+    shareUntranslated: "不翻译，直接分享",
     tryAgain: "不对，重新说",
     passToClinician: "请把设备交给医护人员",
     clinicianSays: "医护人员说",

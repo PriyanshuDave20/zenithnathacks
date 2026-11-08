@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } fro
 import { languages, summary } from "./data";
 import { Bubble, ScreenBar } from "./phone";
 import { Phone3D } from "./phone-3d";
-import { Check, Mic, Pause, Play } from "./icons";
+import { Check, Keyboard, Mic, Pause, Play } from "./icons";
 
 // Stage timeline for one exchange; the last stage holds before the next language starts.
 const STAGE_MS = [1500, 1700, 1900, 4200];
@@ -130,7 +130,7 @@ export function HeroDemo({
         {/* Composer: the glass ends in the app's own input bar, never in dead white */}
         <div className="px-4 pb-5 pt-3">
           <span className="flex min-h-12 min-w-0 items-center gap-2 whitespace-nowrap rounded-full px-4 text-base text-ink-soft ring-1 ring-line">
-            <Mic size={18} className="shrink-0" />
+            {shown < 3 ? <Mic size={18} className="shrink-0" /> : <Keyboard size={18} className="shrink-0" />}
             <span className="truncate">{shown < 3 ? `Speak or type in ${l.english}` : "Reply to the patient"}</span>
           </span>
         </div>
@@ -164,10 +164,10 @@ export function HeroExchange() {
       {(screen, control, label) => (
         <>
           {/* Sized so the whole exchange, summary included, lands in the first phone viewport */}
-          <Phone3D label={label} className="w-[min(20.5rem,100%,calc((100svh-24rem)*0.48))]">
+          <Phone3D label={label} className="w-[min(20.5rem,100%,max(13rem,calc((100svh-24rem)*0.48)))]">
             {screen}
           </Phone3D>
-          <div className="relative z-10 -mt-6">{control}</div>
+          <div className="relative z-10 mt-4">{control}</div>
         </>
       )}
     </HeroDemo>

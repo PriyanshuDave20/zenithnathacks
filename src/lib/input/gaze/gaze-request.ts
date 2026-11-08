@@ -1,8 +1,6 @@
 // Tiny bridge between the session flow (Frontend lane) and the gaze layer (input lane): the
 // session tells us whether the doctor chose ICU mode; the layer enables eye tracking only then.
 // Plain subscription, memory only - no storage, no patient data.
-import { useEffect, useState } from "react";
-
 type Listener = (on: boolean) => void;
 
 let requested = false;
@@ -24,11 +22,4 @@ export function onGazeRequest(l: Listener) {
   return () => {
     listeners.delete(l);
   };
-}
-
-/** React binding for components that need to show whether gaze is on (status badges). */
-export function useGazeRequested(): boolean {
-  const [on, setOn] = useState(isGazeRequested());
-  useEffect(() => onGazeRequest(setOn), []);
-  return on;
 }

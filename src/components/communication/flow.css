@@ -36,6 +36,54 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  /* Room for four rows of languages; a longer list scrolls inside its box. */
+  max-height: 436px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px;
+  margin: -2px;
+}
+.sf-language-search {
+  position: relative;
+  margin-bottom: 12px;
+}
+.sf-language-search svg {
+  position: absolute;
+  inset-inline-start: 18px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+.sf-language-search input {
+  width: 100%;
+  min-height: 56px;
+  border: 1px solid var(--stroke);
+  border-radius: 99px;
+  background: var(--paper);
+  color: var(--text);
+  caret-color: var(--action);
+  padding: 0 20px 0 50px;
+  font: inherit;
+  font-size: 1.05em;
+}
+.sf-language-search input::placeholder {
+  color: var(--muted);
+}
+.sf-language-search input:focus-visible {
+  outline: 3px solid var(--action);
+  outline-offset: 2px;
+  border-color: var(--action);
+}
+.sf-language-empty {
+  grid-column: 1 / -1;
+  border-radius: 20px;
+  background: var(--wash);
+  color: var(--muted);
+  padding: 16px 20px;
+  line-height: 1.5;
 }
 .sf-languages button {
   display: flex;
@@ -397,7 +445,7 @@
     font-size: 0.9em;
   }
   .sf-icu-patient .sc-badge {
-    font-size: 0.7em;
+    font-size: 0.8em;
   }
   .sf-icu-status {
     padding: 12px 16px;

@@ -1,8 +1,10 @@
 "use client";
 
+import { HomeLink } from "@/components/auth/home-link";
+
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { SynapseWordmark } from "@/components/brand/synapse-logo";
 import {
   Mic,
@@ -20,24 +22,25 @@ import {
   PictoArm,
   PictoLeg,
 } from "@/components/home/icons";
-import { BodyDiagram } from "@/components/input/body-diagram";
+import { BodyDiagram, BodyMap } from "@/components/input/body-diagram";
+import { spotLabels, spotParts, spotsToInputs, type BodyFigure, type BodySpot } from "@/lib/input/body-parts";
 import {
   PATIENT_LANGUAGES,
-  QUESTIONS,
   PHRASES,
   CLINICIAN_REPLIES,
-  TEACH_BACK,
-  mockCanTranslateReply,
   type Mode,
   type PatientLanguage,
   type TranslateInput,
   type TranslateResponse,
   type RespondResponse,
 } from "@/lib/mocks";
-import { translate, respond } from "@/components/session/api";
+import { translate, respond, isReplyUnavailable } from "@/components/session/api";
+import { getGuidedQuestions } from "@/lib/questions/localization";
+import { displayInputs } from "@/components/session/input-display";
 import { STRINGS } from "@/components/session/strings";
 import { useRecognition, useSpeak } from "@/components/session/use-speech";
 import { useIdle } from "@/components/session/use-idle";
+import { byEnglishName } from "./language-search";
 import "./workspace.css";
 import { workspaceStyles as s } from "./styles";
 import { EkgLoader, VoiceBars } from "./motion";
@@ -46,6 +49,7 @@ import {
   IntakeFree,
   IntakeGuided,
   ConfirmReadBack,
+  SpeechFeedback,
 } from "@/components/session/patient-screens";
 import "./flow.css";
 
@@ -68,6 +72,10 @@ type Stage =
   | "summary"
   | "teachback"
   | "end";
+const NO_REPORT: { inputs: TranslateInput[]; spots: BodySpot[] } = {
+  inputs: [],
+  spots: [],
+};
 type Turn = {
   id: number;
   role: "patient" | "clinician";
@@ -77,6 +85,9 @@ type Turn = {
   response?: RespondResponse;
   understood?: string;
   unavailable?: boolean;
+  speechKind?: "dynamic" | "public";
+  /** Exact places the patient touched on the body diagram (patient turns only). */
+  spots?: BodySpot[];
 };
 const MODES: { id: Mode; label: string }[] = [
   { id: "standard", label: "Standard" },
@@ -175,9 +186,16 @@ export function CommunicationWorkspace() {
   const [language, setLanguage] = useState<PatientLanguage>("es");
   const [mode, setMode] = useState<Mode>("standard");
   const [role, setRole] = useState<"patient" | "clinician">("clinician");
-  const [setupMode, setSetupMode] = useState<SetupMode>("standard");
+  const [setupMode, setSetupMode] = useState<SetupMode>("icu");
   const [patientPath, setPatientPath] = useState<"free" | "guided">("free");
-  const [patientInputs, setPatientInputs] = useState<TranslateInput[]>([]);
+  // Which body drawing the patient and clinician see. Display only: not sent or stored.
+  const [bodyFigure, setBodyFigure] = useState<BodyFigure>("male");
+  // The patient's last submitted report, kept so a failed translation can be retried or shown as-is.
+  const [patientReport, setPatientReport] = useState<{
+    inputs: TranslateInput[];
+    spots: BodySpot[];
+  }>(NO_REPORT);
+  const patientInputs = patientReport.inputs;
   const [readyForReply, setReadyForReply] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [pending, setPending] = useState<Turn | null>(null);
@@ -198,7 +216,7 @@ export function CommunicationWorkspace() {
     "voice",
   );
   const [selected, setSelected] = useState<TranslateInput[]>([]);
-  const [bodyParts, setBodyParts] = useState<string[]>([]);
+  const [bodySpots, setBodySpots] = useState<BodySpot[]>([]);
   const [body, setBody] = useState(false);
   const [copied, setCopied] = useState("");
   const version = useRef(0);
@@ -207,10 +225,12 @@ export function CommunicationWorkspace() {
   const main = useRef<HTMLElement>(null);
   const stream = useRef<HTMLDivElement>(null);
   const meta = PATIENT_LANGUAGES.find((l) => l.code === language)!;
+  const guidedQuestions = useMemo(() => getGuidedQuestions(language), [language]);
   const text = STRINGS[language];
   const copy = COPY[language];
   const speech = useRecognition(role === "patient" ? meta.speech : "en-US");
   const voice = useSpeak();
+  const { stop: stopVoice } = voice;
   const { setFinalText } = speech;
   const canAudio = mode !== "deaf_hoh";
   const message = [draft, speech.finalText].filter(Boolean).join(" ").trim();
@@ -233,6 +253,7 @@ export function CommunicationWorkspace() {
   function clear(end = false) {
     version.current++;
     lock.current = false;
+    stopVoice();
     window.speechSynthesis?.cancel();
     speech.stop();
     speech.setFinalText("");
@@ -241,7 +262,7 @@ export function CommunicationWorkspace() {
     setPending(null);
     setDraft("");
     setSelected([]);
-    setBodyParts([]);
+    setBodySpots([]);
     setBusy(false);
     setError("");
     setClearConfirm(false);
@@ -251,7 +272,7 @@ export function CommunicationWorkspace() {
     setCopied("");
     setFlipped(false);
     setRole("clinician");
-    setPatientInputs([]);
+    setPatientReport(NO_REPORT);
     setStage(end ? "end" : "setup");
   }
   // Invalidate in-flight work on navigation, React Activity hiding, and bfcache restoration.
@@ -263,13 +284,14 @@ export function CommunicationWorkspace() {
       setPending(null);
       setDraft("");
       setSelected([]);
-      setBodyParts([]);
+      setBodySpots([]);
       setBusy(false);
       setError("");
       setSeverity(null);
       setFinalText("");
-      setPatientInputs([]);
+      setPatientReport(NO_REPORT);
       setStage("setup");
+      stopVoice();
       window.speechSynthesis?.cancel();
     };
     window.addEventListener("pagehide", wipe);
@@ -282,10 +304,25 @@ export function CommunicationWorkspace() {
       window.removeEventListener("pageshow", restore);
       wipe();
     };
-  }, [setFinalText]);
+  }, [setFinalText, stopVoice]);
+  const firstStage = useRef(true);
   useEffect(() => {
-    main.current?.focus({ preventScroll: true });
-    window.scrollTo({ top: 0 });
+    const el = main.current;
+    el?.focus({ preventScroll: true });
+    // A new screen starts at the top at once. The page's smooth scrolling is for anchor links, not for this.
+    window.scrollTo({ top: 0, behavior: "instant" });
+    const first = firstStage.current;
+    firstStage.current = false;
+    // Continuity cue: the new screen settles in. Handoff screens carry their own pass motion, so they skip it.
+    const handoffScreen = stage === "handoff" || stage === "end" || stage === "patient-ready";
+    if (first || handoffScreen || !el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    el.animate(
+      [
+        { opacity: 0.55, transform: "translateY(8px)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 240, easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
+    );
   }, [stage]);
   useEffect(() => {
     stream.current?.scrollTo({ top: stream.current.scrollHeight });
@@ -306,10 +343,11 @@ export function CommunicationWorkspace() {
     if (busy || pending) return;
     speech.stop();
     speech.setFinalText("");
+    stopVoice();
     window.speechSynthesis?.cancel();
     setDraft("");
     setSelected([]);
-    setBodyParts([]);
+    setBodySpots([]);
     setSeverity(null);
     setError("");
     setLanguage(nextLanguage);
@@ -318,6 +356,7 @@ export function CommunicationWorkspace() {
   }
   function selectMode(next: Mode) {
     speech.stop();
+    stopVoice();
     window.speechSynthesis?.cancel();
     setMode(next);
     if (next === "deaf_hoh") setAudio(false);
@@ -351,7 +390,7 @@ export function CommunicationWorkspace() {
       lock.current ||
       pending ||
       speech.listening ||
-      (!message && !selected.length && !bodyParts.length && severity === null)
+      (!message && !selected.length && !bodySpots.length && severity === null)
     )
       return;
     lock.current = true;
@@ -366,22 +405,12 @@ export function CommunicationWorkspace() {
     try {
       const id = nextId.current++;
       if (role === "patient") {
-        const painLabel = {
-          en: "Pain intensity",
-          es: "Intensidad del dolor",
-          ar: "شدة الألم",
-          "zh-Hans": "疼痛程度",
-        }[language];
         const inputs: TranslateInput[] = [
           ...(severity !== null
-            ? [{ kind: "text" as const, value: `${painLabel}: ${severity}/10` }]
+            ? [{ questionId: "how_strong", kind: "option" as const, value: `s${severity}` }]
             : []),
           ...selected,
-          ...bodyParts.map((value) => ({
-            questionId: "where",
-            kind: "option" as const,
-            value,
-          })),
+          ...spotsToInputs(bodySpots),
           ...(message ? [{ kind: "text" as const, value: message }] : []),
         ];
         const translation = await translate({ context, inputs });
@@ -392,6 +421,8 @@ export function CommunicationWorkspace() {
           language,
           original: translation.original,
           translation,
+          spots: bodySpots,
+          speechKind: inputs.some(input => input.kind === "text" || input.kind === "speech_transcript") ? "dynamic" : "public",
         });
       } else {
         const response = await respond({ context, message });
@@ -404,13 +435,13 @@ export function CommunicationWorkspace() {
             language,
             original: message,
             response,
-            unavailable: !mockCanTranslateReply(message, language),
+            unavailable: isReplyUnavailable(response),
           },
         ]);
         if (audio && canAudio)
           voice.speak(
             response.readAloudText,
-            mockCanTranslateReply(message, language) ? meta.speech : "en-US",
+            isReplyUnavailable(response) ? "en-US" : meta.speech,
           );
         setDraft("");
         speech.setFinalText("");
@@ -437,16 +468,16 @@ export function CommunicationWorkspace() {
     setDraft("");
     speech.setFinalText("");
     setSelected([]);
-    setBodyParts([]);
+    setBodySpots([]);
     setSeverity(null);
     if (audio && canAudio)
-      voice.speak(pending.translation!.backTranslation, meta.speech);
+      voice.speak(pending.translation!.backTranslation, meta.speech, { kind: pending.speechKind });
   }
-  async function submitPatient(inputs: TranslateInput[]) {
+  async function submitPatient(inputs: TranslateInput[], spots: BodySpot[] = []) {
     if (lock.current) return;
     const token = version.current;
     lock.current = true;
-    setPatientInputs(inputs);
+    setPatientReport({ inputs, spots });
     setPending(null);
     setError("");
     setBusy(true);
@@ -467,6 +498,8 @@ export function CommunicationWorkspace() {
         language,
         original: translation.original,
         translation,
+        spots,
+        speechKind: inputs.some(input => input.kind === "text" || input.kind === "speech_transcript") ? "dynamic" : "public",
       });
     } catch {
       if (version.current === token) setError("unavailable");
@@ -489,8 +522,10 @@ export function CommunicationWorkspace() {
         id: nextId.current++,
         role: "patient",
         language,
-        original: patientInputs.map((i) => i.value).join(" · "),
+        original: displayInputs(patientInputs, language),
         unavailable: true,
+        spots: patientReport.spots,
+        speechKind: patientInputs.some(input => input.kind === "text" || input.kind === "speech_transcript") ? "dynamic" : "public",
       },
     ]);
     setStage("handoff");
@@ -539,6 +574,9 @@ export function CommunicationWorkspace() {
   const flags = [
     ...new Set(turns.flatMap((t) => t.translation?.summary.redFlags ?? [])),
   ];
+  // Every spot from every patient report, so overlapping reports read as one heat map.
+  const allSpots = useMemo(() => turns.flatMap((t) => t.spots ?? []), [turns]);
+  const bodyParts = spotParts(bodySpots);
   async function copySummary() {
     const content = turns
       .map((t) =>
@@ -557,9 +595,9 @@ export function CommunicationWorkspace() {
     }
   }
 
-  const read = (value: string, lang = meta.speech) =>
+  const read = (value: string, lang = meta.speech, kind: "dynamic" | "public" = "dynamic") =>
     canAudio && voice.supported ? (
-      <button type="button" onClick={() => voice.speak(value, lang)}>
+      <button type="button" onClick={() => voice.speak(value, lang, { kind })}>
         <Speaker size={18} /> {text.readAloud}
       </button>
     ) : null;
@@ -571,9 +609,9 @@ export function CommunicationWorkspace() {
     >
       <header className={s.header}>
         <div className={s.headerInner}>
-          <Link href="/" aria-label="Synapse home">
+          <HomeLink aria-label="Synapse home">
             <SynapseWordmark accent="#77a0c4" />
-          </Link>
+          </HomeLink>
           <span className={s.holder} aria-live="polite">
             {holder} has the device
           </span>
@@ -581,12 +619,9 @@ export function CommunicationWorkspace() {
             {clearConfirm ? (
               <>
                 {
-                  <Action
-                    label={"Cancel"}
-                    onClick={() => setClearConfirm(false)}
-                  />
+                  <button type="button" onClick={() => setClearConfirm(false)}>Cancel</button>
                 }
-                {<Action label={"Clear now"} onClick={() => clear(ending)} />}
+                <button type="button" className="sc-confirmClear" onClick={() => clear(ending)}>{ending ? "End and clear" : "Clear now"}</button>
               </>
             ) : (
               <button
@@ -663,6 +698,7 @@ export function CommunicationWorkspace() {
                     aria-pressed={audio}
                     onClick={() => {
                       setAudio(!audio);
+                      stopVoice();
                       window.speechSynthesis?.cancel();
                     }}
                   >
@@ -685,12 +721,13 @@ export function CommunicationWorkspace() {
               : s.main
         }
       >
+        {canAudio ? <SpeechFeedback status={voice.status} language={language} /> : null}
         {stage === "setup" ? (
           <SessionSetup
             language={language}
             mode={setupMode}
             path={patientPath}
-            onLanguage={setLanguage}
+            onLanguage={(next) => { stopVoice(); setLanguage(next); }}
             onMode={(next) => {
               setSetupMode(next);
               if (next !== "icu") {
@@ -699,6 +736,8 @@ export function CommunicationWorkspace() {
               }
             }}
             onPath={setPatientPath}
+            figure={bodyFigure}
+            onFigure={setBodyFigure}
             displayControls={
               <div className="sf-display-controls">
                 <div role="group" aria-label="Patient text size">
@@ -741,22 +780,24 @@ export function CommunicationWorkspace() {
           <>
             <Image
               src="/communication/synapse-gemini.png"
-              alt="Synapse"
+              alt=""
               width={640}
               height={400}
             />
-            <Handoff size={48} />
+            <Handoff size={48} className="sc-pass sc-pass-to-patient" />
             <h1>Pass the device to the patient</h1>
             <p>
               {setupMode === "icu"
-                ? "The eye-selection interface is ready to preview. Eye tracking is not connected."
+                ? "Eye mode is ready. When the board opens, tap Start once you are both looking at the screen; the patient then follows a moving dot for 30 seconds."
                 : readyForReply
-                  ? `Your reply is ready in ${meta.english}.`
+                  ? lastReply?.unavailable
+                    ? "Translation is unavailable. Return to the clinician or ask for an interpreter."
+                    : `Your reply is ready in ${meta.english}.`
                   : `${meta.english} · ${MODES.find((m) => m.id === mode)?.label}. The patient will see one clear task at a time.`}
             </p>
             {setupMode === "icu" ? (
               <Link className="sf-handoff-choice" href="/icu">
-                Open patient’s ICU board
+                Open patient’s Eye mode board
               </Link>
             ) : (
               <button
@@ -796,9 +837,18 @@ export function CommunicationWorkspace() {
               </p>
             ) : null}
             {patientPath === "guided" ? (
-              <IntakeGuided lang={lang} mode={mode} onSubmit={submitPatient} />
+              <IntakeGuided
+                lang={lang}
+                mode={mode}
+                figure={bodyFigure}
+                initialInputs={patientInputs}
+                initialSpots={patientReport.spots}
+                onSubmit={submitPatient}
+                onUnavailable={() => setPatientPath("free")}
+              />
             ) : (
               <IntakeFree
+                initialPhrases={patientInputs.filter(i => i.kind === "option" && i.value.startsWith("phrase:")).map(i => i.value.slice(7))}
                 lang={lang}
                 mode={mode}
                 initialText={patientInputs
@@ -818,10 +868,13 @@ export function CommunicationWorkspace() {
               lang={lang}
               mode={mode}
               translation={pending?.translation}
+              kind={pending?.speechKind ?? "public"}
               failed={!!error && !busy}
-              fallbackText={patientInputs.map((i) => i.value).join(" · ")}
+              fallbackText={displayInputs(patientInputs, language)}
               onYes={confirmPatient}
-              onRetry={() => submitPatient(patientInputs)}
+              onRetry={() =>
+                submitPatient(patientReport.inputs, patientReport.spots)
+              }
               onTryAgain={() => {
                 setError("");
                 setStage("patient");
@@ -833,7 +886,7 @@ export function CommunicationWorkspace() {
           <>
             <Image
               src="/communication/synapse-gemini.png"
-              alt="Synapse"
+              alt=""
               width={640}
               height={400}
             />
@@ -855,11 +908,11 @@ export function CommunicationWorkspace() {
           <>
             <Image
               src="/communication/synapse-gemini.png"
-              alt="Synapse"
+              alt=""
               width={640}
               height={400}
             />
-            <Handoff size={48} />
+            <Handoff size={48} className="sc-pass sc-pass-to-clinician" />
             <h1 lang={language} dir={meta.dir}>
               {text.passToClinician}
             </h1>
@@ -978,9 +1031,16 @@ export function CommunicationWorkspace() {
                           <p className={s.translation}>
                             Demo only:{" "}
                             {t.role === "patient"
-                              ? "keyword summary, not a full translation."
-                              : "translation unavailable; shown in English."}
+                              ? t.translation?.lowConfidence.map((c) => c.reason).join(" ")
+                              : "translation unavailable; ask an interpreter."}
                           </p>
+                        ) : null}
+                        {t.spots?.length ? (
+                          <BodyMap
+                            figure={bodyFigure}
+                            spots={t.spots}
+                            className="mt-2 w-full max-w-64"
+                          />
                         ) : null}
                         {t.understood ? (
                           <p className={s.translation}>
@@ -1000,6 +1060,7 @@ export function CommunicationWorkspace() {
                               : PATIENT_LANGUAGES.find(
                                   (l) => l.code === t.language,
                                 )!.speech,
+                          t.speechKind ?? "dynamic",
                         )}
                       </article>
                     ))
@@ -1072,25 +1133,20 @@ export function CommunicationWorkspace() {
                       Clinician {role === "clinician" ? "✓" : ""}
                     </button>
                   </div>
-                  <div
-                    className={s.languages}
-                    role="group"
-                    aria-label="Patient language"
-                  >
-                    {PATIENT_LANGUAGES.map((l) => (
-                      <button
-                        type="button"
-                        key={l.code}
-                        lang={l.code}
-                        dir={l.dir}
-                        aria-pressed={language === l.code}
-                        disabled={busy || !!pending}
-                        onClick={() => changeContext(l.code)}
-                      >
-                        {l.name}
-                      </button>
-                    ))}
-                  </div>
+                  <label className={s.languages}>
+                    <span>Patient language</span>
+                    <select
+                      value={language}
+                      disabled={busy || !!pending}
+                      onChange={(e) => changeContext(e.target.value as PatientLanguage)}
+                    >
+                      {[...PATIENT_LANGUAGES].sort(byEnglishName).map((l) => (
+                        <option key={l.code} value={l.code} lang={l.code}>
+                          {l.name === l.english ? l.name : `${l.name} · ${l.english}`}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                   <div
                     lang={role === "patient" ? language : "en"}
                     dir={role === "patient" ? meta.dir : "ltr"}
@@ -1126,7 +1182,7 @@ export function CommunicationWorkspace() {
                         <div
                           className={s.tabs}
                           role="group"
-                          aria-label="Input method"
+                          aria-label={role === "patient" ? `${copy.pictures} / ${copy.type}` : "Input method"}
                         >
                           {(["voice", "pictures", "type"] as const)
                             .filter(
@@ -1187,11 +1243,17 @@ export function CommunicationWorkspace() {
                             ) : null}
                           </div>
                         ) : null}
-                        {channel === "pictures" ? (
+                        {channel === "pictures" && !guidedQuestions ? (
+                          <p className={s.notice} role="status">
+                            {text.couldNotTranslate}{" "}
+                            <button type="button" onClick={() => setChannel("type")}>{text.typeInstead}</button>
+                          </p>
+                        ) : null}
+                        {channel === "pictures" && guidedQuestions ? (
                           <>
-                            <h3>{QUESTIONS[0].text[language]}</h3>
+                            <h3>{guidedQuestions[0].text[language]}</h3>
                             <div className={s.tiles}>
-                              {QUESTIONS[0].options.map((o) => (
+                              {guidedQuestions[0].options.map((o) => (
                                 <button
                                   type="button"
                                   key={o.id}
@@ -1221,8 +1283,9 @@ export function CommunicationWorkspace() {
                             </button>
                             {body ? (
                               <BodyDiagram
+                                figure={bodyFigure}
                                 lang={language}
-                                selected={bodyParts}
+                                spots={bodySpots}
                                 regions={[
                                   "head",
                                   "neck",
@@ -1235,15 +1298,11 @@ export function CommunicationWorkspace() {
                                   "right_leg",
                                 ]}
                                 onSelect={() => {}}
-                                onToggle={(id, on) =>
-                                  setBodyParts((p) =>
-                                    on ? [...p, id] : p.filter((x) => x !== id),
-                                  )
-                                }
+                                onSpotsChange={setBodySpots}
                               />
                             ) : null}
                             <div>
-                              <h3 className={s.question}>
+                              <h3 id="pain-question" className={s.question}>
                                 {
                                   {
                                     en: "Pain: 0 is none, 10 is the worst",
@@ -1256,7 +1315,7 @@ export function CommunicationWorkspace() {
                               <div
                                 className={s.choices}
                                 role="group"
-                                aria-label="Pain intensity"
+                                aria-labelledby="pain-question"
                               >
                                 {Array.from({ length: 11 }, (_, n) => (
                                   <button
@@ -1273,7 +1332,7 @@ export function CommunicationWorkspace() {
                                 ))}
                               </div>
                             </div>
-                            {[QUESTIONS[1], QUESTIONS[4]].map((q) => (
+                            {[guidedQuestions[1], guidedQuestions[4]].map((q) => (
                               <div key={q.id}>
                                 <h3 className={s.question}>
                                   {q.text[language]}
@@ -1310,14 +1369,11 @@ export function CommunicationWorkspace() {
                                 type="button"
                                 key={p.id}
                                 disabled={busy}
+                                aria-pressed={selected.some((i) => i.questionId === "chief_complaint" && i.value === `phrase:${p.id}`)}
                                 onClick={() => {
-                                  setDraft((d) =>
-                                    [d, p.text[language]]
-                                      .filter(Boolean)
-                                      .join(" "),
-                                  );
+                                  toggle("chief_complaint", `phrase:${p.id}`);
                                   if (mode === "mute" && audio)
-                                    voice.speak(p.text[language], meta.speech);
+                                    voice.speak(p.text[language], meta.speech, { kind: "public" });
                                 }}
                               >
                                 {p.text[language]}
@@ -1330,7 +1386,10 @@ export function CommunicationWorkspace() {
                             className={s.choices}
                             style={{ marginBottom: 20 }}
                           >
-                            {CLINICIAN_REPLIES.map((r) => (
+                            {[
+                              { en: "Please point to where it hurts." },
+                              ...CLINICIAN_REPLIES,
+                            ].map((r) => (
                               <button
                                 type="button"
                                 key={r.en}
@@ -1375,7 +1434,7 @@ export function CommunicationWorkspace() {
                             speech.listening ||
                             (!message &&
                               !selected.length &&
-                              !bodyParts.length &&
+                              !bodySpots.length &&
                               severity === null)
                           }
                           onClick={send}
@@ -1390,8 +1449,8 @@ export function CommunicationWorkspace() {
                         </button>
                         {role === "clinician" ? (
                           <p className={s.notice}>
-                            Suggested replies have demo translations. Other
-                            replies are shown in English.
+                            Replies use the configured translation service.
+                            Review the meaning; some translations may be unavailable.
                           </p>
                         ) : null}
                       </>
@@ -1474,6 +1533,8 @@ export function CommunicationWorkspace() {
                           t.response?.patientText,
                       )
                       .join(". "),
+                    meta.speech,
+                    turns.filter(t => t.language === language).every(t => t.speechKind === "public") ? "public" : "dynamic",
                   )}
                 </div>
                 <p className={s.notice}>
@@ -1497,6 +1558,19 @@ export function CommunicationWorkspace() {
                       "Not stated"}
                   </dd>
                 </dl>
+                {allSpots.length ? (
+                  <div>
+                    <h3>Where it hurts · every spot the patient marked</h3>
+                    <BodyMap
+                      figure={bodyFigure}
+                      spots={allSpots}
+                      className="mt-2 w-full max-w-sm"
+                    />
+                    <p>
+                      {spotLabels(allSpots)}
+                    </p>
+                  </div>
+                ) : null}
                 {flags.length ? (
                   <div className={s.flags}>
                     <h3>
@@ -1567,7 +1641,7 @@ export function CommunicationWorkspace() {
               <Action
                 label="Ask the patient for more details"
                 onClick={() => {
-                  setPatientInputs([]);
+                  setPatientReport(NO_REPORT);
                   setReadyForReply(false);
                   setStage("patient-ready");
                 }}
@@ -1593,39 +1667,48 @@ export function CommunicationWorkspace() {
             <h1>{lastReply.response!.patientText}</h1>
             {lastReply.unavailable ? (
               <p>
-                Translation unavailable. This reply is in English; request an
-                interpreter if needed.
+                No translated reply is available. Ask a qualified interpreter to
+                help communicate the clinician’s original message.
               </p>
             ) : null}
-            <p style={{ marginBlock: 24 }}>{TEACH_BACK[lastReply.language]}</p>
-            {read(
-              lastReply.response!.readAloudText,
-              lastReply.unavailable
-                ? "en-US"
-                : PATIENT_LANGUAGES.find((l) => l.code === lastReply.language)!
-                    .speech,
+            {lastReply.unavailable ? (
+              <Action
+                label="Back to clinician"
+                onClick={() => {
+                  setRole("clinician");
+                  setStage("conversation");
+                }}
+              />
+            ) : (
+              <>
+                <p style={{ marginBlock: 24 }}>{lastReply.response!.teachBackPrompt}</p>
+                {read(
+                  lastReply.response!.readAloudText,
+                  PATIENT_LANGUAGES.find((l) => l.code === lastReply.language)!.speech,
+                )}
+                <div className={s.choices}>
+                  {(["yes", "no", "unsure"] as const).map((answer) => (
+                    <button
+                      type="button"
+                      key={answer}
+                      onClick={() => {
+                        setTurns((t) =>
+                          t.map((turn) =>
+                            turn.id === lastReply.id
+                              ? { ...turn, understood: answer }
+                              : turn,
+                          ),
+                        );
+                        setRole("patient");
+                        setStage("handoff");
+                      }}
+                    >
+                      {COPY[lastReply.language][answer]}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
-            <div className={s.choices}>
-              {(["yes", "no", "unsure"] as const).map((answer) => (
-                <button
-                  type="button"
-                  key={answer}
-                  onClick={() => {
-                    setTurns((t) =>
-                      t.map((turn) =>
-                        turn.id === lastReply.id
-                          ? { ...turn, understood: answer }
-                          : turn,
-                      ),
-                    );
-                    setRole("patient");
-                    setStage("handoff");
-                  }}
-                >
-                  {COPY[lastReply.language][answer]}
-                </button>
-              ))}
-            </div>
           </section>
         ) : null}
       </main>
@@ -1648,7 +1731,7 @@ export function CommunicationWorkspace() {
       ) : null}
       {(stage === "conversation" || stage === "summary") &&
       isClinicianRole(role) ? (
-        <footer className={s.footer}>
+        <footer key={stage} className={s.footer}>
           <div className={s.footerInner}>
             <p>
               <Shield size={16} /> No patient data stored. Communication aid,
@@ -1663,6 +1746,7 @@ export function CommunicationWorkspace() {
                       label={"Review summary"}
                       onClick={() => {
                         speech.stop();
+                        stopVoice();
                         window.speechSynthesis?.cancel();
                         setStage("summary");
                       }}
@@ -1699,6 +1783,7 @@ export function CommunicationWorkspace() {
                       onClick={() => {
                         setReadyForReply(true);
                         setStage("patient-ready");
+                        stopVoice();
                         window.speechSynthesis?.cancel();
                       }}
                       primary={true}
