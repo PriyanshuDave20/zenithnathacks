@@ -25,7 +25,7 @@ const COMPOSER: Record<string, string> = {
   language: "Speak or type",
   deaf: "Type an answer",
   literacy: "Tap a picture",
-  mute: "Tap to speak",
+  mute: "Choose a phrase",
   eye: "Pass to clinician to review",
 };
 

@@ -42,7 +42,7 @@ export const modes: { id: ModeId; tab: string; short: string; arrives: string; i
     tab: "Can’t speak",
     short: "Can’t speak",
     arrives: "Tapped phrases, spoken aloud",
-    intro: "The patient types or chooses a phrase, checks their message, then passes the device back for the clinician’s review.",
+    intro: "The patient types or chooses phrases. The device can read their message aloud, and the clinician reviews it.",
   },
   {
     id: "eye",
@@ -158,12 +158,10 @@ export function Panel({
             ))}
           </div>
           <div className="mt-1 rounded-[1.5rem] bg-surface p-4 ring-1 ring-line">
-            <p className="text-sm font-medium text-ink-soft">Message ready for read-back</p>
+            <p className="text-sm font-medium text-ink-soft">Your selected message</p>
             <p className="mt-0.5 font-display text-xl font-semibold leading-snug">Pain in my chest when I breathe, for 2 days.</p>
-            <span className="level mt-3 flex h-6 items-center gap-1" aria-hidden="true">
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((d) => (
-                <span key={d} style={{ ["--d" as string]: d }} className="h-full w-1 rounded-full bg-blue-deep" />
-              ))}
+            <span className="mt-3 flex items-center gap-2 text-sm font-semibold text-blue-deeper">
+              <Speaker size={18} /> Device reads this aloud
             </span>
           </div>
         </div>
