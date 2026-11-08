@@ -45,6 +45,7 @@ import "./workspace.css";
 import { workspaceStyles as s } from "./styles";
 import { EkgLoader, VoiceBars } from "./motion";
 import { SessionSetup, type SetupMode } from "./session-setup";
+import { ScaleSlider as ScaleControl } from "@/components/session/scale-slider";
 import { getVisitPrefs } from "@/lib/visit-prefs";
 import {
   IntakeFree,
@@ -1320,53 +1321,19 @@ export function CommunicationWorkspace() {
                                   }[language]
                                 }
                               </h3>
-                              <div style={{ display: "grid", gap: "0.5rem", maxWidth: "30rem" }}>
-                                <output
-                                  htmlFor="pain-slider"
-                                  aria-live="polite"
-                                  style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.1, minHeight: "2.2rem" }}
-                                >
-                                  {severity === null
-                                    ? {
-                                        en: "Slide to choose",
-                                        es: "Deslice para elegir",
-                                        ar: "حرّك للاختيار",
-                                        "zh-Hans": "滑动选择",
-                                      }[language]
-                                    : severity}
-                                </output>
-                                <input
-                                  id="pain-slider"
-                                  type="range"
-                                  min={0}
-                                  max={10}
-                                  step={1}
-                                  // A slider always sits somewhere; the number reads "slide to choose" until first used.
-                                  value={severity ?? 0}
-                                  disabled={busy}
-                                  aria-labelledby="pain-question"
-                                  onChange={(event) => setSeverity(Number(event.target.value))}
-                                  onPointerDown={(event) => {
-                                    // Pressing the thumb at 0 fires no change event, so a press counts as answering 0.
-                                    if (severity === null && Number(event.currentTarget.value) === 0) setSeverity(0);
-                                  }}
-                                  dir="ltr"
-                                  style={{
-                                    width: "100%",
-                                    height: "2.75rem",
-                                    accentColor: "var(--color-blue-deeper, #1d4f91)",
-                                    cursor: busy ? "not-allowed" : "pointer",
-                                  }}
-                                />
-                                <div
-                                  aria-hidden="true"
-                                  dir="ltr"
-                                  style={{ display: "flex", justifyContent: "space-between", fontSize: "0.95rem", opacity: 0.8 }}
-                                >
-                                  <span>0</span>
-                                  <span>10</span>
-                                </div>
-                              </div>
+                              <ScaleControl
+                                value={severity}
+                                onChange={setSeverity}
+                                label={
+                                  {
+                                    en: "Pain: 0 is none, 10 is the worst",
+                                    es: "Dolor: 0 es nada, 10 es el peor",
+                                    ar: "الألم: ٠ لا ألم، ١٠ أسوأ ألم",
+                                    "zh-Hans": "疼痛：0为不痛，10为最痛",
+                                  }[language]
+                                }
+                                locale={language}
+                              />
                             </div>
                             {[guidedQuestions[1], guidedQuestions[4]].map((q) => (
                               <div key={q.id}>

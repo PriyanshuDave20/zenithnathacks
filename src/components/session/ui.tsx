@@ -49,7 +49,7 @@ export function Screen({
 export function ActionBar({ children }: { children: ReactNode }) {
   return (
     <div className="pointer-events-none sticky bottom-0 z-10 mt-auto flex justify-center pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:justify-end">
-      <div className="pointer-events-auto flex w-full flex-col-reverse gap-2 rounded-[2rem] bg-surface/90 p-2 shadow-lift ring-1 ring-line backdrop-blur-xl sm:w-auto sm:flex-row sm:items-center">
+      <div className="pointer-events-auto flex w-full flex-row items-center gap-2 rounded-[2rem] bg-surface/90 p-2 shadow-lift ring-1 ring-line backdrop-blur-xl [&>*]:min-w-0 [&>*]:flex-1 sm:w-auto sm:[&>*]:flex-none">
         {children}
       </div>
     </div>

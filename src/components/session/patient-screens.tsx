@@ -35,6 +35,7 @@ import { BodyDiagram } from "@/components/input/body-diagram";
 import { RegionIdSchema } from "@/lib/contracts";
 import { getBodyPart, spotParts, spotsToInputs, type BodyFigure, type BodySpot } from "@/lib/input/body-parts";
 import { STRINGS } from "./strings";
+import { ScaleSlider as ScaleControl } from "./scale-slider";
 import { ActionBar, PrimaryButton, QuietButton, Screen, SpeechBubble, Spinner, Tile, Title } from "./ui";
 import { useRecognition, useSpeak } from "./use-speech";
 import type { SpeechPlaybackStatus } from "./speech-playback";
@@ -289,36 +290,18 @@ function ScaleSlider({
   if (numeric.length === 0) return null;
   const lo = Number(numeric[0].id.slice(1));
   const hi = Number(numeric[numeric.length - 1].id.slice(1));
-  const fmt = (n: number) => new Intl.NumberFormat(locale).format(n);
   const current = answer && /^s\d+$/.test(answer) ? Number(answer.slice(1)) : null;
   const otherPicked = other.find((o) => o.id === answer);
   return (
     <div className="mt-4 flex flex-col gap-4">
-      <div className="rounded-field bg-surface p-5 ring-1 ring-line">
-        <output htmlFor="scale-slider" aria-live="polite" className="block text-center font-display text-6xl font-bold leading-none text-ink">
-          {current === null ? "–" : fmt(current)}
-        </output>
-        <input
-          id="scale-slider"
-          type="range"
-          dir="ltr"
-          min={lo}
-          max={hi}
-          step={1}
-          value={current ?? lo}
-          aria-label={label}
-          onChange={(e) => onAnswer(`s${e.target.value}`)}
-          onPointerDown={(e) => {
-            // Pressing the thumb without moving it fires no change event, so a press counts as answering.
-            if (current === null && Number(e.currentTarget.value) === lo) onAnswer(`s${lo}`);
-          }}
-          className="mt-5 h-12 w-full cursor-pointer accent-[var(--color-blue-deep)]"
-        />
-        <div dir="ltr" aria-hidden="true" className="flex justify-between text-base font-semibold text-ink-soft">
-          <span>{fmt(lo)}</span>
-          <span>{fmt(hi)}</span>
-        </div>
-      </div>
+      <ScaleControl
+        value={current}
+        onChange={(n) => onAnswer(`s${n}`)}
+        min={lo}
+        max={hi}
+        label={label}
+        locale={locale}
+      />
       {other.map((o) => (
         <button
           key={o.id}
