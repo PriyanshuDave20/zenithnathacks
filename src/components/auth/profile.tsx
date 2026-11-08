@@ -74,8 +74,13 @@ function ProfileForm({ me }: { me: ClinicianProfile }) {
 
   async function onSignOut() {
     setSigningOut(true);
-    await signOut();
-    router.replace("/signin");
+    try {
+      await signOut();
+      router.replace("/signin");
+    } catch {
+      setError("Couldn’t sign out. Please try again.");
+      setSigningOut(false);
+    }
   }
 
   const toggleLang = (code: string) =>
@@ -174,16 +179,10 @@ function ProfileForm({ me }: { me: ClinicianProfile }) {
                 {me.plan.name}
               </h2>
               <p className="mt-3 inline-flex items-center rounded-full bg-navy-raised px-3 py-1 text-sm font-semibold text-blue">
-                {USING_MOCK_AUTH
-                  ? "Sample plan · billing not connected"
-                  : me.plan.status === "trial"
-                    ? `Free trial · ends ${me.plan.renews}`
-                    : `Active · renews ${me.plan.renews}`}
+                Free clinician account
               </p>
               <p className="mt-5 text-sm leading-relaxed text-on-navy-soft">
-                {USING_MOCK_AUTH
-                  ? "This plan is a placeholder. Plans and billing arrive with the account service."
-                  : "Manage your plan from your clinic’s billing settings."}
+                Plans and billing are not connected.
               </p>
             </section>
             <p className="flex items-start gap-3 rounded-[1.5rem] bg-ground-2 p-5 text-base leading-relaxed text-ink-soft">

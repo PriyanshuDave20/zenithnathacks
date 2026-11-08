@@ -55,11 +55,26 @@ reload, cold start or instance recycling can clear them. Multiple workers or
 deployments do not share a durable total. This is a demo sink, not a persistent
 analytics system.
 
-This task is Backend 1 only. `src/components/session/api.ts` still has a disabled
-`track()` adapter; the main frontend does not automatically submit these events.
-The frontend owner must separately wire the desired events and handle the empty
-204 response without blocking the conversation. That integration should not add
-patient/session identifiers or retries that are assumed to deduplicate.
+The live frontend now submits events through `src/components/session/api.ts`.
+`track()` validates and projects only event/mode/optional timing, omits credentials,
+uses no-store, and silently abandons failures after five seconds. There is no
+response parsing, retry, persistent queue, identifier or patient content.
 
-Real clinician authentication and clinician profile storage in PostgreSQL are
-separate work. They must not attach clinician or patient identifiers to metrics.
+The workspace starts its local clock when the patient first presses **I’m ready**
+after setup. **First message** means the patient confirms the translated report or
+explicitly shares their untranslated words. **Teach-back confirmed** means an
+affirmative comprehension response after a clinician reply. Each event fires once
+per active local flow, using the initial mode as its cohort. Returning to setup
+within that flow does not create another event. Clear, expiry and navigation
+cleanup reset the clock/flags. The unused legacy session component has been removed.
+
+Eye starts on a deliberate choice on the patient board, including selecting its
+mode or interacting with a resumed board. Its first new committed choice counts
+as first message, including muted choices. Merely mounting an old log or updating
+speech status does not count. Eye has no clinician-reply teach-back step, so a
+generic Yes on that board does **not** emit teach-back confirmation. Returning to
+a preserved Eye board creates a new local flow only on the next deliberate choice;
+these counts describe frontend flows rather than unique clinical visits.
+
+Only mode, elapsed clock and once-flags live in the browser's memory. PostgreSQL
+clinician accounts remain separate and never attach identifiers to these events.

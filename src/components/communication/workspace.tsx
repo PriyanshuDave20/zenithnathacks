@@ -34,7 +34,8 @@ import {
   type TranslateResponse,
   type RespondResponse,
 } from "@/lib/mocks";
-import { translate, respond, isReplyUnavailable, track, elapsedSince, startClock } from "@/components/session/api";
+import { translate, respond, isReplyUnavailable } from "@/components/session/api";
+import { SessionMetrics } from "@/components/session/metrics-lifecycle";
 import { getGuidedQuestions } from "@/lib/questions/localization";
 import { displayInputs } from "@/components/session/input-display";
 import { STRINGS } from "@/components/session/strings";
@@ -230,10 +231,8 @@ export function CommunicationWorkspace() {
   const [body, setBody] = useState(false);
   const [copied, setCopied] = useState("");
   const version = useRef(0);
+  const metrics = useRef(new SessionMetrics());
   const lock = useRef(false);
-  // Anonymous metrics bookkeeping for this visit: when it started and whether the first message was counted.
-  const metricsStart = useRef<number | null>(null);
-  const firstMessageCounted = useRef(false);
   const nextId = useRef(1);
   const main = useRef<HTMLElement>(null);
   const stream = useRef<HTMLDivElement>(null);
@@ -264,8 +263,7 @@ export function CommunicationWorkspace() {
   };
 
   function clear(end = false) {
-    metricsStart.current = null;
-    firstMessageCounted.current = false;
+    metrics.current.reset();
     version.current++;
     lock.current = false;
     stopVoice();
@@ -293,6 +291,7 @@ export function CommunicationWorkspace() {
   // Invalidate in-flight work on navigation, React Activity hiding, and bfcache restoration.
   useEffect(() => {
     const wipe = () => {
+      metrics.current.reset();
       version.current++;
       lock.current = false;
       setTurns([]);
@@ -412,10 +411,6 @@ export function CommunicationWorkspace() {
     lock.current = true;
     setBusy(true);
     setError("");
-    if (!firstMessageCounted.current) {
-      firstMessageCounted.current = true;
-      track({ event: "first_message", mode, msSinceStart: elapsedSince(metricsStart.current) });
-    }
     const token = version.current;
     const context = {
       language,
@@ -482,6 +477,7 @@ export function CommunicationWorkspace() {
   }
   function confirm() {
     if (!pending) return;
+    metrics.current.firstMessage();
     setTurns((current) => [...current, pending]);
     setStage("handoff");
     setPending(null);
@@ -536,6 +532,8 @@ export function CommunicationWorkspace() {
       return;
     }
     // A failed service must still let the clinician see the patient's own words.
+    if (busy || !patientInputs.length) return;
+    metrics.current.firstMessage();
     setTurns((current) => [
       ...current,
       {
@@ -832,10 +830,6 @@ export function CommunicationWorkspace() {
               </div>
             }
             onStart={() => {
-              if (metricsStart.current === null) {
-                metricsStart.current = startClock();
-                track({ event: "session_started", mode });
-              }
               setReadyForReply(false);
               setStage("patient-ready");
             }}
@@ -871,6 +865,8 @@ export function CommunicationWorkspace() {
                 lang={language}
                 dir={meta.dir}
                 onClick={() => {
+                  // Start when the patient accepts the first handoff, after setup can still change.
+                  metrics.current.start(mode);
                   setRole("patient");
                   setStage(readyForReply ? "teachback" : "patient");
                 }}
@@ -1756,7 +1752,7 @@ export function CommunicationWorkspace() {
                       type="button"
                       key={answer}
                       onClick={() => {
-                        if (answer === "yes") track({ event: "teachback_confirmed", mode });
+                        if (answer === "yes") metrics.current.teachback();
                         setTurns((t) =>
                           t.map((turn) =>
                             turn.id === lastReply.id

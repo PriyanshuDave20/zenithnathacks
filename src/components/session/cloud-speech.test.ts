@@ -21,7 +21,7 @@ function fixture(provider: SpeechMetadata["provider"] = "azure") {
   const audio = { src: "", onended: null as HTMLAudioElement["onended"], onerror: null as HTMLAudioElement["onerror"], pause() {},
     play() { plays++; return blocked ? Promise.reject(new DOMException("blocked", "NotAllowedError")) : Promise.resolve(); } };
   const playback = createCloudSpeech({ speak(text) { localCalls++; localTexts.push(text); }, stop() {}, dispose() {} }, state => states.push(state), {
-    fetch: ((_: unknown, init: RequestInit) => { calls++; signal = init.signal; return new Promise<Response>(done => { resolve = done; }); }) as typeof fetch,
+    fetch: ((_: unknown, init: RequestInit) => { assert.equal(init.credentials, "same-origin"); calls++; signal = init.signal; return new Promise<Response>(done => { resolve = done; }); }) as typeof fetch,
     makeAudio: () => audio, createUrl: () => "blob:synthetic", revokeUrl() { revocations++; }, metadata: () => ({ provider, clips }),
   });
   return { playback, audio, states, clips, localTexts, get calls() { return calls; }, get localCalls() { return localCalls; }, get plays() { return plays; }, get revocations() { return revocations; }, get signal() { return signal; }, resolve: (response: Response) => resolve(response), block: () => { blocked = true; }, unblock: () => { blocked = false; } };

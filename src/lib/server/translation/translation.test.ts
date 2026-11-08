@@ -4,8 +4,8 @@ import { STORIES } from "../fixtures/stories";
 import { translateAzureTexts, translateTexts, translationLanguage } from "./index";
 import { translate } from "../translate";
 import { respond } from "../respond";
-import { POST as translateRoute } from "../../../app/api/translate/route";
-import { POST as respondRoute } from "../../../app/api/respond/route";
+import { POST as translateRoute } from "../../../app/api/translate/handler";
+import { POST as respondRoute } from "../../../app/api/respond/handler";
 
 function environment(t: TestContext, values: Record<string, string | undefined>) {
   const before = Object.fromEntries(Object.keys(values).map((key) => [key, process.env[key]]));
