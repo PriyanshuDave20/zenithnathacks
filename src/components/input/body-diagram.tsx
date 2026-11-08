@@ -448,3 +448,26 @@ export const BodyMap = memo(function BodyMap({
     </div>
   );
 });
+
+/* ---------- One read-only view, for illustrations ---------- */
+
+/** A single view with its spots and no controls or labels, e.g. the home page's demo phone. */
+export function BodyPicture({
+  view,
+  figure = "male",
+  lang = "en",
+  spots,
+  className = "",
+}: {
+  view: BodyView;
+  figure?: BodyFigure;
+  lang?: Lang;
+  spots: BodySpot[];
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <Figure view={view} figure={figure} lang={lang} spots={spots.filter((s) => s.view === view)} />
+    </div>
+  );
+}

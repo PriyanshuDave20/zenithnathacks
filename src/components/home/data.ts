@@ -70,42 +70,43 @@ export const summary = {
 export type Holder = "Clinician" | "Patient";
 
 export type Step = {
-  id: "start" | "intake" | "handoff" | "review" | "response" | "end";
+  id: "start" | "intake" | "readback" | "review" | "response" | "end";
   holder: Holder;
   title: string;
   body: string;
 };
 
+// The six steps mirror the real session at /start (src/components/communication/workspace.tsx).
 export const steps: Step[] = [
   {
     id: "start",
     holder: "Clinician",
-    title: "Pick the patient’s language and how they communicate",
-    body: "Two taps on the clinician’s own phone, tablet, or laptop. No interpreter to book, no patient account, nothing for the patient to install.",
+    title: "Set up the visit in a few taps",
+    body: "On the clinician’s own phone, tablet, or laptop: the patient’s language, how they communicate, where they start, and which body diagram they see. Then pass the device. Nothing for the patient to install.",
   },
   {
     id: "intake",
     holder: "Patient",
-    title: "The patient says it their way",
-    body: "Speak or type in their own language, or answer one question at a time with large buttons and pictures. No names or personal details are asked.",
+    title: "The patient shows and says it their way",
+    body: "In their own language: tap exactly where it hurts on a body diagram, answer one question at a time with pictures, or speak and type freely. No names or personal details are asked.",
   },
   {
-    id: "handoff",
+    id: "readback",
     holder: "Patient",
-    title: "Pass the device back",
-    body: "A full-screen handoff hides what the patient wrote, so each person only ever sees what is meant for them.",
+    title: "They check it, then hand it back",
+    body: "Before anything reaches the clinician, the patient sees their answers read back in their own language and confirms them. A full-screen handoff then passes the device back.",
   },
   {
     id: "review",
     holder: "Clinician",
-    title: "Read a structured summary",
-    body: "Chief complaint, symptoms, duration, and red flags in English, beside the patient’s own words and a back-translation to judge reliability.",
+    title: "Read both views",
+    body: "A summary in English: chief complaint, symptoms, duration, flags to check, and a body map with every spot the patient marked, beside the patient’s own words and the read-back.",
   },
   {
     id: "response",
     holder: "Patient",
-    title: "Reply, simplified for them",
-    body: "The clinician’s instructions arrive in the patient’s language and reading level, read aloud if needed, with a quick check that they understood.",
+    title: "Reply, then check understanding",
+    body: "The clinician’s reply arrives in the patient’s language, read aloud if needed, and the patient answers a quick teach-back: yes, no, or not sure.",
   },
   {
     id: "end",
