@@ -1314,24 +1314,52 @@ export function CommunicationWorkspace() {
                                   }[language]
                                 }
                               </h3>
-                              <div
-                                className={s.choices}
-                                role="group"
-                                aria-labelledby="pain-question"
-                              >
-                                {Array.from({ length: 11 }, (_, n) => (
-                                  <button
-                                    type="button"
-                                    key={n}
-                                    aria-pressed={severity === n}
-                                    disabled={busy}
-                                    onClick={() =>
-                                      setSeverity(severity === n ? null : n)
-                                    }
-                                  >
-                                    {n}
-                                  </button>
-                                ))}
+                              <div style={{ display: "grid", gap: "0.5rem", maxWidth: "30rem" }}>
+                                <output
+                                  htmlFor="pain-slider"
+                                  aria-live="polite"
+                                  style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.1, minHeight: "2.2rem" }}
+                                >
+                                  {severity === null
+                                    ? {
+                                        en: "Slide to choose",
+                                        es: "Deslice para elegir",
+                                        ar: "حرّك للاختيار",
+                                        "zh-Hans": "滑动选择",
+                                      }[language]
+                                    : severity}
+                                </output>
+                                <input
+                                  id="pain-slider"
+                                  type="range"
+                                  min={0}
+                                  max={10}
+                                  step={1}
+                                  // A slider always sits somewhere; the number reads "slide to choose" until first used.
+                                  value={severity ?? 0}
+                                  disabled={busy}
+                                  aria-labelledby="pain-question"
+                                  onChange={(event) => setSeverity(Number(event.target.value))}
+                                  onPointerDown={(event) => {
+                                    // Pressing the thumb at 0 fires no change event, so a press counts as answering 0.
+                                    if (severity === null && Number(event.currentTarget.value) === 0) setSeverity(0);
+                                  }}
+                                  dir="ltr"
+                                  style={{
+                                    width: "100%",
+                                    height: "2.75rem",
+                                    accentColor: "var(--color-blue-deeper, #1d4f91)",
+                                    cursor: busy ? "not-allowed" : "pointer",
+                                  }}
+                                />
+                                <div
+                                  aria-hidden="true"
+                                  dir="ltr"
+                                  style={{ display: "flex", justifyContent: "space-between", fontSize: "0.95rem", opacity: 0.8 }}
+                                >
+                                  <span>0</span>
+                                  <span>10</span>
+                                </div>
                               </div>
                             </div>
                             {[guidedQuestions[1], guidedQuestions[4]].map((q) => (
