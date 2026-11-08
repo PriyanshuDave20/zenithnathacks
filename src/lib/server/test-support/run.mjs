@@ -17,12 +17,17 @@ const tests = [
   "src/lib/server/redact.test.ts",
   "src/lib/server/llm.test.ts",
   "src/lib/server/providers/nvidia.test.ts",
+  "src/lib/server/translation/translation.test.ts",
+  "src/lib/server/speech/speech.test.ts",
+  "src/lib/server/speech/generate.test.ts",
+  "src/app/api/speech/route.test.ts",
   "src/lib/server/translate/translate.test.ts",
   "src/app/api/translate/route.test.ts",
   "src/lib/server/respond/respond.test.ts",
   "src/app/api/respond/route.test.ts",
   "src/components/session/api.test.ts",
   "src/components/session/speech-playback.test.ts",
+  "src/components/session/cloud-speech.test.ts",
 ];
 
 try {
