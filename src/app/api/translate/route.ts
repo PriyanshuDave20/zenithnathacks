@@ -18,7 +18,7 @@ export async function POST(request: Request): Promise<Response> {
   if (!parsed.success) return error(400, "invalid_request", "Provide a valid translate request.");
 
   try {
-    return Response.json(await translate(parsed.data), { headers });
+    return Response.json(await translate(parsed.data, undefined, undefined, request.signal), { headers });
   } catch (cause) {
     if (cause instanceof InvalidTranslateInputError) {
       return error(400, "invalid_request", cause.message);

@@ -32,7 +32,7 @@ export async function callNvidia(request: ModelRequest): Promise<string> {
       cache: "no-store",
       credentials: "omit",
       redirect: "error",
-      signal: AbortSignal.timeout(25_000),
+      signal: request.signal ? AbortSignal.any([request.signal, AbortSignal.timeout(25_000)]) : AbortSignal.timeout(25_000),
     });
     if (!response.ok) throw new Error();
     const completion = CompletionSchema.parse(await response.json());

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type SetStateAction } from "react";
 import { createSpeechPlayback, type SpeechPlaybackState } from "./speech-playback";
+import { createCloudSpeech, loadSpeechMetadata, speechMetadata, type SpeechOptions } from "./cloud-speech";
 
 // Minimal typing for the Web Speech API (not in the TS DOM lib everywhere).
 type RecognitionResultList = { length: number; [i: number]: { isFinal: boolean; 0: { transcript: string } } };
@@ -160,20 +161,26 @@ export function useRecognition(lang: string) {
 export function useSpeak() {
   const supported = useSyncExternalStore(
     noop,
-    () => typeof window !== "undefined" && "speechSynthesis" in window,
+    () => typeof window !== "undefined" && ("speechSynthesis" in window || "Audio" in window),
     () => false,
   );
   const [state, setState] = useState<SpeechPlaybackState>({ speaking: false, status: null });
-  const playback = useRef<ReturnType<typeof createSpeechPlayback> | null>(null);
+  const playback = useRef<ReturnType<typeof createCloudSpeech> | null>(null);
 
-  const speak = useCallback((text: string, lang: string) => {
-    playback.current?.speak(text, lang);
+  const speak = useCallback((text: string, lang: string, options?: SpeechOptions) => {
+    playback.current?.speak(text, lang, options);
   }, []);
   const stop = useCallback(() => playback.current?.stop(), []);
 
   useEffect(() => {
-    if (!("speechSynthesis" in window)) return;
-    const current = createSpeechPlayback(window.speechSynthesis, text => new SpeechSynthesisUtterance(text), setState);
+    void loadSpeechMetadata();
+    const local = "speechSynthesis" in window
+      ? createSpeechPlayback(window.speechSynthesis, text => new SpeechSynthesisUtterance(text), setState)
+      : { speak() { setState({ speaking: false, status: "voice-unavailable" }); }, stop() {}, dispose() {} };
+    const current = createCloudSpeech(local, setState, {
+      fetch: window.fetch.bind(window), makeAudio: () => new Audio(),
+      createUrl: blob => URL.createObjectURL(blob), revokeUrl: url => URL.revokeObjectURL(url), metadata: speechMetadata,
+    });
     playback.current = current;
     return () => { current.dispose(); playback.current = null; };
   }, []);

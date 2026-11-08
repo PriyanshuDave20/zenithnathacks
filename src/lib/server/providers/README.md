@@ -23,6 +23,20 @@ Reviewed 2026-11-07:
 - [Model card](https://build.nvidia.com/nvidia/nemotron-3.5-lightning-30b-a3b/modelcard): lists English, Spanish, French, German, Italian and Japanese; Arabic/Chinese quality is unverified here.
 - [NVIDIA API Trial Terms](https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf): trial/evaluation only; sections 2.6 and 4.3 prohibit sensitive/identifiable health data, and section 3.3 permits content collection/use. No zero-retention or real-clinic suitability claim is made. Use public static questions and synthetic examples only.
 
+## Azure language layer
+
+Runtime translation is separate from `callModel`. `TRANSLATION_PROVIDER=azure`
+uses the native-fetch adapter in `../translation/` for free text/transcripts and
+clinician reply/read-back fields. Nemotron receives English for summary extraction
+and mode/reading-level reply preparation. Guided selections never reach either
+provider. Azure failures fail explicitly rather than invoking multilingual
+Nemotron. `TRANSLATION_PROVIDER=mock` is the independent offline fixture default.
+See [setup and privacy review](../../../../docs/AZURE.md).
+
+The new internal model envelopes are English summary/preparation tasks. Legacy
+mock translate/respond envelopes below remain available for foundation fixtures;
+they do not define runtime multilingual routing.
+
 ## Mock behavior
 
 Add a real adapter here later (for example Ollama, a hosted open model, or

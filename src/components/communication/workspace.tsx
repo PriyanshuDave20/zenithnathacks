@@ -83,6 +83,7 @@ type Turn = {
   response?: RespondResponse;
   understood?: string;
   unavailable?: boolean;
+  speechKind?: "dynamic" | "public";
   /** Exact places the patient touched on the body diagram (patient turns only). */
   spots?: BodySpot[];
 };
@@ -419,6 +420,7 @@ export function CommunicationWorkspace() {
           original: translation.original,
           translation,
           spots: bodySpots,
+          speechKind: inputs.some(input => input.kind === "text" || input.kind === "speech_transcript") ? "dynamic" : "public",
         });
       } else {
         const response = await respond({ context, message });
@@ -467,7 +469,7 @@ export function CommunicationWorkspace() {
     setBodySpots([]);
     setSeverity(null);
     if (audio && canAudio)
-      voice.speak(pending.translation!.backTranslation, meta.speech);
+      voice.speak(pending.translation!.backTranslation, meta.speech, { kind: pending.speechKind });
   }
   async function submitPatient(inputs: TranslateInput[], spots: BodySpot[] = []) {
     if (lock.current) return;
@@ -495,6 +497,7 @@ export function CommunicationWorkspace() {
         original: translation.original,
         translation,
         spots,
+        speechKind: inputs.some(input => input.kind === "text" || input.kind === "speech_transcript") ? "dynamic" : "public",
       });
     } catch {
       if (version.current === token) setError("unavailable");
@@ -520,6 +523,7 @@ export function CommunicationWorkspace() {
         original: displayInputs(patientInputs, language),
         unavailable: true,
         spots: patientReport.spots,
+        speechKind: patientInputs.some(input => input.kind === "text" || input.kind === "speech_transcript") ? "dynamic" : "public",
       },
     ]);
     setStage("handoff");
@@ -589,9 +593,9 @@ export function CommunicationWorkspace() {
     }
   }
 
-  const read = (value: string, lang = meta.speech) =>
+  const read = (value: string, lang = meta.speech, kind: "dynamic" | "public" = "dynamic") =>
     canAudio && voice.supported ? (
-      <button type="button" onClick={() => voice.speak(value, lang)}>
+      <button type="button" onClick={() => voice.speak(value, lang, { kind })}>
         <Speaker size={18} /> {text.readAloud}
       </button>
     ) : null;
@@ -862,6 +866,7 @@ export function CommunicationWorkspace() {
               lang={lang}
               mode={mode}
               translation={pending?.translation}
+              kind={pending?.speechKind ?? "public"}
               failed={!!error && !busy}
               fallbackText={displayInputs(patientInputs, language)}
               onYes={confirmPatient}
@@ -1053,6 +1058,7 @@ export function CommunicationWorkspace() {
                               : PATIENT_LANGUAGES.find(
                                   (l) => l.code === t.language,
                                 )!.speech,
+                          t.speechKind ?? "dynamic",
                         )}
                       </article>
                     ))
@@ -1365,7 +1371,7 @@ export function CommunicationWorkspace() {
                                 onClick={() => {
                                   toggle("chief_complaint", `phrase:${p.id}`);
                                   if (mode === "mute" && audio)
-                                    voice.speak(p.text[language], meta.speech);
+                                    voice.speak(p.text[language], meta.speech, { kind: "public" });
                                 }}
                               >
                                 {p.text[language]}
@@ -1525,6 +1531,8 @@ export function CommunicationWorkspace() {
                           t.response?.patientText,
                       )
                       .join(". "),
+                    meta.speech,
+                    turns.filter(t => t.language === language).every(t => t.speechKind === "public") ? "public" : "dynamic",
                   )}
                 </div>
                 <p className={s.notice}>

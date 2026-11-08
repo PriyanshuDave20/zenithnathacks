@@ -10,10 +10,11 @@ config({ quiet: true }); // Reads ignored .env without printing configuration or
 const root = process.cwd();
 const tasks = {
   questions: { source: "src/lib/questions/generator.ts", compiled: "lib/questions/generator.js", method: "generateToFile" },
+  speech: { source: "src/lib/server/speech/generate.ts", compiled: "lib/server/speech/generate.js", method: "generateToFile" },
   smoke: { source: "src/lib/server/test-support/smoke.ts", compiled: "lib/server/test-support/smoke.js", method: "run" },
 };
 const task = tasks[process.argv[2]];
-if (!task) throw new Error("Choose the questions or smoke maintenance task.");
+if (!task) throw new Error("Choose the questions, speech or smoke maintenance task.");
 const output = mkdtempSync(join(tmpdir(), "synapse-static-translations-"));
 try {
   const configFile = ts.readConfigFile(resolve(root, "tsconfig.json"), ts.sys.readFile);

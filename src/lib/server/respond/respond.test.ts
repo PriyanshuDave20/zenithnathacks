@@ -26,7 +26,8 @@ test("clinician identifiers are masked before the model and clinical numbers rem
   }, async ({ system, user }) => {
     assert.doesNotMatch(user, /demo@example|780-555|2000-01-02/);
     const envelope = JSON.parse(user);
-    assert.equal(envelope.task, "respond");
+    assert.equal(envelope.task, "prepare_reply");
+    assert.equal(envelope.request.context.language, "en");
     assert.equal(envelope.request.message, "Take 5 mg twice daily for 3 days. Contact [removed], [removed], DOB [removed].");
     assert.match(system, /Omit names/);
     assert.match(system, /not a diagnostic tool/);
@@ -56,11 +57,11 @@ test("all modes and reading levels reach the model while the mock remains fixed 
     for (const readingLevel of [1, 2, 3, 4, 5] as const) {
       const request = { ...STORIES[1].respondRequest, context: { language: "es", mode, readingLevel } };
       await respond(request, async ({ system, user }) => {
-        assert.deepEqual(JSON.parse(user).request.context, request.context);
+        assert.deepEqual(JSON.parse(user).request.context, { ...request.context, language: "en" });
         assert.match(system, /context.readingLevel/);
         assert.match(system, /mute must not require a spoken answer/);
         assert.match(system, /deaf_hoh must be understandable as text without hearing/);
-        return JSON.stringify(STORIES[1].respondResponse);
+        return JSON.stringify(STORIES[0].respondResponse);
       });
       // This deliberately verifies the current limitation, not live adaptation.
       assert.deepEqual(await respond(request), STORIES[1].respondResponse);
@@ -99,6 +100,10 @@ test("unsupported messages and languages return explicit mock-unavailable replie
     { ...STORIES[0].respondRequest, message: "A synthetic unsupported instruction." },
     { ...STORIES[0].respondRequest, context: { ...STORIES[0].respondRequest.context, language: "fr" } },
   ]) {
+    if (request.context.language === "fr") {
+      await assert.rejects(respond(request), { message: "Translation provider is unavailable." });
+      continue;
+    }
     const response = RespondResponseSchema.parse(await respond(request));
     assert.match(response.patientText, /Mock provider: no translated reply available/);
     assert.match(response.readAloudText, /Mock provider: no translated reply available/);

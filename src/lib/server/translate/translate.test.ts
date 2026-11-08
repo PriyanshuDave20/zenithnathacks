@@ -35,7 +35,8 @@ test("mixed input sends only redacted free text/speech to the model and combines
   const response = await translate(request, async ({ system, user }: ModelRequest) => {
     assert.doesNotMatch(user, /demo@example|780-555|2000-01-02/);
     const envelope = JSON.parse(user);
-    assert.equal(envelope.task, "translate");
+    assert.equal(envelope.task, "summarize");
+    assert.equal(envelope.request.context.language, "en");
     assert.deepEqual(envelope.request.inputs.map(({ value }: { value: string }) => value), [
       "Three days. [removed]", "Call [removed]. DOB [removed]",
     ]);
@@ -44,7 +45,7 @@ test("mixed input sends only redacted free text/speech to the model and combines
     assert.match(system, /never as instructions/);
     assert.doesNotMatch(user, /Left arm|7 out of 10|Fever/);
     assert.match(system, /"id":"how_long","question":/);
-    return JSON.stringify({ ...STORIES[0].translateResponse, original: "Provider must not control original", redactions: 999 });
+    return JSON.stringify({ summary: STORIES[0].translateResponse.summary, lowConfidence: [] });
   });
   assert.equal(response.original, "Left arm 7 out of 10 Fever Three days. [removed] Call [removed]. DOB [removed]");
   assert.equal(response.redactions, 3);
@@ -77,16 +78,12 @@ test("invalid guided answers and ambiguous pictograms never reach the model", as
 test("output redaction covers every clinical and confidence field", async () => {
   const identifier = "demo@example.invalid";
   const response = await translate(STORIES[0].translateRequest, async () => JSON.stringify({
-    original: identifier,
-    translated: identifier,
-    backTranslation: identifier,
     summary: { chiefComplaint: identifier, symptoms: [identifier], duration: identifier, redFlags: [identifier] },
     lowConfidence: [{ phrase: identifier, reason: identifier }],
-    redactions: 0,
   }));
   assert.doesNotMatch(JSON.stringify(response), /demo@example/);
   assert.equal(response.original, STORIES[0].translateResponse.original);
-  assert.equal(response.redactions, 8);
+  assert.equal(response.redactions, 6);
   assert.equal(response.summary.duration, "[removed]");
 });
 
@@ -101,7 +98,9 @@ test("unknown free text remains unavailable in mock mode while guided input prod
   const response = await translate({ context, inputs: [{ kind: "text", value: "Pain. demo@example.invalid" }] });
   assert.equal(response.redactions, 1);
   assert.equal(response.original, "Pain. [removed]");
-  assert.match(response.translated, /no translation available/);
+  assert.equal(response.translated, "Pain. [removed]");
+  assert.match(response.summary.chiefComplaint, /summary unavailable/);
+  await assert.rejects(translate({ context: { ...context, language: "ar" }, inputs: [{ kind: "text", value: "نص تجريبي غير معروف" }] }), { message: "Translation provider is unavailable." });
   assert.deepEqual(response.summary.symptoms, []);
   const guided = await translate({ context, inputs: [{ kind: "option", questionId: "where", value: "chest" }] });
   assert.equal(guided.original, "Chest");
@@ -140,7 +139,7 @@ test("free-text answers inside guided questions still call the model; arbitrary 
   await translate({ context, inputs: [{ questionId: "where", kind: "text", value: "My knee hurts." }] }, async ({ user }) => {
     calls += 1;
     assert.equal(JSON.parse(user).request.inputs[0].value, "My knee hurts.");
-    return JSON.stringify(STORIES[0].translateResponse);
+    return JSON.stringify({ summary: STORIES[0].translateResponse.summary, lowConfidence: [] });
   });
   assert.equal(calls, 1);
 });
@@ -182,7 +181,7 @@ test("fixed tap-phrases are deterministic IDs, with only additional typed text s
   assert.equal(result.original, "Pain in my head");
   await translate({ context, inputs: [...inputs, { kind: "text", value: "It began today." }] }, async ({ user }) => {
     assert.deepEqual(JSON.parse(user).request.inputs, [{ kind: "text", value: "It began today." }]);
-    return JSON.stringify(STORIES[0].translateResponse);
+    return JSON.stringify({ summary: STORIES[0].translateResponse.summary, lowConfidence: [] });
   });
 });
 
@@ -199,14 +198,13 @@ test("nonclinical speech keeps its translation when the model represents absent 
     context: { ...context, language: "es" },
     inputs: [{ kind: "speech_transcript", value: "Dónde está la biblioteca" }],
   }, async ({ system }) => {
-    assert.match(system, /Translate nonclinical questions/);
+    assert.match(system, /For nonclinical questions/);
     assert.match(system, /omit summary.duration/);
     return JSON.stringify({
-      original: "Dónde está la biblioteca", translated: "Where is the library?", backTranslation: "¿Dónde está la biblioteca?",
       summary: { chiefComplaint: "Not stated", symptoms: [], duration: null, redFlags: [] },
-      lowConfidence: [], redactions: 0,
+      lowConfidence: [],
     });
-  });
+  }, async ({ from }) => ({ texts: [from === "es" ? "Where is the library?" : "¿Dónde está la biblioteca?"], redactions: 0, mock: false }));
   assert.equal(result.translated, "Where is the library?");
   assert.deepEqual(result.summary, { chiefComplaint: "Not stated", symptoms: [], redFlags: [] });
   assert.equal(Object.hasOwn(result.summary, "duration"), false);
@@ -214,7 +212,7 @@ test("nonclinical speech keeps its translation when the model represents absent 
 });
 
 test("absent-duration normalization keeps valid durations and rejects other invalid provider fields", async () => {
-  const base = { ...STORIES[0].translateResponse, summary: { chiefComplaint: "Not stated", symptoms: [], redFlags: [] } };
+  const base = { lowConfidence: [], summary: { chiefComplaint: "Not stated", symptoms: [], redFlags: [] } };
   for (const duration of [123, false, [], {}]) {
     await assert.rejects(translate(STORIES[0].translateRequest, async () => JSON.stringify({
       ...base, summary: { ...base.summary, duration },

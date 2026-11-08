@@ -75,6 +75,25 @@ Anonymous counts only. No content, no identifiers.
 { event: "session_started" | "first_message" | "teachback_confirmed"; mode: Mode; msSinceStart?: number }
 ```
 
+## Speech playback (additive Azure integration)
+
+`GET /api/speech` returns `{ provider: "azure" | "browser" }`, with no keys or
+resource details. Azure is available only when explicitly selected and configured.
+
+`POST /api/speech` accepts exactly `{ text: string, language: string }`. Text is
+nonempty and at most 2,000 characters; JSON bodies are bounded at 16 KiB. The
+server chooses a prebuilt voice for the supported English, Spanish, Arabic or
+Mandarin locale and masks identifiers before synthesis. Successful responses are
+`audio/mpeg`; failures use the existing `{ error: { code, message } }` shape:
+400 invalid input, 413 oversized body, 503 disabled, or 502 provider failure.
+All success/error/capability responses use `Cache-Control: no-store`.
+
+Dynamic audio stays in memory and is released on completion, cancellation or
+session/context changes. Guided questions, options and fixed phrases use public
+pre-generated clips or browser voices; they do not call this synthesis endpoint.
+Only the explicit public-source maintenance command may write static audio files.
+Existing translate/respond request and response schemas are unchanged.
+
 ## Question bank (data, not a route)
 Lives in `src/lib/questions/`. Owned by Backend 1; read by the frontend and the body diagram.
 ```ts

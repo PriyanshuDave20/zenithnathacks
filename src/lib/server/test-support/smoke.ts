@@ -4,8 +4,9 @@ import { respond } from "../respond";
 
 /** Explicit live check using checked-in synthetic fixtures only; never prints their content. */
 export async function run(): Promise<void> {
-  if (!process.env.NVIDIA_API_KEY?.trim()) throw new Error("Translation provider is unavailable.");
+  if (!process.env.NVIDIA_API_KEY?.trim() || !process.env.AZURE_TRANSLATOR_KEY?.trim()) throw new Error("Translation provider is unavailable.");
   process.env.LLM_PROVIDER = "nvidia";
+  process.env.TRANSLATION_PROVIDER = "azure";
   for (const story of STORIES) {
     const started = Date.now();
     const translated = await translate(story.translateRequest);

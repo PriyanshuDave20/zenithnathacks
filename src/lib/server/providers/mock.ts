@@ -3,10 +3,13 @@ import { RespondRequestSchema, RespondResponseSchema, TranslateRequestSchema, Tr
 import { STORIES } from "../fixtures/stories";
 import { redact } from "../redact";
 import type { ModelRequest } from "../llm";
+import { EnglishSummarySchema } from "../translation/model-output";
 
 const TaskSchema = z.discriminatedUnion("task", [
   z.strictObject({ task: z.literal("translate"), request: TranslateRequestSchema }),
   z.strictObject({ task: z.literal("respond"), request: RespondRequestSchema }),
+  z.strictObject({ task: z.literal("summarize"), request: TranslateRequestSchema.refine((request) => request.context.language === "en") }),
+  z.strictObject({ task: z.literal("prepare_reply"), request: RespondRequestSchema.refine((request) => request.context.language === "en") }),
 ]);
 
 /** Deterministic, local-only synthetic responses. No content is retained between calls. */
@@ -25,7 +28,25 @@ export async function callMock({ user }: ModelRequest): Promise<string> {
   try {
     task = TaskSchema.parse(parsed);
   } catch {
-    throw new Error("Mock provider expects a valid translate or respond task.");
+    throw new Error("Mock provider expects a valid synthetic task.");
+  }
+
+  if (task.task === "summarize") {
+    const text = task.request.inputs.map((input) => redact(input.value).text).join(" ");
+    const fixture = STORIES.find((story) => story.translateResponse.translated === text);
+    return JSON.stringify(EnglishSummarySchema.parse({
+      summary: fixture?.translateResponse.summary ?? { chiefComplaint: "Mock provider: summary unavailable.", symptoms: [], redFlags: [] },
+      lowConfidence: [],
+    }));
+  }
+
+  if (task.task === "prepare_reply") {
+    const fixture = STORIES.find((story) => story.respondRequest.context.language === "en" && story.respondRequest.message === task.request.message);
+    return JSON.stringify(RespondResponseSchema.parse(fixture?.respondResponse ?? {
+      patientText: "Mock provider: no translated reply available.",
+      readAloudText: "Mock provider: no translated reply available.",
+      teachBackPrompt: "Mock provider: teach-back unavailable.",
+    }));
   }
 
   if (task.task === "translate") {

@@ -1,16 +1,20 @@
 # Translation and guided communication
 
-Free-form patient text/transcripts and clinician replies use `callModel`. Set
-`LLM_PROVIDER=nvidia` and `NVIDIA_API_KEY` in ignored `.env` for the selected
-`nvidia/nemotron-3.5-lightning-30b-a3b`; mock stays the no-key default for new clones.
-The key is server-only. See `src/lib/server/providers/README.md` for endpoint,
-timeout, model limitations and the hosted trial's data-use restrictions.
+Free-form patient text/transcripts pass through Azure Translator into English.
+`callModel` receives English for summary extraction and plain-language reply/teach-back
+preparation. Azure translates the canonical English read-back and prepared reply
+fields into the patient's language. A summary never replaces the full translation
+used for read-back. Set `TRANSLATION_PROVIDER=azure` independently of
+`LLM_PROVIDER=nvidia`; see [Azure setup](AZURE.md) for server-only credentials.
+New clones default to offline mocks. Unknown foreign mock text fails explicitly;
+Azure errors never fall back to multilingual Nemotron. See
+`src/lib/server/providers/README.md` for NVIDIA's hosted-trial restrictions.
 
 Guided answers never call a model. The browser submits registered question/option
 IDs; the server maps them to fixed English labels and assembles a report. The
 internal `/api/translate` handler still accepts these submissions, but makes zero
 external translation calls. Mixed submissions send only their text/transcript
-portion to the model and combine its result with the deterministic guided report.
+portion through translation/English processing and combine it with the deterministic guided report.
 Typed details attached to a question are still free text, not cached answers.
 
 ## Static language packs
@@ -21,7 +25,7 @@ same IDs and the canonical 0–10 severity scale; the old mock /5 scale is no lo
 used by the active guided flow. Detailed body-part IDs retain side and location.
 Fixed phrase taps use registered `phrase:*` IDs and their existing static demo
 translations; they do not become free text. Changing the typed draft still invokes
-the model. Legacy frontend mock data remains for other demo surfaces.
+the translation pipeline. Legacy frontend mock data remains for other demo surfaces.
 
 `src/lib/questions/language-packs.json` contains generated Spanish, Arabic and
 Simplified Chinese questions **and answer labels**. English comes directly from
@@ -42,21 +46,22 @@ npm run questions:translate -- es --force
 npm run llm:smoke
 ```
 
-Generation works independently of the app's `LLM_PROVIDER`, using NVIDIA explicitly.
-It translates at most three questions per request, validates exact IDs/nonempty
-strings and the expected writing system, protects numeric values in questions as
-placeholders and restores them locally. Severity answers are numeric data formatted
-as `value/10`, so the model does not translate eleven copies of the same scale.
-Numbers/scales are checked again when loading packs. Complete, current packs are reused with **zero** model calls.
+Generation uses Azure Translator explicitly, independently of runtime provider
+selection. It sends bounded batches of public source strings; IDs and English
+clinical mappings stay in code. Cardinality, nonempty strings, numbers and writing
+systems are checked before publication. Severity answers are numeric data formatted
+as `value/10`, so they need no translation call. Numbers/scales are checked again
+when loading packs. Complete current packs are reused with **zero** provider calls.
 Writes are atomic per language; failure preserves the last complete pack. These
 maintenance commands are never called by a route, page or server startup.
 
 All generated packs are **drafts**. Clinical and fluent-speaker review must check
 meaning, negation, side, uncertainty, numbers and accessibility before marking a
 pack `reviewed`. Schema tests and successful live calls do not establish translation
-accuracy. Arabic/Chinese are not listed among this model card's supported languages;
-their packs and synthetic live calls succeeded, but language quality is unverified.
-Actual generation exposed mixed-script Arabic labels and English filler in Chinese
+accuracy. Existing packs were generated with Nemotron before the Azure layer and
+have not been silently replaced or marked reviewed. Arabic/Chinese are not listed
+among that model card's supported languages. Earlier generation exposed mixed-script
+Arabic labels and English filler in Chinese
 scale answers. The checked-in draft records five Arabic source-vocabulary corrections
 in `reviewNotes`; numeric scale formatting is now deterministic. Wrong-script output
 fails validation and is never served as a valid pack. These corrections are not a
@@ -70,13 +75,12 @@ positive answers to the explicit red-flags question populate its red-flags array
 this is not automated triage. English clinical headings and values are deterministic
 across languages. Draft wording produces a review notice in `lowConfidence`.
 
-Free-form model outputs still undergo strict schema validation and best-effort
-redaction. Nonclinical conversation is translated normally with no invented clinical
+Every external text boundary and final output undergo best-effort redaction;
+English model outputs use strict schemas. Nonclinical conversation is translated normally with no invented clinical
 fields. An explicitly null optional provider duration is normalized to omission;
 other malformed fields still fail validation. Provider/invalid-output errors return generic 502 responses; the frontend
-retains the draft. The reply prompt has a fixed `Translation unavailable.` sentinel
-for unsupported translation; the UI shows interpreter guidance instead of asking
-the patient to confirm that placeholder. No existing HTTP schema fields changed.
+retains the draft. Mock/unavailable reply notices remain explicit and are never
+translated as though they were clinician instructions. No existing HTTP schema fields changed.
 
 Only public static language packs are written to JSON. Patient inputs, responses,
 summaries, identifiers and session history are never written to files, a database,
