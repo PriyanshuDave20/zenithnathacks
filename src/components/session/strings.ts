@@ -22,6 +22,9 @@ type Strings = {
   speechReady: string;
   speechUnavailable: string;
   speechFailed: string;
+  speechAudioLoading: string;
+  speechAudioReady: string;
+  speechBrowserReady: string;
   working: string;
   isThisRight: string;
   yesRight: string;
@@ -69,6 +72,9 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     speechReady: "The voice is ready. Tap the audio button again.",
     speechUnavailable: "A voice for this language isn’t available. Ask the clinician to add this language’s voice in the device’s speech settings, then try again.",
     speechFailed: "Read aloud couldn’t start. Tap again, or ask the clinician to check this language’s voice in the device’s speech settings.",
+    speechAudioLoading: "Preparing the voice…",
+    speechAudioReady: "The audio is ready. Tap the speak button again to listen.",
+    speechBrowserReady: "The natural voice is unavailable. Tap the speak button again to try this device’s voice.",
     working: "One moment…",
     isThisRight: "Is this what you meant?",
     yesRight: "Yes, that's right",
@@ -114,6 +120,9 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     speechReady: "La voz está lista. Toque el botón de audio otra vez.",
     speechUnavailable: "No hay una voz disponible para este idioma. Pida al personal médico que añada una voz para este idioma en los ajustes de voz del dispositivo y vuelva a intentarlo.",
     speechFailed: "No se pudo iniciar la lectura. Toque otra vez o pida al personal médico que revise la voz de este idioma en los ajustes del dispositivo.",
+    speechAudioLoading: "Preparando la voz…",
+    speechAudioReady: "El audio está listo. Toque el botón de voz otra vez para escuchar.",
+    speechBrowserReady: "La voz natural no está disponible. Toque el botón de voz otra vez para probar la voz de este dispositivo.",
     working: "Un momento…",
     isThisRight: "¿Es esto lo que quiso decir?",
     yesRight: "Sí, es correcto",
@@ -159,6 +168,9 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     speechReady: "الصوت جاهز. اضغط على زر الصوت مرة أخرى.",
     speechUnavailable: "لا يتوفر صوت لهذه اللغة. اطلب من الطاقم الطبي إضافة صوت لهذه اللغة في إعدادات النطق بالجهاز، ثم حاول مرة أخرى.",
     speechFailed: "تعذر بدء القراءة بصوت عالٍ. اضغط مرة أخرى أو اطلب من الطاقم الطبي التحقق من صوت هذه اللغة في إعدادات النطق بالجهاز.",
+    speechAudioLoading: "جارٍ تحضير الصوت…",
+    speechAudioReady: "الصوت جاهز. اضغط على زر النطق مرة أخرى للاستماع.",
+    speechBrowserReady: "الصوت الطبيعي غير متاح. اضغط على زر النطق مرة أخرى لتجربة صوت هذا الجهاز.",
     working: "لحظة من فضلك…",
     isThisRight: "هل هذا ما قصدته؟",
     yesRight: "نعم، صحيح",
@@ -204,6 +216,9 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     speechReady: "语音已准备好。请再次点击语音按钮。",
     speechUnavailable: "此语言的语音不可用。请医护人员在设备的语音设置中添加此语言的语音，然后重试。",
     speechFailed: "无法开始朗读。请再次点击，或请医护人员检查设备语音设置中此语言的语音。",
+    speechAudioLoading: "正在准备语音…",
+    speechAudioReady: "音频已准备好。请再次点击朗读按钮收听。",
+    speechBrowserReady: "自然语音暂时不可用。请再次点击朗读按钮，尝试此设备的语音。",
     working: "请稍候…",
     isThisRight: "这是您想表达的意思吗？",
     yesRight: "对，没错",
