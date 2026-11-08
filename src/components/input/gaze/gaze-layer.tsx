@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { DwellController } from "@/lib/input/gaze/dwell";
 import {
   applyGazeMapping,
+  FeatureSmoother,
   fitGazeMapping,
   gazeFeatures,
   median,
@@ -24,17 +25,24 @@ import { GazeTracker } from "@/lib/input/gaze/tracker";
 type Phase = "off" | "starting" | "calibrating" | "on" | "error";
 
 const RING_C = 2 * Math.PI * 22;
-/** Calibration targets as fractions of the viewport, in visiting order. */
+/** Calibration targets as fractions of the viewport, in visiting order (a perimeter after the centre). */
 const CALIBRATION_POINTS: [number, number][] = [
   [0.5, 0.5],
-  [0.1, 0.14],
-  [0.9, 0.14],
-  [0.1, 0.86],
-  [0.9, 0.86],
+  [0.12, 0.14],
+  [0.5, 0.14],
+  [0.88, 0.14],
+  [0.88, 0.5],
+  [0.88, 0.86],
+  [0.5, 0.86],
+  [0.12, 0.86],
+  [0.12, 0.5],
 ];
 const CALIBRATION_HOLD_MS = 1300;
+const CALIBRATION_SETTLE_MS = 350; // the eye is still travelling to a fresh dot; sample only after this
+const CALIBRATION_MIN_SAMPLES = 6; // fewer inferences than this in a hold: skip the point
 const EDGE_ZONE = 88; // px band at the top/bottom edge that scrolls the page
 const NO_FACE_MS = 2500;
+const BLINK_GRACE_MS = 350; // a dropped prediction shorter than this holds the last gaze point
 
 /** Elements a gaze dwell may activate. Kept broad so the whole site works, not one page. */
 const INTERACTIVE = [
@@ -82,6 +90,7 @@ export function GazeLayer() {
   const [phase, setPhase] = useState<Phase>("off");
   const [status, setStatus] = useState<string | null>(null);
   const [noFace, setNoFace] = useState(false);
+  const [unstable, setUnstable] = useState(false);
   const [calibIndex, setCalibIndex] = useState(0);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -89,13 +98,18 @@ export function GazeLayer() {
   const ringRef = useRef<SVGCircleElement | null>(null);
   const trackerRef = useRef<GazeTracker | null>(null);
   const dwellRef = useRef(new DwellController());
-  const smootherRef = useRef(new SmoothedPoint());
+  // Two smoothing stages: the raw features wobble most (and the mapping magnifies it), so they
+  // get the steadier filter; the pixel filter just takes the residual edge off.
+  const featureSmootherRef = useRef(new FeatureSmoother(0.3, 0.75, 0.06));
+  const smootherRef = useRef(new SmoothedPoint(0.2, 0.55, 0.02, 2));
   const mappingRef = useRef<GazeMapping | null>(null);
   const calibBufferRef = useRef<GazeFeatures[]>([]);
   const samplesRef = useRef<CalibrationSample[]>([]);
+  const calibHoldStartRef = useRef(0);
   const elementKeysRef = useRef(new WeakMap<Element, number>());
   const nextKeyRef = useRef(1);
   const noFaceRef = useRef(false);
+  const unstableRef = useRef(false);
 
   const active = phase === "calibrating" || phase === "on";
 
@@ -106,6 +120,7 @@ export function GazeLayer() {
     setCalibIndex(0);
     samplesRef.current = [];
     calibBufferRef.current = [];
+    calibHoldStartRef.current = performance.now();
     if (!trackerRef.current) trackerRef.current = new GazeTracker();
     try {
       await trackerRef.current.start(videoRef.current!);
@@ -150,19 +165,25 @@ export function GazeLayer() {
         window.setTimeout(() => {
           if (i > 0) {
             const buf = calibBufferRef.current;
-            const fx = median(buf.map((f) => f.x));
-            const fy = median(buf.map((f) => f.y));
-            if (fx !== null && fy !== null) {
-              const [sx, sy] = CALIBRATION_POINTS[i - 1];
-              samplesRef.current.push({ features: { x: fx, y: fy }, screen: { x: sx, y: sy } });
+            if (buf.length >= CALIBRATION_MIN_SAMPLES) {
+              const mx = median(buf.map((f) => f.x));
+              const my = median(buf.map((f) => f.y));
+              const ma = median(buf.map((f) => f.a));
+              const mp = median(buf.map((f) => f.p));
+              if (mx !== null && my !== null && ma !== null && mp !== null) {
+                const [sx, sy] = CALIBRATION_POINTS[i - 1];
+                samplesRef.current.push({ features: { x: mx, y: my, a: ma, p: mp }, screen: { x: sx, y: sy } });
+              }
             }
           }
           if (i === CALIBRATION_POINTS.length) {
             mappingRef.current = fitGazeMapping(samplesRef.current); // null falls back to the default mapping
+            featureSmootherRef.current.reset();
             smootherRef.current.reset();
             setPhase("on");
           } else {
             calibBufferRef.current = [];
+            calibHoldStartRef.current = performance.now();
             setCalibIndex(i);
           }
         }, 400 + i * CALIBRATION_HOLD_MS),
@@ -175,11 +196,14 @@ export function GazeLayer() {
   useEffect(() => {
     if (phase !== "calibrating" && phase !== "on") return;
     const dwell = dwellRef.current;
+    const featureSmoother = featureSmootherRef.current;
     const smoother = smootherRef.current;
     smoother.reset();
+    featureSmoother.reset();
     let raf = 0;
     let last = performance.now();
     let lastFeatureAt = last;
+    let lastSmoothed: GazeFeatures | null = null;
 
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
@@ -194,26 +218,41 @@ export function GazeLayer() {
           noFaceRef.current = false;
           setNoFace(false);
         }
+        if (unstableRef.current) {
+          unstableRef.current = false;
+          setUnstable(false);
+        }
       } else if (phase === "on" && !noFaceRef.current && now - lastFeatureAt > NO_FACE_MS) {
         noFaceRef.current = true;
         setNoFace(true);
       }
+      if (trackerRef.current?.unhealthy && !unstableRef.current) {
+        unstableRef.current = true;
+        setUnstable(true);
+      }
 
       const cursor = cursorRef.current;
       if (phase === "calibrating") {
-        if (features) calibBufferRef.current.push(features);
+        // Skip the settle window: right after a dot appears the eye is still travelling to it.
+        if (features && now - calibHoldStartRef.current >= CALIBRATION_SETTLE_MS) calibBufferRef.current.push(features);
         return;
       }
       if (!cursor) return;
 
-      if (!features) {
+      // Blink grace: a dropped prediction for a moment (a blink) holds the last known gaze
+      // instead of snapping the cursor and resetting the dwell; past the grace it is lost.
+      const held = !features && lastSmoothed && now - lastFeatureAt <= BLINK_GRACE_MS;
+      if (!features && !held) {
+        lastSmoothed = null;
         dwell.update(now, null);
         cursor.style.opacity = "0.25";
         ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
         return;
       }
 
-      const point = applyGazeMapping(mappingRef.current, features);
+      const smoothed = features ? featureSmoother.next(features, dt) : lastSmoothed!;
+      if (features) lastSmoothed = smoothed;
+      const point = applyGazeMapping(mappingRef.current, smoothed);
       const x = point.x * window.innerWidth;
       const y = point.y * window.innerHeight;
       const p = smoother.next({ x, y }, dt);
@@ -314,13 +353,13 @@ export function GazeLayer() {
         </div>
       ) : null}
 
-      {status || (phase === "on" && noFace) ? (
+      {status || (phase === "on" && (noFace || unstable)) ? (
         <p
           role="status"
           aria-live="polite"
           className="pointer-events-none fixed end-2 top-[calc(50%+3.5rem)] z-[70] max-w-48 rounded-field bg-surface p-3 text-sm font-medium leading-snug text-ink shadow-soft ring-1 ring-line"
         >
-          {status ?? "No face seen - sit centred in front of the camera."}
+          {status ?? (unstable ? "Tracking is struggling - try brighter, even lighting." : "No face seen - sit centred in front of the camera.")}
         </p>
       ) : null}
 

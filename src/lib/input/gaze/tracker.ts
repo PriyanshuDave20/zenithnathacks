@@ -13,6 +13,7 @@ export class GazeTracker {
   private stream: MediaStream | null = null;
   private video: HTMLVideoElement | null = null;
   private lastFrameTime = -1;
+  private detectErrors = 0;
 
   /** Ask for the camera and load the face model. Throws with a plain message on failure. */
   async start(video: HTMLVideoElement): Promise<void> {
@@ -33,11 +34,9 @@ export class GazeTracker {
       outputFaceBlendshapes: false,
       outputFacialTransformationMatrixes: false,
     });
-    try {
-      this.landmarker = await FaceLandmarker.createFromOptions(fileset, options("GPU"));
-    } catch {
-      this.landmarker = await FaceLandmarker.createFromOptions(fileset, options("CPU"));
-    }
+    // CPU delegate on purpose: the GPU/WebGL path throws intermittently mid-run on some
+    // machines ("finishProcessing" errors), and XNNPACK CPU keeps ~30 fps with none of that.
+    this.landmarker = await FaceLandmarker.createFromOptions(fileset, options("CPU"));
     this.video = video;
   }
 
@@ -46,11 +45,25 @@ export class GazeTracker {
    * webcam delivers ~30 fps; the render loop runs faster, so this throttles the model itself).
    */
   detect(nowMs: number): NormalizedLandmark[] | null {
-    if (!this.landmarker || !this.video || this.video.readyState < 2) return null;
+    if (!this.landmarker || !this.video) return null;
+    if (this.video.readyState < 2 || this.video.videoWidth === 0) return null;
     if (this.video.currentTime === this.lastFrameTime) return null;
     this.lastFrameTime = this.video.currentTime;
-    const result = this.landmarker.detectForVideo(this.video, nowMs);
-    return result.faceLandmarks[0] ?? null;
+    try {
+      const result = this.landmarker.detectForVideo(this.video, nowMs);
+      this.detectErrors = 0;
+      return result.faceLandmarks[0] ?? null;
+    } catch {
+      // Warmup or a bad frame: skip it instead of crashing the render loop or spamming the
+      // console. A long run of failures is reported through `unhealthy` instead.
+      this.detectErrors++;
+      return null;
+    }
+  }
+
+  /** True when inference keeps failing (bad lighting, unsupported camera) — the UI can say so. */
+  get unhealthy() {
+    return this.detectErrors > 60;
   }
 
   /** Stop everything: the camera light must go out the moment gaze is disabled. */
@@ -62,5 +75,6 @@ export class GazeTracker {
     if (this.video) this.video.srcObject = null;
     this.video = null;
     this.lastFrameTime = -1;
+    this.detectErrors = 0;
   }
 }
