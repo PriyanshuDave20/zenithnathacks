@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { drawStaff, drawSnakeHead } from "./asclepius-renderer";
 import { clamp, ease, heartbeat, journeyPoint, mix, monitorPoint, type Stage } from "./heartbeat-geometry";
 
 /** Scroll-driven snake climb, followed by a compact reading-progress heartbeat. */
@@ -120,8 +121,22 @@ export function HeartbeatJourney() {
           for (let i = points.length - 1; i > 0; i--) {
             const p = points[i];
             if ((p.z >= 0) !== front) continue;
-            const thickness = mix(2, 13, Math.sin((1 - p.body) * Math.PI / 2)) * mix(1, 0.18, docked);
-            line([p, points[i - 1]], front ? blue : dark, thickness, bodyAlpha);
+            const thickness = mix(0.65, 12.5, Math.sin((1 - p.body) * Math.PI / 2)) * mix(1, 0.18, docked);
+            const nextPoint = points[i - 1];
+            const segmentLength = Math.hypot(nextPoint.x - p.x, nextPoint.y - p.y) || 1;
+            const normalX = -(nextPoint.y - p.y) / segmentLength;
+            const normalY = (nextPoint.x - p.x) / segmentLength;
+            const surface = ctx!.createLinearGradient(p.x - normalX * thickness / 2, p.y - normalY * thickness / 2, p.x + normalX * thickness / 2, p.y + normalY * thickness / 2);
+            surface.addColorStop(0, dark);
+            surface.addColorStop(.36, front ? blue : dark);
+            surface.addColorStop(.72, front ? mist : blue);
+            surface.addColorStop(1, front ? blue : dark);
+            line([p, nextPoint], dark, thickness + .8, bodyAlpha * .65);
+            line([p, nextPoint], surface, thickness, bodyAlpha);
+            // Restrained belly divisions follow the coil's own normal, fading during launch.
+            if (front && i % 5 === 0 && p.body > .07 && p.body < .85) {
+              line([{ x: p.x - normalX * thickness * .24, y: p.y - normalY * thickness * .24 }, { x: p.x + normalX * thickness * .2, y: p.y + normalY * thickness * .2 }], dark, .65, bodyAlpha * .24 * (1 - docked));
+            }
             if (front) {
               const next = points[i - 1];
               const length = Math.hypot(next.x - p.x, next.y - p.y) || 1;
@@ -137,44 +152,12 @@ export function HeartbeatJourney() {
         renderBody(false);
         // The staff stays upright. It disappears only after the snake has cleared it.
         const poleAlpha = 1 - ease(0.45, 0.72, phase);
-        // A slender, softly capped staff, scaled to its neighbouring phone rather than the page.
-        ctx!.save();
-        ctx!.globalAlpha = poleAlpha;
-        const staffFinish = ctx!.createLinearGradient(stage.x - 5, 0, stage.x + 5, 0);
-        staffFinish.addColorStop(0, blue);
-        staffFinish.addColorStop(0.3, mist);
-        staffFinish.addColorStop(0.52, white);
-        staffFinish.addColorStop(1, blue);
-        ctx!.fillStyle = staffFinish;
-        ctx!.beginPath();
-        ctx!.roundRect(stage.x - 5, stage.top - 12, 10, stage.height + 26, 5);
-        ctx!.fill();
-        line([{ x: stage.x - 1.6, y: stage.top - 6 }, { x: stage.x - 1.6, y: stage.top + stage.height + 7 }], white, 1.1, poleAlpha * 0.55);
-        ctx!.restore();
+        drawStaff(ctx!, stage, poleAlpha);
         renderBody(true);
 
         const head = points[0];
         const neck = pointAt(headDistance - 3);
-        ctx!.save();
-        ctx!.translate(head.x, head.y);
-        ctx!.rotate(Math.atan2(head.y - neck.y, head.x - neck.x));
-        ctx!.globalAlpha = 1 - docked;
-        ctx!.fillStyle = blue;
-        ctx!.beginPath();
-        ctx!.ellipse(2, 0, 11, 7, 0, 0, Math.PI * 2);
-        ctx!.fill();
-        ctx!.strokeStyle = mist;
-        ctx!.lineWidth = 1;
-        ctx!.globalAlpha = (1 - docked) * 0.45;
-        ctx!.beginPath();
-        ctx!.ellipse(1, -1, 7, 3.5, 0, Math.PI * 1.1, Math.PI * 1.8);
-        ctx!.stroke();
-        ctx!.globalAlpha = 1 - docked;
-        ctx!.fillStyle = navy;
-        ctx!.beginPath();
-        ctx!.arc(6, -2.6, 1.2, 0, Math.PI * 2);
-        ctx!.fill();
-        ctx!.restore();
+        drawSnakeHead(ctx!, head.x, head.y, Math.atan2(head.y - neck.y, head.x - neck.x), 1 - docked, { blue, dark, white, mist, navy });
 
       }
 

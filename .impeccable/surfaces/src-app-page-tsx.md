@@ -38,3 +38,9 @@ Animate the ECG profile itself inside the progress marker. On landing above the 
 ### Emblem scale and blended origin (Zach, 2026-11-07)
 
 Give the staff and snake more presence and detail while retaining their centered gap beside the phone. Blend the monitor origin: the tail unfolds backward from the arriving snake with a feathered start, rather than appearing as an already-solid bar. Keep live ECG and the clockwise top/right route.
+
+### Natural staff and serpent refinement (Zach, 2026-11-07)
+
+The original canvas illustration now depicts a plain, organically tapered timber staff with an uneven rounded top, fine grain and a healed knot. Muted timber colours belong only to this illustration's material; they introduce no global UI palette or tokens. One blue serpent retains cylindrical shading, a thin tapered tail and a smooth, nontriangular head with an eye, jaw, nostril and restrained belly hints. The concept follows the single-serpent physician's staff described by [UF's symbol reference](https://humanism.med.ufl.edu/about/chapman-projects/whats-in-a-symbol/); [WHO's logo guidance](https://www.who.int/about/policies/publishing/logo) is contextual reference only, with no WHO emblem copied.
+
+Staff height, layout, path geometry, scroll choreography, Pause/Play, hidden-tab suspension, reduced motion and mobile fallback remain unchanged. Existing canvas geometry supplies the artwork; no raster assets were generated. Compared with the incumbent DESIGN.md pulse description, the material and anatomical detail are more specific; its shared colour, type, shape and motion system remains intact. DESIGN.md and .impeccable/design.json are preserved. Finish review: ship, no fixes; baseline typecheck, lint and 48 tests pass.

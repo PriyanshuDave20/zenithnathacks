@@ -45,6 +45,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 | `POST /api/respond`: simplify clinician reply to the patient's mode and level | Backend 1 | Prem / Codex | prem/respond-api (PR #29) | Done, merged: mock-only route/pipeline, input/output redaction and 12 new tests; live adaptation/frontend wiring separate |
 | Anonymous metrics (time to first message, mode, teach-back confirmed); no content | Backend 1 | Prem / Codex | | Next Backend 1 task, not started: `/api/metrics` against existing schema; decide anonymous aggregation/sink behavior before implementation |
 | **Phase 3: Demo & polish (~20h)** | | | | |
+| Refine Rod of Asclepius staff and snake detail without changing motion | Frontend | Zach / Codex | zach/asclepius-refinement | Done: tapered timber/grain/knot, shaded serpent and head detail; finish review ship |
 | Home-page snake climb → header heartbeat animation | Frontend | Zach / Codex | zach/continuous-pulse | Done: larger detailed centered emblem, blended unfolding trail, live ECG and top/right progress; Pause/Play and reduced motion supported |
 | Two synthetic personas + canned demo script | Both | TBD | | Todo |
 | Phone-viewport testing, accessibility pass, bug fixes | Both | TBD | | Todo |

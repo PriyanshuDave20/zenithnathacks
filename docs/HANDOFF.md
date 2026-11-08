@@ -15,6 +15,14 @@ Do not put secrets or patient data here.
 
 ## Entries
 
+### 2026-11-07  Zach / Codex  zach/asclepius-refinement
+- Done: refined home Rod of Asclepius with a naturally tapered timber staff, uneven rounded tip, grain and healed knot; blue serpent with cylindrical shading, belly divisions, fine tail and clearer head/brow/jaw/eye/nostril. Original canvas artwork; timber material tones confined to the illustration. No WHO logo copied.
+- Preserved: emblem positioning/scale, geometric path, climb-to-header ECG, pause/play, hidden-tab suspension, reduced motion and existing mobile fallback. New rendering helpers in `src/components/home/asclepius-renderer.ts`; caller changes only in `heartbeat-journey.tsx`. No backend, config, dependencies, session UI or landing-copy edits.
+- Synced: latest main `51bbb7d` (merged language-search PR #7) without conflicts; other checkout’s config/language work untouched.
+- Checked: typecheck, 48 tests, lint 0 errors/188 baseline warnings; detector no findings. Browser1440x900/1280x720/390x844, climb/docked/reduced-motion endpoints, no mobile overflow. Finish reviewer ship, no material fixes. Captures in /private/tmp; Graphify queried outside Git.
+- Next: review homepage at http://localhost:3002 in isolated `/private/tmp/synapse-emblem`, then merge task branch when accepted.
+
+
 ### 2026-11-08  Zach / Claude  zach/language-search
 - Done: patient languages are now searchable and scale past the four demo languages (no new languages added).
   - Setup screen (`communication/session-setup.tsx`): a "Search languages" box above the language cards. Matching ignores case and accents and checks the native name, English name, code and `aliases` ("chinese" finds 中文, "espanol" finds Español). Enter picks the first match; Escape clears. The chosen language stays visible while searching, and a no-match message appears. The cards are sorted by English name and scroll inside their box past four rows.
