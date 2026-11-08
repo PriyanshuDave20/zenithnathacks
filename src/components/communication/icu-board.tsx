@@ -4,20 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { SynapseWordmark } from "@/components/brand/synapse-logo";
 import {
-  ArrowLeft,
-  PictoArm,
-  PictoBack,
-  PictoChest,
-  PictoHead,
-  PictoHelp,
-  PictoLeg,
-  PictoStomach,
-  PictoNo,
-  PictoPain,
-  PictoYes,
   Speaker,
   Handoff,
-  Shield,
 } from "@/components/home/icons";
 import {
   cancelGazeRequest,
@@ -44,93 +32,9 @@ import "./icu.css";
 import "./flow.css";
 import { idleMsFor, optionFor, SESSION_WARNING_MS, useSessionTimeout } from "@/lib/session-timeout";
 import { icuStyles as i } from "./styles";
-import {
-  clearFrom,
-  describeAnswers,
-  EMPTY_ANSWERS,
-  nextStep,
-  previousStep,
-  rootLabel,
-  SIDE_OPTIONS,
-  STRENGTH_OPTIONS,
-  WHERE_OPTIONS,
-  type FlowAnswers,
-  type FlowStep,
-} from "./icu-flow";
-
-const WHERE_ICONS: Record<string, (p: { size?: number }) => React.ReactNode> = {
-  head: PictoHead,
-  chest: PictoChest,
-  abdomen: PictoStomach,
-  back: PictoBack,
-  arm: PictoArm,
-  leg: PictoLeg,
-};
-
-const STEP_PROMPT: Record<Exclude<FlowStep, "root">, string> = {
-  confirm: "Is this what you want to say?",
-  where: "Where does it hurt?",
-  side: "Which side?",
-  strength: "How strong is the pain?",
-  review: "Is this right?",
-};
-
-/** One big gaze/tap target. The step's container is keyed, so every screen gets fresh elements and a fresh dwell. */
-function FlowTile({
-  id,
-  label,
-  hint,
-  icon,
-  strong,
-  onPick,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  icon?: React.ReactNode;
-  strong?: boolean;
-  onPick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className={i.target}
-      data-gaze-target={id}
-      onClick={onPick}
-      style={{
-        minHeight: strong ? 180 : 120,
-        padding: strong ? undefined : "14px 20px",
-        ...(strong ? { background: "var(--action)", color: "#fff", borderColor: "var(--action)" } : null),
-      }}
-    >
-      {icon}
-      <strong style={strong ? { fontSize: "2em" } : undefined}>{label}</strong>
-      {hint ? <span>{hint}</span> : null}
-      <span className={i.track} aria-hidden="true">
-        <span />
-      </span>
-    </button>
-  );
-}
-
-const OPTIONS = [
-  { id: "yes", label: "Yes", hint: "That is right", Icon: PictoYes },
-  { id: "no", label: "No", hint: "That is not right", Icon: PictoNo },
-  { id: "pain", label: "Pain", hint: "Something hurts", Icon: PictoPain },
-  { id: "help", label: "Help", hint: "I need attention", Icon: PictoHelp },
-  {
-    id: "reposition",
-    label: "Move me",
-    hint: "Help me get comfortable",
-    Icon: Handoff,
-  },
-  {
-    id: "pause",
-    label: "Take a break",
-    hint: "Pause this conversation",
-    Icon: Shield,
-  },
-];
+import { EyeWorkspace } from "@/components/eye/eye-workspace";
+import { describeAnswers } from "@/lib/eye/flow";
+import { eye, useEyeState } from "@/lib/eye/session";
 
 /** Uses the shared gaze layer; its marked activation preserves the existing SelectEvent contract. */
 export function IcuBoard({
@@ -140,13 +44,8 @@ export function IcuBoard({
 }) {
   const main = useRef<HTMLElement>(null);
   const [expired, setExpired] = useState(false);
-  const [answers, setAnswers] = useState<FlowAnswers>(EMPTY_ANSWERS);
-  const [step, setStep] = useState<FlowStep>("root");
-  const selected = answers.option;
-  const resetFlow = () => {
-    setAnswers(EMPTY_ANSWERS);
-    setStep("root");
-  };
+  // The conversation lives in memory (src/lib/eye/session.ts) so going back and forth keeps it; Clear wipes it.
+  const eyeState = useEyeState();
   const [contrast, setContrast] = useState(false);
   const [handoff, setHandoff] = useState(false);
   const [reviewed, setReviewed] = useState(false);
@@ -207,24 +106,13 @@ export function IcuBoard({
     setGazeAvailable(boardUp);
     return () => setGazeAvailable(false);
   }, [boardUp]);
-  // Moves to the screen after `from`; when the chain is finished the device goes to the clinician.
-  const advance = (from: FlowStep, next: FlowAnswers) => {
-    setAnswers(next);
-    const to = nextStep(from, next);
-    if (to) setStep(to);
-    else setHandoff(true);
-  };
-  const back = () => {
-    setAnswers(clearFrom(step, answers));
-    setStep(previousStep(step, answers));
-  };
   const sessionTimeout = useSessionTimeout();
   const idle = useIdle({
     enabled: !expired,
     idleMs: idleMsFor(sessionTimeout),
     graceMs: SESSION_WARNING_MS,
     onExpire: () => {
-      resetFlow();
+      eye.clear();
       setHandoff(false);
       setReviewed(false);
       setExpired(true);
@@ -248,6 +136,16 @@ export function IcuBoard({
             {gazeRequested && !handoff && !reviewed && !expired ? (
               <button type="button" onClick={stopGaze}>
                 Stop eye control
+              </button>
+            ) : null}
+            {eyeState.mode ? (
+              <button type="button" onClick={() => eye.start(eyeState.mode === "intake" ? "conversation" : "intake")}>
+                {eyeState.mode === "intake" ? "Switch to conversation" : "Switch to intake"}
+              </button>
+            ) : null}
+            {eyeState.mode ? (
+              <button type="button" onClick={eye.clear}>
+                Clear
               </button>
             ) : null}
             <button
@@ -293,22 +191,20 @@ export function IcuBoard({
       ) : reviewed ? (
         <main ref={main} tabIndex={-1} className={s.main} style={{ paddingInline: "max(24px, var(--eye-edge, 24px))" }}>
           <section className={s.sheet}>
-            <h1>What the patient chose</h1>
+            <h1>What the patient said</h1>
             <p className="sf-icu-review-choice" role="status">
-              {selected ? describeAnswers(answers).join(" · ") : "No choice was made"}
+              {eyeState.lastSaid ?? "Nothing has been said yet"}
             </p>
+            {describeAnswers(eyeState.answers).length ? <p>In progress: {describeAnswers(eyeState.answers).join(" · ")}</p> : null}
+            {eyeState.lastIntake ? <p>Intake summary: {eyeState.lastIntake}</p> : null}
             <p>
-              This is the patient’s selected phrase. No request has been sent to staff.
+              Each choice is said aloud by this device. No request has been sent to staff.
             </p>
             <div className="sf-clinician-actions">
               <button
                 type="button"
                 className={s.primary}
-                onClick={() => {
-                  // The next thing the patient wants to say starts from the board again.
-                  resetFlow();
-                  setReviewed(false);
-                }}
+                onClick={() => setReviewed(false)}
               >
                 Return to patient’s board
               </button>
@@ -356,8 +252,8 @@ export function IcuBoard({
             </div>
           ) : null}
           <div className={s.intro}>
-            {/* Once the questions start, the page title makes room so the choices fit without scrolling. */}
-            {step === "root" ? (
+            {/* Once a mode is chosen, the page title makes room so the choices fit without scrolling. */}
+            {eyeState.screen === "mode" ? (
               <div>
                 <h1>Let your eyes do the talking.</h1>
                 <p>One clear choice at a time, with room to rest.</p>
@@ -375,120 +271,7 @@ export function IcuBoard({
             ) : null}
           </div>
           <div className={i.layout} style={{ maxWidth: "min(1050px, calc(100vw - 2 * var(--eye-gutter, 0px)))" }}>
-            <section className={s.panel} aria-labelledby="icu-prompt">
-              <div className={s.panelHead}>
-                <div>
-                  <h2 id="icu-prompt">{step === "root" ? "What would you like to say?" : STEP_PROMPT[step]}</h2>
-                  <p>
-                    {step === "root"
-                      ? "After calibration, look at a choice for two seconds to select it. Tap and keyboard also work."
-                      : "Look at a choice for two seconds to select it. Tap and keyboard also work."}
-                  </p>
-                </div>
-                {step !== "root" && step !== "confirm" && step !== "review" ? (
-                  // Always on screen, at the top of the question: Back is a normal big target like any choice.
-                  <button
-                    type="button"
-                    className={s.quiet}
-                    data-gaze-target="flow-back"
-                    onClick={back}
-                    style={{ minHeight: 64, minWidth: "9rem", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: "1.1rem" }}
-                  >
-                    <ArrowLeft size={22} /> Go back
-                  </button>
-                ) : null}
-              </div>
-              <div className="sf-icu-status" role="status" aria-live="polite">
-                {step === "root" ? (
-                  "Choose what you want to say."
-                ) : (
-                  <>
-                    {step === "review" || step === "confirm" ? "You chose: " : "So far: "}
-                    <strong>{describeAnswers(answers).join(" · ")}</strong>
-                  </>
-                )}
-              </div>
-              <div
-                key={step}
-                className={i.board}
-                style={
-                  step === "where" || step === "side"
-                    ? { gridTemplateColumns: "repeat(3, 1fr)" }
-                    : step === "confirm" || step === "strength" || step === "review"
-                      ? { gridTemplateColumns: "repeat(2, 1fr)" }
-                      : undefined
-                }
-              >
-                {step === "root"
-                  ? OPTIONS.map(({ id, label, hint, Icon }) => (
-                      <button
-                        type="button"
-                        key={id}
-                        className={i.target}
-                        data-gaze-target={id}
-                        aria-pressed={selected === id}
-                        onClick={(event) => {
-                          const channel = (event.nativeEvent as MouseEvent & { synapseInputChannel?: string }).synapseInputChannel === "gaze" ? "gaze" : "tap";
-                          onSelect?.({ channel, optionId: id });
-                          setAnswers({ ...EMPTY_ANSWERS, option: id });
-                          setStep("confirm");
-                        }}
-                      >
-                        <Icon size={36} />
-                        <strong>{label}</strong>
-                        <span>{hint}</span>
-                        <span className={i.track} aria-hidden="true">
-                          <span />
-                        </span>
-                      </button>
-                    ))
-                  : null}
-                {step === "confirm" ? (
-                  <>
-                    <FlowTile id="confirm-yes" strong label="Yes, that’s right" hint={`${rootLabel(answers.option) ?? ""}`} onPick={() => advance("confirm", answers)} />
-                    <FlowTile id="confirm-no" strong={false} label="No, go back" hint="Choose again" onPick={resetFlow} />
-                  </>
-                ) : null}
-                {step === "where"
-                  ? WHERE_OPTIONS.map((o) => {
-                      const Picto = WHERE_ICONS[o.picto];
-                      return (
-                        <FlowTile
-                          key={o.id}
-                          id={`where-${o.id}`}
-                          label={o.label}
-                          icon={<Picto size={44} />}
-                          onPick={() => advance("where", { ...answers, where: o.id })}
-                        />
-                      );
-                    })
-                  : null}
-                {step === "side"
-                  ? SIDE_OPTIONS.map((o) => (
-                      <FlowTile key={o.id} id={`side-${o.id}`} label={o.label} hint={o.hint} onPick={() => advance("side", { ...answers, side: o.id })} />
-                    ))
-                  : null}
-                {step === "strength"
-                  ? STRENGTH_OPTIONS.map((o) => (
-                      <FlowTile key={o.id} id={`strength-${o.id}`} label={o.label} hint={o.hint} onPick={() => advance("strength", { ...answers, strength: o.id })} />
-                    ))
-                  : null}
-                {step === "review" ? (
-                  <>
-                    <FlowTile id="review-yes" strong label="Yes, send it to the clinician" hint={describeAnswers(answers).join(" · ")} onPick={() => advance("review", answers)} />
-                    <FlowTile
-                      id="review-change"
-                      label="No, change it"
-                      hint="Start the questions again"
-                      onPick={() => {
-                        setAnswers(clearFrom("where", answers));
-                        setStep("where");
-                      }}
-                    />
-                  </>
-                ) : null}
-              </div>
-            </section>
+            <EyeWorkspace onSelect={onSelect} />
             <details className={`${s.sheet} sf-icu-guide`}>
               <summary>Clinician guidance & preview controls</summary>
               <p>
@@ -508,10 +291,10 @@ export function IcuBoard({
               <button
                 type="button"
                 className={s.quiet}
-                disabled={!selected}
-                onClick={resetFlow}
+                disabled={!eyeState.mode}
+                onClick={eye.clear}
               >
-                Clear choice
+                Clear everything
               </button>
               <p>
                 <Speaker size={18} /> Keep spoken reassurance and a human
