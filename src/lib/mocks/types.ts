@@ -2,7 +2,7 @@
 // src/lib/contracts/ (Backend 1's first shared PR). When those land, import the real types and
 // delete this file; the UI only depends on these names.
 
-export type Mode = "standard" | "deaf_hoh" | "low_literacy" | "mute";
+export type Mode = "standard" | "deaf_hoh" | "low_literacy" | "mute" | "icu";
 export type Language = string; // BCP-47, e.g. "en", "es", "ar", "zh-Hans"
 export type ReadingLevel = 1 | 2 | 3 | 4 | 5;
 

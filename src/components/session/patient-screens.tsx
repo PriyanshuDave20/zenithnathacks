@@ -315,7 +315,7 @@ export function IntakeGuided({
     setSpots(next);
     // Low-literacy and can't-speak patients hear the part named back (the clinician hears it too).
     const part = added && getBodyPart(added.partId);
-    if (part && (mode === "low_literacy" || mode === "mute")) speak(part.text[lang.code], lang.speech);
+    if (part && (mode === "low_literacy" || mode === "mute" || mode === "icu")) speak(part.text[lang.code], lang.speech);
   }
 
   function next() {

@@ -15,9 +15,25 @@ export class GazeTracker {
   private lastFrameTime = -1;
   private detectErrors = 0;
   private generation = 0;
+  private starting: Promise<void> | null = null;
 
-  /** Ask for the camera and load the face model. Throws with a plain message on failure. */
-  async start(video: HTMLVideoElement): Promise<void> {
+  /**
+   * Ask for the camera and load the face model. Throws with a plain message on failure.
+   * Concurrent calls share one start (React Strict Mode double-invokes effects in dev, and the
+   * camera must only be requested once); stop() drops the shared start so a start right after a
+   * stop is always a fresh one rather than the cancelled one.
+   */
+  start(video: HTMLVideoElement): Promise<void> {
+    if (this.starting) return this.starting;
+    if (this.landmarker) return Promise.resolve();
+    const run = this.begin(video).finally(() => {
+      if (this.starting === run) this.starting = null;
+    });
+    this.starting = run;
+    return run;
+  }
+
+  private async begin(video: HTMLVideoElement): Promise<void> {
     const generation = ++this.generation;
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
@@ -76,6 +92,7 @@ export class GazeTracker {
   /** Stop everything: the camera light must go out the moment gaze is disabled. */
   stop() {
     this.generation++;
+    this.starting = null;
     this.landmarker?.close();
     this.landmarker = null;
     this.stream?.getTracks().forEach((t) => t.stop());
