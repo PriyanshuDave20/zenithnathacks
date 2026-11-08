@@ -3,7 +3,8 @@ import type { RegionId } from "./input";
 
 export * from "./input";
 
-export const ModeSchema = z.enum(["standard", "deaf_hoh", "low_literacy", "mute"]);
+// "icu" is the eye-gaze mode (webcam dwell-to-select); added for the ICU stretch feature.
+export const ModeSchema = z.enum(["standard", "deaf_hoh", "low_literacy", "mute", "icu"]);
 export const LanguageSchema = z.string();
 export const ReadingLevelSchema = z.union([
   z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5),

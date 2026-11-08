@@ -14,6 +14,7 @@ import {
   type TranslateResponse,
 } from "@/lib/mocks";
 import { respond, track, translate } from "./api";
+import { requestGaze } from "@/lib/input/gaze/gaze-request";
 import {
   EndScreen,
   HandoffScreen,
@@ -166,6 +167,16 @@ export function SessionApp() {
     mainRef.current?.focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
   }, [s.stage]);
+
+  // Eye tracking runs only in the ICU (eye-gaze) mode, and only once the visit is under way - the
+  // intake screen carries the patient's options, which the calibration sweep covers. Any other
+  // mode, the start/end screens, a cleared or idle-expired session withdraws the request, which
+  // stops tracking and releases the camera. The cleanup also covers leaving the page entirely.
+  useEffect(() => {
+    const gazeOn = s.mode === "icu" && s.stage !== "start" && s.stage !== "end";
+    requestGaze(gazeOn);
+    return () => requestGaze(false);
+  }, [s.mode, s.stage]);
 
   useEffect(() => {
     if (!toast) return;

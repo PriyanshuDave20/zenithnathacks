@@ -248,7 +248,7 @@ export function IntakeGuided({
     setParts((prev) => (on ? [...prev.filter((p) => p !== id), id] : prev.filter((p) => p !== id)));
     // Low-literacy and can't-speak patients hear the part named back (the clinician hears it too).
     const part = getBodyPart(id);
-    if (on && part && (mode === "low_literacy" || mode === "mute")) speak(part.text[lang.code], lang.speech);
+    if (on && part && (mode === "low_literacy" || mode === "mute" || mode === "icu")) speak(part.text[lang.code], lang.speech);
   }
 
   function next() {
