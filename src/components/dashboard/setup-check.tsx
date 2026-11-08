@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Check } from "@/components/home/icons";
-import { canSpeak, speakAloud } from "@/lib/eye/speak";
+import { canSpeak, speakAloud, type EyeSpeechStatus } from "@/lib/eye/speak";
 
 type Result = { id: string; label: string; ok: boolean; detail: string };
 
@@ -52,6 +52,7 @@ async function runChecks(): Promise<Result[]> {
 /** A before-the-visit check. It runs only when pressed (never a surprise camera prompt) and keeps nothing. */
 export function SetupCheck() {
   const [state, setState] = useState<"idle" | "running" | Result[]>("idle");
+  const [voice, setVoice] = useState<EyeSpeechStatus>("idle");
 
   async function onCheck() {
     setState("running");
@@ -78,13 +79,22 @@ export function SetupCheck() {
         </button>
         <button
           type="button"
-          onClick={() => speakAloud("This is a test of the voice. If you can hear this, speaking aloud is working.")}
+          onClick={() => speakAloud("This is a test of the voice. If you can hear this, speaking aloud is working.", setVoice)}
           disabled={!canSpeak()}
           className="press inline-flex min-h-12 items-center rounded-full px-6 text-base font-semibold text-ink ring-1 ring-line disabled:opacity-50"
         >
           Play a test sentence
         </button>
       </div>
+      <p aria-live="polite" className="mt-3 min-h-5 text-sm text-ink-soft">
+        {voice === "speaking" || voice === "queued"
+          ? "Speaking…"
+          : voice === "spoken"
+            ? "Played. If you heard it, speaking aloud works on this device."
+            : voice === "unavailable" || voice === "error"
+              ? "This device could not speak the sentence. Check the volume and that a voice is installed."
+              : ""}
+      </p>
       <div aria-live="polite" className="mt-5">
         {results ? (
           <>

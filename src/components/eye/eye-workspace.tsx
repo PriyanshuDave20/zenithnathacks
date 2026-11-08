@@ -40,6 +40,7 @@ import {
   type FlowStep,
 } from "@/lib/eye/flow";
 import { eye, useEyeState } from "@/lib/eye/session";
+import { speechStatusLabel } from "@/lib/eye/speak";
 import { FlowTile } from "./flow-tile";
 
 type Icon = (p: { size?: number }) => ReactNode;
@@ -61,7 +62,7 @@ const TITLES: Record<EyeScreen, [string, string]> = {
   home: ["Answer, or tell us something", "Look at a choice for two seconds to say it. Tap and keyboard also work."],
   needs: ["What do you need?", "Look at a choice for two seconds to say it."],
   rest: ["Resting", "Nothing is being said. Look at the button when you are ready."],
-  help: ["Help", "The device is calling for a person."],
+  help: ["Help", "The patient is asking for a person."],
   done: ["Intake complete", "Clinician: the summary is below."],
   pain_q: ["Are you in pain?", "Look at Yes or No for two seconds."],
   where: ["Where does it hurt?", "Look at a choice for two seconds."],
@@ -78,14 +79,17 @@ const channelOf = (event: MouseEvent) =>
 
 /** The Eye mode screens. All state is in memory (src/lib/eye/session.ts); this file only draws it. */
 export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => void }) {
-  const { mode, screen, answers, lastSaid, lastIntake } = useEyeState();
+  const { mode, screen, answers, lastSaid, lastIntake, speechStatus } = useEyeState();
   const emit = (event: MouseEvent, optionId: string) => onSelect?.({ channel: channelOf(event), optionId });
 
   // While Help is up it keeps calling until someone cancels it.
   useEffect(() => {
     if (screen !== "help") return;
     const timer = setInterval(() => eye.say(HELP_SAY, true), HELP_REPEAT_MS);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      eye.stopSpeech();
+    };
   }, [screen]);
 
   const isStep = (x: EyeScreen): x is FlowStep =>
@@ -155,7 +159,7 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
       <>
         <p role="alert" className="eye-help-banner">
           HELP. The patient is asking for a person.
-          <small>This device is saying it aloud. Staff have not been notified automatically.</small>
+          <small>{speechStatusLabel[speechStatus]} Staff have not been notified automatically.</small>
         </p>
         <FlowTile id="help-cancel" label="Cancel: I’m okay" hint="Look here to stop calling" onPick={() => eye.go("home")} />
       </>
@@ -242,12 +246,11 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
           </>
         ) : lastSaid ? (
           <>
-            Said aloud: <strong>{lastSaid}</strong>
+            Selected: <strong>{lastSaid}</strong>{" "}
+            <span>{speechStatusLabel[speechStatus]}</span>
           </>
-        ) : screen === "mode" ? (
-          "Nothing has been said yet."
         ) : (
-          "Nothing said yet."
+          "No choice selected yet."
         )}
       </div>
       {screen === "home" ? (

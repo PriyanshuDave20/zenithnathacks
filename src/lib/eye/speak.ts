@@ -8,20 +8,49 @@ export function canSpeak(): boolean {
   return typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
 }
 
-export function speakAloud(text: string): void {
-  if (!text.trim() || !canSpeak()) return;
+export type EyeSpeechStatus = "idle" | "queued" | "speaking" | "spoken" | "muted" | "unavailable" | "error" | "stopped";
+
+export const speechStatusLabel: Record<EyeSpeechStatus, string> = {
+  idle: "No speech yet.",
+  queued: "Waiting for the device to speak.",
+  speaking: "Speaking aloud…",
+  spoken: "Finished speaking aloud.",
+  muted: "Not spoken. Sound was off when this choice was selected.",
+  unavailable: "Speech is unavailable. Please show this choice to the clinician.",
+  error: "The device could not speak. Please show this choice to the clinician.",
+  stopped: "Speech stopped. The choice remains on screen.",
+};
+
+// Invalidates callbacks from a cancelled or superseded utterance.
+let generation = 0;
+
+export function speakAloud(text: string, onStatus: (status: EyeSpeechStatus) => void): void {
+  if (!text.trim()) return;
+  stopSpeaking();
+  if (!canSpeak()) {
+    onStatus("unavailable");
+    return;
+  }
+  const current = generation;
+  const report = (status: EyeSpeechStatus) => {
+    if (current === generation) onStatus(status);
+  };
+  report("queued");
   try {
-    window.speechSynthesis.cancel(); // the newest thing said replaces anything still being said
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "en-US";
     utterance.rate = 0.95;
+    utterance.onstart = () => report("speaking");
+    utterance.onend = () => report("spoken");
+    utterance.onerror = () => report("error");
     window.speechSynthesis.speak(utterance);
   } catch {
-    /* no voice available: the sentence is still shown on screen */
+    report("error");
   }
 }
 
 export function stopSpeaking(): void {
+  generation++;
   if (!canSpeak()) return;
   try {
     window.speechSynthesis.cancel();

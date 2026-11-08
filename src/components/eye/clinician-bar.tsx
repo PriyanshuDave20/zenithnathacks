@@ -59,7 +59,7 @@ export function ClinicianBar() {
           ) : (
             <p style={{ margin: "8px 0 0", opacity: 0.8 }}>No intake has been done yet.</p>
           )}
-          <h2 style={{ margin: "18px 0 0", fontSize: "1.05rem" }}>Said aloud for the patient</h2>
+          <h2 style={{ margin: "18px 0 0", fontSize: "1.05rem" }}>Patient choices</h2>
           {recent.length ? (
             <ul style={{ margin: "8px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 4 }}>
               {recent.map((entry) => (
