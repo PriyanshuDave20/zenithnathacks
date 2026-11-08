@@ -1,4 +1,6 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useId, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
   Mic,
   Captions,
@@ -12,6 +14,7 @@ import {
   type Mode,
   type PatientLanguage,
 } from "@/lib/mocks";
+import { byEnglishName, languageMatches } from "./language-search";
 import "./flow.css";
 
 export type SetupMode = Mode | "icu";
@@ -80,24 +83,7 @@ export function SessionSetup({
         <div>
           <fieldset className="sf-fieldset">
             <legend>Which language does the patient prefer?</legend>
-            <div className="sf-languages">
-              {PATIENT_LANGUAGES.map((l) => (
-                <button
-                  type="button"
-                  key={l.code}
-                  aria-pressed={language === l.code}
-                  onClick={() => onLanguage(l.code)}
-                >
-                  <span lang={l.code} dir={l.dir}>
-                    {l.name}
-                  </span>
-                  <small>{l.english}</small>
-                  {language === l.code ? (
-                    <span aria-hidden="true">✓</span>
-                  ) : null}
-                </button>
-              ))}
-            </div>
+            <LanguageSearch language={language} onLanguage={onLanguage} />
           </fieldset>
           <div className="sf-explainer">
             <Shield size={24} />
@@ -183,5 +169,80 @@ export function SessionSetup({
         </button>
       </div>
     </section>
+  );
+}
+
+/** Search box plus the matching languages. The chosen one stays visible while searching. */
+function LanguageSearch({
+  language,
+  onLanguage,
+}: {
+  language: PatientLanguage;
+  onLanguage: (value: PatientLanguage) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const searchId = useId();
+  const sorted = [...PATIENT_LANGUAGES].sort(byEnglishName);
+  const results = sorted.filter((l) => languageMatches(l, query));
+  const shown = sorted.filter((l) => l.code === language || languageMatches(l, query));
+
+  function onKey(e: KeyboardEvent<HTMLInputElement>) {
+    // Typing a name and pressing Enter picks the first match.
+    if (e.key === "Enter" && results[0]) {
+      e.preventDefault();
+      onLanguage(results[0].code);
+    }
+    if (e.key === "Escape") setQuery("");
+  }
+
+  return (
+    <>
+      <div className="sf-language-search">
+        <label htmlFor={searchId} className="sr-only">
+          Search languages
+        </label>
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+          <circle cx="11" cy="11" r="7" />
+          <path d="M20 20l-3.5-3.5" />
+        </svg>
+        <input
+          id={searchId}
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={onKey}
+          placeholder="Search languages"
+          autoComplete="off"
+          spellCheck={false}
+          aria-describedby={`${searchId}-count`}
+        />
+      </div>
+      <p id={`${searchId}-count`} aria-live="polite" className="sr-only">
+        {query.trim()
+          ? `${results.length} ${results.length === 1 ? "language" : "languages"} found`
+          : `${PATIENT_LANGUAGES.length} languages`}
+      </p>
+      <div className="sf-languages">
+        {shown.map((l) => (
+          <button
+            type="button"
+            key={l.code}
+            aria-pressed={language === l.code}
+            onClick={() => onLanguage(l.code)}
+          >
+            <span lang={l.code} dir={l.dir}>
+              {l.name}
+            </span>
+            <small>{l.english}</small>
+            {language === l.code ? <span aria-hidden="true">✓</span> : null}
+          </button>
+        ))}
+        {results.length === 0 ? (
+          <p className="sf-language-empty">
+            No language matches &ldquo;{query.trim()}&rdquo;. Try its English name or language code.
+          </p>
+        ) : null}
+      </div>
+    </>
   );
 }

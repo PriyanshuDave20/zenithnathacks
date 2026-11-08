@@ -38,6 +38,7 @@ import { translate, respond } from "@/components/session/api";
 import { STRINGS } from "@/components/session/strings";
 import { useRecognition, useSpeak } from "@/components/session/use-speech";
 import { useIdle } from "@/components/session/use-idle";
+import { byEnglishName } from "./language-search";
 import "./workspace.css";
 import { workspaceStyles as s } from "./styles";
 import { EkgLoader, VoiceBars } from "./motion";
@@ -1072,25 +1073,20 @@ export function CommunicationWorkspace() {
                       Clinician {role === "clinician" ? "✓" : ""}
                     </button>
                   </div>
-                  <div
-                    className={s.languages}
-                    role="group"
-                    aria-label="Patient language"
-                  >
-                    {PATIENT_LANGUAGES.map((l) => (
-                      <button
-                        type="button"
-                        key={l.code}
-                        lang={l.code}
-                        dir={l.dir}
-                        aria-pressed={language === l.code}
-                        disabled={busy || !!pending}
-                        onClick={() => changeContext(l.code)}
-                      >
-                        {l.name}
-                      </button>
-                    ))}
-                  </div>
+                  <label className={s.languages}>
+                    <span>Patient language</span>
+                    <select
+                      value={language}
+                      disabled={busy || !!pending}
+                      onChange={(e) => changeContext(e.target.value as PatientLanguage)}
+                    >
+                      {[...PATIENT_LANGUAGES].sort(byEnglishName).map((l) => (
+                        <option key={l.code} value={l.code} lang={l.code}>
+                          {l.name === l.english ? l.name : `${l.name} · ${l.english}`}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                   <div
                     lang={role === "patient" ? language : "en"}
                     dir={role === "patient" ? meta.dir : "ltr"}
