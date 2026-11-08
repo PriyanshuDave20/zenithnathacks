@@ -15,6 +15,12 @@ Do not put secrets or patient data here.
 
 ## Entries
 
+### 2026-11-08  Zach / Claude  zach/asset-pictograms
+- Done: every `Picto*` pictogram now uses Akash's artwork from `Akash NAT HACKS 2026 File/Asset-Icons.svg` instead of the hand-drawn line icons. New `src/components/home/asset-pictograms.tsx` holds 23 icons cut from the sheet (filled, `currentColor`, square viewBox); `icons.tsx` re-exports them, so existing imports (`PICTOS` in patient-screens/workspace, landing `modes.tsx`, ICU) pick them up unchanged. New ones available: `PictoYes/No/Help/Water/Pain/Nurse/Bathroom/NotUnderstood`. ICU board Yes/No/Help tiles now use the matching sheet tiles (Move me / Take a break kept their old icons; no matching art).
+- Notes: the sheet is one traced SVG with no groups; icons were cut by path bounding box per grid cell (script kept outside the repo). If Akash updates the sheet, regenerate rather than hand-edit the path data. `PictoPain` is now a filled square tile, so on the landing `modes.tsx` row it sits beside line icons.
+- Checked: typecheck, 48 tests, eslint clean on touched files; all 23 rendered in the browser on a temporary preview route (removed).
+- Touched: `src/components/home/{asset-pictograms.tsx,icons.tsx}`, `src/components/communication/icu-board.tsx`, this file.
+
 ### 2026-11-08  Zach / Claude  zach/language-search
 - Done: patient languages are now searchable and scale past the four demo languages (no new languages added).
   - Setup screen (`communication/session-setup.tsx`): a "Search languages" box above the language cards. Matching ignores case and accents and checks the native name, English name, code and `aliases` ("chinese" finds 中文, "espanol" finds Español). Enter picks the first match; Escape clears. The chosen language stays visible while searching, and a no-match message appears. The cards are sorted by English name and scroll inside their box past four rows.
