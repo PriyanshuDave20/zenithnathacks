@@ -11,6 +11,8 @@ import {
   Shield,
 } from "@/components/home/icons";
 import type { SelectEvent } from "@/lib/contracts/input";
+import { isGazeClick } from "@/lib/input/gaze/gaze-click";
+import { requestGaze, useGazeRequested } from "@/lib/input/gaze/gaze-request";
 import "./workspace.css";
 import { workspaceStyles as s } from "./styles";
 import "./icu.css";
@@ -46,6 +48,8 @@ export function IcuBoard({
   const [contrast, setContrast] = useState(false);
   const [handoff, setHandoff] = useState(false);
   const [reviewed, setReviewed] = useState(false);
+  const gazeOn = useGazeRequested();
+  const boardShown = !handoff && !reviewed;
   useEffect(
     () => () => {
       setSelected(null);
@@ -54,6 +58,13 @@ export function IcuBoard({
     },
     [],
   );
+  // Eye control: while the patient's board is on screen the gaze layer runs (camera on, sweep
+  // calibration over these options, then stare-to-select). It stops while the board is hidden
+  // for the handoff and on the clinician's review screen, and when the board unmounts.
+  useEffect(() => {
+    if (boardShown) requestGaze(true);
+    return () => requestGaze(false);
+  }, [boardShown]);
   return (
     <div className={`${s.root} ${contrast ? s.high : ""}`}>
       <header className={s.header}>
@@ -106,8 +117,8 @@ export function IcuBoard({
                 : "No choice was made"}
             </p>
             <p>
-              This is a manual interface preview. No request has been sent to
-              staff.
+              This is a gaze-driven communication aid, not a diagnostic tool.
+              No request has been sent to staff.
             </p>
             <div className="sf-clinician-actions">
               <button
@@ -131,7 +142,9 @@ export function IcuBoard({
               <p>One clear choice at a time, with room to rest.</p>
             </div>
             <span className={s.badge}>
-              Interface preview · Eye tracking not connected
+              {gazeOn
+                ? "Eye tracking on · the camera runs on this device only"
+                : "Eye tracking starting · allow the camera to begin"}
             </span>
           </div>
           <div className={i.layout}>
@@ -139,7 +152,7 @@ export function IcuBoard({
               <div className={s.panelHead}>
                 <div>
                   <h2 id="icu-prompt">What would you like to say?</h2>
-                  <p>Tap or use Tab and Enter to preview a choice.</p>
+                  <p>Stare at a choice for two seconds, or tap or use Tab and Enter.</p>
                 </div>
               </div>
               <div className="sf-icu-status" role="status" aria-live="polite">
@@ -161,9 +174,9 @@ export function IcuBoard({
                     key={id}
                     className={i.target}
                     aria-pressed={selected === id}
-                    onClick={() => {
+                    onClick={(e) => {
                       setSelected(id);
-                      onSelect?.({ channel: "tap", optionId: id });
+                      onSelect?.({ channel: isGazeClick(e.nativeEvent) ? "gaze" : "tap", optionId: id });
                     }}
                   >
                     <Icon size={36} />
@@ -190,13 +203,17 @@ export function IcuBoard({
               </p>
               <h3>Eye control</h3>
               <p>
-                Camera access, calibration, gaze detection, and dwell selection
-                will be connected by the input-channel team.
+                When the board opens, the camera turns on and a dot moves around
+                the screen for 30 seconds - follow it with your eyes. It rests
+                on each choice while it calibrates. Afterwards, hold your gaze
+                on a choice for two seconds to select it; a ring shows the
+                progress. Gaze can also turn eye tracking off by resting on the
+                small eye switch at the screen&rsquo;s edge.
               </p>
               <p className={s.notice}>
-                This page only previews the interface. Hover or keyboard focus
-                shows a dwell indicator; it does not select a target. No camera
-                is accessed.
+                Camera frames are processed on this device only. Nothing is
+                uploaded, recorded, or stored, and choices here do not notify
+                staff or trigger clinical actions.
               </p>
               <p>
                 Choices here do not notify staff or trigger clinical actions.
@@ -221,8 +238,8 @@ export function IcuBoard({
         <footer className={s.footer}>
           <div className={s.footerInner}>
             <p>
-              No camera feed, recording, or stored selections. Frontend preview
-              only.
+              Camera frames are processed on this device only. Nothing is
+              uploaded, recorded, or stored.
             </p>
             <button
               type="button"
