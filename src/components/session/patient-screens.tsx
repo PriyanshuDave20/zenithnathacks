@@ -32,7 +32,7 @@ import {
 } from "@/components/home/icons";
 import { BodyDiagram } from "@/components/input/body-diagram";
 import { RegionIdSchema } from "@/lib/contracts";
-import { getBodyPart, spotParts, spotsToInputs, type BodySpot } from "@/lib/input/body-parts";
+import { getBodyPart, spotParts, spotsToInputs, type BodyFigure, type BodySpot } from "@/lib/input/body-parts";
 import { STRINGS } from "./strings";
 import { ActionBar, PrimaryButton, QuietButton, Screen, SpeechBubble, Spinner, Tile, Title } from "./ui";
 import { useRecognition, useSpeak } from "./use-speech";
@@ -222,10 +222,13 @@ export function IntakeFree({
 export function IntakeGuided({
   lang,
   mode,
+  figure,
   onSubmit,
 }: {
   lang: LangMeta;
   mode: Mode;
+  /** The body drawing the clinician chose. */
+  figure?: BodyFigure;
   /** `spots` are the exact places touched on the body diagram, for the clinician's map. */
   onSubmit: (inputs: TranslateInput[], spots?: BodySpot[]) => void;
 }) {
@@ -284,7 +287,7 @@ export function IntakeGuided({
 
           {bodyOn ? (
             <div className="mt-2">
-              <BodyDiagram regions={RegionIdSchema.options} onSelect={() => {}} lang={lang.code} spots={spots} onSpotsChange={changeSpots} />
+              <BodyDiagram regions={RegionIdSchema.options} onSelect={() => {}} lang={lang.code} spots={spots} onSpotsChange={changeSpots} figure={figure} />
             </div>
           ) : isScale ? (
             <div className="mt-4 grid grid-cols-5 gap-2 sm:gap-3">

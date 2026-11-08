@@ -21,7 +21,7 @@ import {
   PictoLeg,
 } from "@/components/home/icons";
 import { BodyDiagram, BodyMap } from "@/components/input/body-diagram";
-import { spotLabels, spotParts, spotsToInputs, type BodySpot } from "@/lib/input/body-parts";
+import { spotLabels, spotParts, spotsToInputs, type BodyFigure, type BodySpot } from "@/lib/input/body-parts";
 import {
   PATIENT_LANGUAGES,
   QUESTIONS,
@@ -183,6 +183,8 @@ export function CommunicationWorkspace() {
   const [role, setRole] = useState<"patient" | "clinician">("clinician");
   const [setupMode, setSetupMode] = useState<SetupMode>("standard");
   const [patientPath, setPatientPath] = useState<"free" | "guided">("free");
+  // Which body drawing the patient and clinician see. Display only: not sent or stored.
+  const [bodyFigure, setBodyFigure] = useState<BodyFigure>("male");
   // The patient's last submitted report, kept so a failed translation can be retried or shown as-is.
   const [patientReport, setPatientReport] = useState<{
     inputs: TranslateInput[];
@@ -712,6 +714,8 @@ export function CommunicationWorkspace() {
               }
             }}
             onPath={setPatientPath}
+            figure={bodyFigure}
+            onFigure={setBodyFigure}
             displayControls={
               <div className="sf-display-controls">
                 <div role="group" aria-label="Patient text size">
@@ -811,7 +815,12 @@ export function CommunicationWorkspace() {
               </p>
             ) : null}
             {patientPath === "guided" ? (
-              <IntakeGuided lang={lang} mode={mode} onSubmit={submitPatient} />
+              <IntakeGuided
+                lang={lang}
+                mode={mode}
+                figure={bodyFigure}
+                onSubmit={submitPatient}
+              />
             ) : (
               <IntakeFree
                 lang={lang}
@@ -1001,6 +1010,7 @@ export function CommunicationWorkspace() {
                         ) : null}
                         {t.spots?.length ? (
                           <BodyMap
+                            figure={bodyFigure}
                             spots={t.spots}
                             className="mt-2 w-full max-w-64"
                           />
@@ -1239,6 +1249,7 @@ export function CommunicationWorkspace() {
                             </button>
                             {body ? (
                               <BodyDiagram
+                                figure={bodyFigure}
                                 lang={language}
                                 spots={bodySpots}
                                 regions={[
@@ -1518,6 +1529,7 @@ export function CommunicationWorkspace() {
                   <div>
                     <h3>Where it hurts · every spot the patient marked</h3>
                     <BodyMap
+                      figure={bodyFigure}
                       spots={allSpots}
                       className="mt-2 w-full max-w-sm"
                     />

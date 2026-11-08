@@ -5,6 +5,8 @@
 import type { RegionId } from "@/lib/contracts/input";
 
 export type BodyView = "front" | "back";
+/** Which drawing the clinician chose for the body diagram. Display only: never stored or sent. */
+export type BodyFigure = "male" | "female";
 export type BodySide = "right" | "left";
 type Lang = "en" | "es" | "ar" | "zh-Hans";
 type Text = Record<Lang, string>;
