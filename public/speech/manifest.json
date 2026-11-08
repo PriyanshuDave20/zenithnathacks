@@ -1,1 +1,1073 @@
-{"schemaVersion":1,"clips":[]}
+{
+  "schemaVersion": 1,
+  "clips": [
+    {
+      "id": "question:chief_complaint",
+      "language": "zh-Hans",
+      "text": "今天把你带到这里的主要问题是什么？",
+      "src": "/speech/zh-Hans-96c391c4b1c488ba68deca8dd96cff7ec33c60bf0fd81261e91b44cc49be1de2.mp3"
+    },
+    {
+      "id": "option:chief_complaint:pain",
+      "language": "zh-Hans",
+      "text": "疼痛",
+      "src": "/speech/zh-Hans-e13cc0fa55b4740f02ff7a194ba761a341da302f03fae3b7de4b8b7ff4d19d5e.mp3"
+    },
+    {
+      "id": "option:chief_complaint:breathing",
+      "language": "zh-Hans",
+      "text": "呼吸困难",
+      "src": "/speech/zh-Hans-38c78df2ed23dccecb2c810049892906293a5b3656fd909380dad3dcba92836a.mp3"
+    },
+    {
+      "id": "option:chief_complaint:fever",
+      "language": "zh-Hans",
+      "text": "发烧",
+      "src": "/speech/zh-Hans-7cff8086c7895685ff81f192fdd196950c998752a84b944fb35efa9f3f4f4941.mp3"
+    },
+    {
+      "id": "option:chief_complaint:other",
+      "language": "zh-Hans",
+      "text": "别的什么",
+      "src": "/speech/zh-Hans-bd92fb86824acf9cf2e5bfb4e055aa14f0d8de5d353813cf9e1de0a63246a03c.mp3"
+    },
+    {
+      "id": "option:chief_complaint:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:onset",
+      "language": "zh-Hans",
+      "text": "这一切是什么时候开始的？是突然的还是缓慢的？",
+      "src": "/speech/zh-Hans-6698bf8da8d0c75eceb1b919c03ba0177680f9a1642425fd025827c0bf806582.mp3"
+    },
+    {
+      "id": "option:onset:sudden",
+      "language": "zh-Hans",
+      "text": "突然",
+      "src": "/speech/zh-Hans-8fb925fc113196b75395b5bcc57331a6e8c28717155e9898141829d99128b38b.mp3"
+    },
+    {
+      "id": "option:onset:gradual",
+      "language": "zh-Hans",
+      "text": "慢慢来",
+      "src": "/speech/zh-Hans-2cbfacf030c621778fbc7f575b330ee58788e23c55e4072a7658dbda5e303c4c.mp3"
+    },
+    {
+      "id": "option:onset:today",
+      "language": "zh-Hans",
+      "text": "现今",
+      "src": "/speech/zh-Hans-8856f284bc12be54c88cf7aa8981fbf66223662845c918111f94cb7e80d1060b.mp3"
+    },
+    {
+      "id": "option:onset:days",
+      "language": "zh-Hans",
+      "text": "几天前",
+      "src": "/speech/zh-Hans-1bfb599d5b74d68cb50083fdeaefc17f267eb103a19934627245486d2299d5bc.mp3"
+    },
+    {
+      "id": "option:onset:longer",
+      "language": "zh-Hans",
+      "text": "更久以前",
+      "src": "/speech/zh-Hans-33a9d2dd568c67651c086ff83277452cb4627c1895d5609b3658cf2147ef3d93.mp3"
+    },
+    {
+      "id": "option:onset:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:where",
+      "language": "zh-Hans",
+      "text": "你感觉到哪里？请用一根手指。",
+      "src": "/speech/zh-Hans-2643abbe9631e3dd44030a0d5c2b7f54450d4c8d4c57b5b157cc4246d2fa0a35.mp3"
+    },
+    {
+      "id": "option:where:head",
+      "language": "zh-Hans",
+      "text": "首领",
+      "src": "/speech/zh-Hans-3d2da0c0d4e9b0663f87402543c4fa45042183d1d81e18e7e336fef04621619c.mp3"
+    },
+    {
+      "id": "option:where:neck",
+      "language": "zh-Hans",
+      "text": "琴颈",
+      "src": "/speech/zh-Hans-f113f175730f4004060a5cf09ec6f40cf2f8b996f3fcaeef98f9c158d30845da.mp3"
+    },
+    {
+      "id": "option:where:chest",
+      "language": "zh-Hans",
+      "text": "胸部",
+      "src": "/speech/zh-Hans-924ba6c0b1b37a09d0adb4d88b42b726035e195d4ad52714a8ab9085d76d9750.mp3"
+    },
+    {
+      "id": "option:where:abdomen",
+      "language": "zh-Hans",
+      "text": "胃部",
+      "src": "/speech/zh-Hans-a2f4e3eb6a0308ffee4515025e59334884f8ad2765add60e0fb5083ed70b85e8.mp3"
+    },
+    {
+      "id": "option:where:back",
+      "language": "zh-Hans",
+      "text": "返回",
+      "src": "/speech/zh-Hans-46d94ef73171aceea0b61e81024cd9affbd8b05d634d25b6016ed4691fe66073.mp3"
+    },
+    {
+      "id": "option:where:left_arm",
+      "language": "zh-Hans",
+      "text": "左臂",
+      "src": "/speech/zh-Hans-fd7a0648550a76180222ed8c4d2a5a88b3152d23f406cc36c6cef4589a359753.mp3"
+    },
+    {
+      "id": "option:where:right_arm",
+      "language": "zh-Hans",
+      "text": "右臂",
+      "src": "/speech/zh-Hans-9a502157274ee8497c57326fb1af7d26216508b7cfed467bf26a337e83f07ae0.mp3"
+    },
+    {
+      "id": "option:where:left_leg",
+      "language": "zh-Hans",
+      "text": "左腿",
+      "src": "/speech/zh-Hans-da465d3c04b90b167066c1358425edc77606e4cbbce023d1ed7e02926aa7893f.mp3"
+    },
+    {
+      "id": "option:where:right_leg",
+      "language": "zh-Hans",
+      "text": "右腿",
+      "src": "/speech/zh-Hans-c1d949073c8e37cfe883389549e492837a5e66055b289855608914c21d3f15dc.mp3"
+    },
+    {
+      "id": "option:where:elsewhere",
+      "language": "zh-Hans",
+      "text": "别的地方",
+      "src": "/speech/zh-Hans-5b8689a73bca418fb63d04ed5c3728ff0907ef2f998afdfd7f5af462ba258f53.mp3"
+    },
+    {
+      "id": "option:where:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:how_long",
+      "language": "zh-Hans",
+      "text": "这种感觉持续多久？是一直存在，还是时有时无？",
+      "src": "/speech/zh-Hans-0fa0d63616fd6968bf10c1aaceeac2a2083ed4a9481870af75ed905c19ac7946.mp3"
+    },
+    {
+      "id": "option:how_long:minutes",
+      "language": "zh-Hans",
+      "text": "分钟",
+      "src": "/speech/zh-Hans-64db00e83ad5d18a5ef4488e7333422c984de292ca5ea2582b0f2ba656e5c36f.mp3"
+    },
+    {
+      "id": "option:how_long:hours",
+      "language": "zh-Hans",
+      "text": "开放时间",
+      "src": "/speech/zh-Hans-95d217f8e1315c0f29be362f5aa2c6229627101bae366a02e4bec5055687fb75.mp3"
+    },
+    {
+      "id": "option:how_long:days",
+      "language": "zh-Hans",
+      "text": "日子",
+      "src": "/speech/zh-Hans-1ef132819e2710d0eb44e96b61aae6d267b376a5d8dd9c814a83e9738cdc58ce.mp3"
+    },
+    {
+      "id": "option:how_long:constant",
+      "language": "zh-Hans",
+      "text": "一直都是",
+      "src": "/speech/zh-Hans-2bea8ba16a8754ec737ca74dd68c8af9c448a24fb992378ff55eb6e5d5f984f7.mp3"
+    },
+    {
+      "id": "option:how_long:intermittent",
+      "language": "zh-Hans",
+      "text": "时来去去",
+      "src": "/speech/zh-Hans-1c07b09fb833897a9cdfc5fe51a03e905ed19a076680b0fcf994e2d8da24cebf.mp3"
+    },
+    {
+      "id": "option:how_long:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:how_strong",
+      "language": "zh-Hans",
+      "text": "从0（无痛）到10（你能想象到的最痛），有多严重？",
+      "src": "/speech/zh-Hans-f86cbbeb3019355b8ceb481174143b782e95d4e421f83ac66c3730b65faf558a.mp3"
+    },
+    {
+      "id": "option:how_strong:s0",
+      "language": "zh-Hans",
+      "text": "0/10",
+      "src": "/speech/zh-Hans-a786d232bbc865669db3b224e8b91cf2417078bf4f4ad2e8a065d02ea590b881.mp3"
+    },
+    {
+      "id": "option:how_strong:s1",
+      "language": "zh-Hans",
+      "text": "1/10",
+      "src": "/speech/zh-Hans-557c4d37f82baf89e19efef5ba16b99f8e9fbe66c710b43b16dc463939a38c5e.mp3"
+    },
+    {
+      "id": "option:how_strong:s2",
+      "language": "zh-Hans",
+      "text": "2/10",
+      "src": "/speech/zh-Hans-ef396e909f4c3f30a623a980ac09a40a4324574d7d7326769f1a0bcefb92bf2b.mp3"
+    },
+    {
+      "id": "option:how_strong:s3",
+      "language": "zh-Hans",
+      "text": "3/10",
+      "src": "/speech/zh-Hans-8bdd20f78d5d533f251ebe774aa701e72795807243f021f6533ce14357276336.mp3"
+    },
+    {
+      "id": "option:how_strong:s4",
+      "language": "zh-Hans",
+      "text": "4/10",
+      "src": "/speech/zh-Hans-98e4458180a503b1954481b1ff207c2fefb52c9d35ea0f2f68d392ec7d005b6d.mp3"
+    },
+    {
+      "id": "option:how_strong:s5",
+      "language": "zh-Hans",
+      "text": "5/10",
+      "src": "/speech/zh-Hans-0cde8ab29b201ac6ade6bdb9fec33e46de754da3a569a414582ee6104e9588cc.mp3"
+    },
+    {
+      "id": "option:how_strong:s6",
+      "language": "zh-Hans",
+      "text": "6/10",
+      "src": "/speech/zh-Hans-64374f6f6ef659f6d619ace6aeccea2b003d79a40ca5d6f09396af48f0158ab4.mp3"
+    },
+    {
+      "id": "option:how_strong:s7",
+      "language": "zh-Hans",
+      "text": "7/10",
+      "src": "/speech/zh-Hans-57f8cbaa756defa9a8c66ffb2f8dc9150725618b25c9bad41a5506357e8d2b7b.mp3"
+    },
+    {
+      "id": "option:how_strong:s8",
+      "language": "zh-Hans",
+      "text": "8/10",
+      "src": "/speech/zh-Hans-e48a83ce48d5313bb6d2ce1097102181225fd7e630367b801dcfe3c5d06db986.mp3"
+    },
+    {
+      "id": "option:how_strong:s9",
+      "language": "zh-Hans",
+      "text": "9/10",
+      "src": "/speech/zh-Hans-f6301c6619db194b9ef4c72adb609415c2645ae2495e18700a58cd9c66c3ac8c.mp3"
+    },
+    {
+      "id": "option:how_strong:s10",
+      "language": "zh-Hans",
+      "text": "10/10",
+      "src": "/speech/zh-Hans-7102866db2a90b8153adc67e04edbab695bc73b5711f370991586969335866bf.mp3"
+    },
+    {
+      "id": "option:how_strong:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:character",
+      "language": "zh-Hans",
+      "text": "感觉如何？尖锐、钝痛、灼烧、挤压，还是别的什么？",
+      "src": "/speech/zh-Hans-160c1c9b7ace4b35f06fb28c6a1c85d40fca31b80fe93e1c33d20a27f3188927.mp3"
+    },
+    {
+      "id": "option:character:sharp",
+      "language": "zh-Hans",
+      "text": "夏普",
+      "src": "/speech/zh-Hans-bee9cb51e433179e050646a5012f3fef490b01d85418846719ff735c8b5ec86f.mp3"
+    },
+    {
+      "id": "option:character:dull",
+      "language": "zh-Hans",
+      "text": "无聊",
+      "src": "/speech/zh-Hans-e2fec46231e6a0c3df450bff9a9abda1cbe9b1b7fe2a9cf24143d3feedb2b8a8.mp3"
+    },
+    {
+      "id": "option:character:burning",
+      "language": "zh-Hans",
+      "text": "焚烧",
+      "src": "/speech/zh-Hans-eaad8729066e0bf058a8744f6d1a32a6bd4055bd886466c0d61f017f6f1686f4.mp3"
+    },
+    {
+      "id": "option:character:squeezing",
+      "language": "zh-Hans",
+      "text": "挤压",
+      "src": "/speech/zh-Hans-7b956baea253366b0aaf647439bf6f0c4f52431de26529380252cfc5195695e8.mp3"
+    },
+    {
+      "id": "option:character:other",
+      "language": "zh-Hans",
+      "text": "别的什么",
+      "src": "/speech/zh-Hans-bd92fb86824acf9cf2e5bfb4e055aa14f0d8de5d353813cf9e1de0a63246a03c.mp3"
+    },
+    {
+      "id": "option:character:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:aggravating_factors",
+      "language": "zh-Hans",
+      "text": "什么让情况更糟？",
+      "src": "/speech/zh-Hans-532a6807d2e14529d5d295b5b8cf90cafb8676444ba0cebfc05bf4d42c189d91.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:moving",
+      "language": "zh-Hans",
+      "text": "搬家",
+      "src": "/speech/zh-Hans-910038cba08bd52469a30ecb2af2373d97b39c76158ae13c62c92ad8cd764e1a.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:breathing",
+      "language": "zh-Hans",
+      "text": "呼吸",
+      "src": "/speech/zh-Hans-739a536edaeed5871fa0a8710f058fd0beb406415a608b786433cbb6d91e538f.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:eating",
+      "language": "zh-Hans",
+      "text": "饮食",
+      "src": "/speech/zh-Hans-920d64cabed56cc37f29e67b777381fe69ad23ba431bef8d981b7cffaea6e099.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:nothing",
+      "language": "zh-Hans",
+      "text": "没什么特别的",
+      "src": "/speech/zh-Hans-d439fe6a958fa9123712281bd151af15515321c21582bbaff2bff19a1178eb9c.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:other",
+      "language": "zh-Hans",
+      "text": "别的什么",
+      "src": "/speech/zh-Hans-bd92fb86824acf9cf2e5bfb4e055aa14f0d8de5d353813cf9e1de0a63246a03c.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:relieving_factors",
+      "language": "zh-Hans",
+      "text": "是什么让它更好？",
+      "src": "/speech/zh-Hans-5cc6cbd64e85e9ad9b83692d508c37b520d7599fde609dcd8db60ae849ed1961.mp3"
+    },
+    {
+      "id": "option:relieving_factors:rest",
+      "language": "zh-Hans",
+      "text": "休息",
+      "src": "/speech/zh-Hans-5d7e30590a029510a55ae247b8779828e8128c9d3087560de3ad7068c561a79f.mp3"
+    },
+    {
+      "id": "option:relieving_factors:medicine",
+      "language": "zh-Hans",
+      "text": "医学",
+      "src": "/speech/zh-Hans-30c8d9468f66dd16c57e88a595f5d59d233b124a4d32f2bb8a6903720a9c80f3.mp3"
+    },
+    {
+      "id": "option:relieving_factors:position",
+      "language": "zh-Hans",
+      "text": "立场变动",
+      "src": "/speech/zh-Hans-91ffae05bf2142432c405ee418013cf265389048d5623a441b35a35bdc8ae241.mp3"
+    },
+    {
+      "id": "option:relieving_factors:nothing",
+      "language": "zh-Hans",
+      "text": "什么都没有",
+      "src": "/speech/zh-Hans-70cf84a30eff5e4b38b3805c7811e6c1bee463d415f79f5adc96ef31686132d4.mp3"
+    },
+    {
+      "id": "option:relieving_factors:other",
+      "language": "zh-Hans",
+      "text": "别的什么",
+      "src": "/speech/zh-Hans-bd92fb86824acf9cf2e5bfb4e055aa14f0d8de5d353813cf9e1de0a63246a03c.mp3"
+    },
+    {
+      "id": "option:relieving_factors:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:radiation",
+      "language": "zh-Hans",
+      "text": "疼痛会转移到身体的其他地方吗？",
+      "src": "/speech/zh-Hans-544bbbc6f0ed184b50236b634e79bcb38b89b9027feb487fc3650085ffdb0a33.mp3"
+    },
+    {
+      "id": "option:radiation:stays",
+      "language": "zh-Hans",
+      "text": "停留在一个地方",
+      "src": "/speech/zh-Hans-23b1df7ad55ece2e7a28ddf0d71e90688683ceb915c5ef9f3a2a8ea8f194c167.mp3"
+    },
+    {
+      "id": "option:radiation:moves",
+      "language": "zh-Hans",
+      "text": "搬到别处",
+      "src": "/speech/zh-Hans-32ffad1f281867d91afde4c2925963d3dca38f6385343d4d6a74ab06d8198d43.mp3"
+    },
+    {
+      "id": "option:radiation:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:associated_symptoms",
+      "language": "zh-Hans",
+      "text": "你还有其他症状吗，比如发烧、呕吐或呼吸困难？",
+      "src": "/speech/zh-Hans-dd537ca939236a09d01607912f221a65e2095ac8fb093b6782f0c20d301b550b.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:fever",
+      "language": "zh-Hans",
+      "text": "发烧",
+      "src": "/speech/zh-Hans-7cff8086c7895685ff81f192fdd196950c998752a84b944fb35efa9f3f4f4941.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:vomiting",
+      "language": "zh-Hans",
+      "text": "呕吐",
+      "src": "/speech/zh-Hans-a2b7e7b63394a80ba4b8cf139262baa47e122e7861c86c495f30bad19d002b4b.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:short_breath",
+      "language": "zh-Hans",
+      "text": "呼吸困难",
+      "src": "/speech/zh-Hans-38c78df2ed23dccecb2c810049892906293a5b3656fd909380dad3dcba92836a.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:none",
+      "language": "zh-Hans",
+      "text": "别无他物",
+      "src": "/speech/zh-Hans-43cda95a77c474e80791b5dc106c6681459af67984fb579645230ac3200e2b71.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:other",
+      "language": "zh-Hans",
+      "text": "别的什么",
+      "src": "/speech/zh-Hans-bd92fb86824acf9cf2e5bfb4e055aa14f0d8de5d353813cf9e1de0a63246a03c.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:red_flags",
+      "language": "zh-Hans",
+      "text": "你有没有出现胸痛、呼吸困难、晕倒或身体一侧无力？",
+      "src": "/speech/zh-Hans-d490be0aec554235d6b4533d4a69b44a458ea72ba5b0b887264de203b077f7df.mp3"
+    },
+    {
+      "id": "option:red_flags:chest_pain",
+      "language": "zh-Hans",
+      "text": "胸痛",
+      "src": "/speech/zh-Hans-768d6c5a2d95e781e115f07295ad39dedc74ff12eb7e8e10bb200861984840b1.mp3"
+    },
+    {
+      "id": "option:red_flags:short_breath",
+      "language": "zh-Hans",
+      "text": "呼吸困难",
+      "src": "/speech/zh-Hans-38c78df2ed23dccecb2c810049892906293a5b3656fd909380dad3dcba92836a.mp3"
+    },
+    {
+      "id": "option:red_flags:fainting",
+      "language": "zh-Hans",
+      "text": "晕倒",
+      "src": "/speech/zh-Hans-6102ba751c2cb824a8e19a62a6882a95c58f1cfd4032cc734b4ed31a1222be90.mp3"
+    },
+    {
+      "id": "option:red_flags:one_sided_weakness",
+      "language": "zh-Hans",
+      "text": "一侧无力",
+      "src": "/speech/zh-Hans-f7872489fec31afa75a4c40564c4e4b432fc55175771c16ba0b79ba43682d814.mp3"
+    },
+    {
+      "id": "option:red_flags:none",
+      "language": "zh-Hans",
+      "text": "这些都不是",
+      "src": "/speech/zh-Hans-14a59ae4b0b2dc8f23400290c0f56c2d055aa454209c24898e3d8646efc081f4.mp3"
+    },
+    {
+      "id": "option:red_flags:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:allergies",
+      "language": "zh-Hans",
+      "text": "你对任何药物、食物或其他东西过敏吗？你反应时会发生什么？",
+      "src": "/speech/zh-Hans-1dbc84748cf7868c9891cb99562b181826cde0d334ce79ea0cc3f6dda5472822.mp3"
+    },
+    {
+      "id": "option:allergies:medicine",
+      "language": "zh-Hans",
+      "text": "药物过敏",
+      "src": "/speech/zh-Hans-951b3fdb47d27315e215b55ceccb601fff8ba9dc021ccec1e23ea4b14596165e.mp3"
+    },
+    {
+      "id": "option:allergies:food",
+      "language": "zh-Hans",
+      "text": "食物过敏",
+      "src": "/speech/zh-Hans-0d9df256bd3ff0e91ef80b9033a988b7ac9bc209ff2e0c97db45a747f2844bb8.mp3"
+    },
+    {
+      "id": "option:allergies:other",
+      "language": "zh-Hans",
+      "text": "又是过敏",
+      "src": "/speech/zh-Hans-d06053aa061ef9fa7c0b57cf87c99cfc217c98d9e3c9d6bec1adf98aa316faaa.mp3"
+    },
+    {
+      "id": "option:allergies:none",
+      "language": "zh-Hans",
+      "text": "没有已知的过敏",
+      "src": "/speech/zh-Hans-5bb464bc94c8e59f72513da26e58474646c37a4099fe4777b57ad9700205d189.mp3"
+    },
+    {
+      "id": "option:allergies:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:current_medications",
+      "language": "zh-Hans",
+      "text": "你服用哪些药物？请包括维生素、草药产品以及任何未经处方购买的药物。",
+      "src": "/speech/zh-Hans-caeec1ca36735b9645a7785d69a3a76aae4609bbfcb96756a0c7b8e2314d5835.mp3"
+    },
+    {
+      "id": "option:current_medications:prescription",
+      "language": "zh-Hans",
+      "text": "处方药",
+      "src": "/speech/zh-Hans-1a8a9da5b8b02ac6f6df43bf9c3b20740f4a5569d4df1a4c99a1761103d436d8.mp3"
+    },
+    {
+      "id": "option:current_medications:nonprescription",
+      "language": "zh-Hans",
+      "text": "无处方购买的药物",
+      "src": "/speech/zh-Hans-49ce4d396bfef3ff204826e9f4070043050c2fd27c86d31704909f9f81a6ef05.mp3"
+    },
+    {
+      "id": "option:current_medications:supplements",
+      "language": "zh-Hans",
+      "text": "维生素或草本产品",
+      "src": "/speech/zh-Hans-53632d35e2e4b45f7caa105926659e8350db200466a65a3c174f3ba2e96fc5da.mp3"
+    },
+    {
+      "id": "option:current_medications:none",
+      "language": "zh-Hans",
+      "text": "没有药物",
+      "src": "/speech/zh-Hans-45ef879d162cbf513c7e1d442b3c6203e19f506e11ea6fe3e248d4224c0deaed.mp3"
+    },
+    {
+      "id": "option:current_medications:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:past_medical_history",
+      "language": "zh-Hans",
+      "text": "你有没有经历过严重疾病、手术或住院？",
+      "src": "/speech/zh-Hans-4726fd5759d3eb9c14470c03f50b61c0464a9522db9ed04cdafb37e98930cc26.mp3"
+    },
+    {
+      "id": "option:past_medical_history:illness",
+      "language": "zh-Hans",
+      "text": "重病",
+      "src": "/speech/zh-Hans-7e3c8546cef9cf3b43ddc769143b43e7630d847c3f1e66f61cd80b88779e1ffe.mp3"
+    },
+    {
+      "id": "option:past_medical_history:surgery",
+      "language": "zh-Hans",
+      "text": "手术",
+      "src": "/speech/zh-Hans-dc8224789c2b143feb7a8cdf9cd7a6b2738dfa0444fd2312a679d1e2f6b1879b.mp3"
+    },
+    {
+      "id": "option:past_medical_history:hospital",
+      "language": "zh-Hans",
+      "text": "住院",
+      "src": "/speech/zh-Hans-1612b4036849379a2876b651f2ae47ed8e925ff3622e40a1f4d2d1a50fbdd8c6.mp3"
+    },
+    {
+      "id": "option:past_medical_history:none",
+      "language": "zh-Hans",
+      "text": "这些都不是",
+      "src": "/speech/zh-Hans-14a59ae4b0b2dc8f23400290c0f56c2d055aa454209c24898e3d8646efc081f4.mp3"
+    },
+    {
+      "id": "option:past_medical_history:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:family_history",
+      "language": "zh-Hans",
+      "text": "你家里有人患过心脏病、糖尿病、癌症或中风吗？",
+      "src": "/speech/zh-Hans-3c77fabf07aedd617e2fbe773b97dea891f3b5a4c229950397cbaffd5eb7ba15.mp3"
+    },
+    {
+      "id": "option:family_history:heart_disease",
+      "language": "zh-Hans",
+      "text": "心脏病",
+      "src": "/speech/zh-Hans-eb339d6de49f4b2f464c9dd86d99ab697b78fb4403a409dcfd1e1513212a09aa.mp3"
+    },
+    {
+      "id": "option:family_history:diabetes",
+      "language": "zh-Hans",
+      "text": "糖尿病",
+      "src": "/speech/zh-Hans-03dfe8782d440e6adfebec846b046154f802bc4bd9fd988ebb28797be46cd393.mp3"
+    },
+    {
+      "id": "option:family_history:cancer",
+      "language": "zh-Hans",
+      "text": "癌症",
+      "src": "/speech/zh-Hans-b2cf01054c52c701f748643cc21a8b31f8c2a1d5e0b8a6ec0c034e322d5cea64.mp3"
+    },
+    {
+      "id": "option:family_history:stroke",
+      "language": "zh-Hans",
+      "text": "中风",
+      "src": "/speech/zh-Hans-a656976262488bdefbe604f8af566f013ff06d3e16cfbc3ccf99312b5f7bf37d.mp3"
+    },
+    {
+      "id": "option:family_history:none",
+      "language": "zh-Hans",
+      "text": "这些都不是",
+      "src": "/speech/zh-Hans-14a59ae4b0b2dc8f23400290c0f56c2d055aa454209c24898e3d8646efc081f4.mp3"
+    },
+    {
+      "id": "option:family_history:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "question:pregnancy",
+      "language": "zh-Hans",
+      "text": "你会怀孕吗？",
+      "src": "/speech/zh-Hans-4be8ace530bfa886a9326105bd905c4307d1a93c60d6a1f8cf9aacaeea66c4d2.mp3"
+    },
+    {
+      "id": "option:pregnancy:yes",
+      "language": "zh-Hans",
+      "text": "是的",
+      "src": "/speech/zh-Hans-121c01cd14d11a5846e227b323dbf3662bc322afe4e19798cf47d6d9db449f37.mp3"
+    },
+    {
+      "id": "option:pregnancy:no",
+      "language": "zh-Hans",
+      "text": "不",
+      "src": "/speech/zh-Hans-6fe42ba73b33e45974876b2bb975a7d8705280ef5cb2540371e042ba326d7d5a.mp3"
+    },
+    {
+      "id": "option:pregnancy:unsure",
+      "language": "zh-Hans",
+      "text": "不太确定",
+      "src": "/speech/zh-Hans-4bce12531d9718c901f720273a11c94f91404f7c94eee1ae850ef541fb6e5e3e.mp3"
+    },
+    {
+      "id": "option:pregnancy:prefer_not_to_say",
+      "language": "zh-Hans",
+      "text": "我宁愿不说",
+      "src": "/speech/zh-Hans-a7602c4f688ace7fdfc3dead19a8720c069c5a6e7df589b8dbeae24bf8bbc4d6.mp3"
+    },
+    {
+      "id": "question:substance_use",
+      "language": "zh-Hans",
+      "text": "你抽烟、喝酒或使用任何毒品吗？",
+      "src": "/speech/zh-Hans-692a15723c33b2f1ecdab4c6cb9a3367b25e304f0c4a9c935d018a5d26df18a7.mp3"
+    },
+    {
+      "id": "option:substance_use:smoking",
+      "language": "zh-Hans",
+      "text": "吸烟",
+      "src": "/speech/zh-Hans-1ba618bae55530a68cea24d9881227d2b455a634050d5a87be4f236fd92ec57b.mp3"
+    },
+    {
+      "id": "option:substance_use:alcohol",
+      "language": "zh-Hans",
+      "text": "酒精",
+      "src": "/speech/zh-Hans-e7ee0fb4e495ce0e86775de6a0d759e072153c2c11e54ad95fc4357f1468ce68.mp3"
+    },
+    {
+      "id": "option:substance_use:drugs",
+      "language": "zh-Hans",
+      "text": "其他药物",
+      "src": "/speech/zh-Hans-fa61d8fb7761de0e37db4aab4b355184349c40252d5e39950c7c2ddddfba77b0.mp3"
+    },
+    {
+      "id": "option:substance_use:none",
+      "language": "zh-Hans",
+      "text": "这些都不是",
+      "src": "/speech/zh-Hans-14a59ae4b0b2dc8f23400290c0f56c2d055aa454209c24898e3d8646efc081f4.mp3"
+    },
+    {
+      "id": "option:substance_use:prefer_not_to_say",
+      "language": "zh-Hans",
+      "text": "我宁愿不说",
+      "src": "/speech/zh-Hans-a7602c4f688ace7fdfc3dead19a8720c069c5a6e7df589b8dbeae24bf8bbc4d6.mp3"
+    },
+    {
+      "id": "phrase:pain",
+      "language": "zh-Hans",
+      "text": "疼",
+      "src": "/speech/zh-Hans-7dd80d9de49f061f3c370c751e18942b27aeb1b26ad758d127a9b3eea48395dd.mp3"
+    },
+    {
+      "id": "phrase:chest",
+      "language": "zh-Hans",
+      "text": "胸口",
+      "src": "/speech/zh-Hans-af2ffcaa62428ff759a1bbac3ae7ad784f4dcf7ceed63cf81a5a109c9e6a1a86.mp3"
+    },
+    {
+      "id": "phrase:stomach",
+      "language": "zh-Hans",
+      "text": "肚子",
+      "src": "/speech/zh-Hans-fbb1d05ab648fa6f2b6545fd7007c327b6c6d3a3951fec4e06222fb8e7ab55bb.mp3"
+    },
+    {
+      "id": "phrase:head",
+      "language": "zh-Hans",
+      "text": "头",
+      "src": "/speech/zh-Hans-f39f59fc2d5514f9783fa2659a0ddbf03de1c69f60c5c82c88a52669262821bb.mp3"
+    },
+    {
+      "id": "phrase:breathing",
+      "language": "zh-Hans",
+      "text": "呼吸时",
+      "src": "/speech/zh-Hans-d25a84bc9c7aa2771974163a1ab16452cd1f4006a8076f59c1e34f1df8ed06df.mp3"
+    },
+    {
+      "id": "phrase:two_days",
+      "language": "zh-Hans",
+      "text": "两天了",
+      "src": "/speech/zh-Hans-095ec56e322d0344fa3157dbf59d36646dc940ce5e3593d6e94a85e1de495977.mp3"
+    },
+    {
+      "id": "phrase:dizzy",
+      "language": "zh-Hans",
+      "text": "头晕",
+      "src": "/speech/zh-Hans-595c051197c822e61faa87f677dd09d68b5ad0f0540d78168778f51d066bc2a4.mp3"
+    },
+    {
+      "id": "phrase:nausea",
+      "language": "zh-Hans",
+      "text": "恶心",
+      "src": "/speech/zh-Hans-19e9668f2b6d15487ba2862c4a7f2dd2e2b189ada36352e728c9b0e3d88cf3c7.mp3"
+    },
+    {
+      "id": "phrase:help",
+      "language": "zh-Hans",
+      "text": "我需要帮助",
+      "src": "/speech/zh-Hans-ad8e759a49864e7eebbf272426d53efde55114ead58d30e7a78a66f1174cd566.mp3"
+    },
+    {
+      "id": "body:head",
+      "language": "zh-Hans",
+      "text": "头部",
+      "src": "/speech/zh-Hans-8b120852918c1af981973284dd359062d4cb085bfafd60369976876e70e7a59d.mp3"
+    },
+    {
+      "id": "body:neck",
+      "language": "zh-Hans",
+      "text": "脖子",
+      "src": "/speech/zh-Hans-29af1a38387bda1166b20d5eab9f124e06325229a68d243428c6f71f11cf4b51.mp3"
+    },
+    {
+      "id": "body:chest",
+      "language": "zh-Hans",
+      "text": "胸口",
+      "src": "/speech/zh-Hans-af2ffcaa62428ff759a1bbac3ae7ad784f4dcf7ceed63cf81a5a109c9e6a1a86.mp3"
+    },
+    {
+      "id": "body:abdomen",
+      "language": "zh-Hans",
+      "text": "肚子",
+      "src": "/speech/zh-Hans-fbb1d05ab648fa6f2b6545fd7007c327b6c6d3a3951fec4e06222fb8e7ab55bb.mp3"
+    },
+    {
+      "id": "body:groin",
+      "language": "zh-Hans",
+      "text": "腹股沟",
+      "src": "/speech/zh-Hans-84fafd95926e7e82b6a79585529c7a7c67cd65264c2cc127c1585c7a21b30e09.mp3"
+    },
+    {
+      "id": "body:head_back",
+      "language": "zh-Hans",
+      "text": "后脑勺",
+      "src": "/speech/zh-Hans-52312cb2b8e95c946fcda3a6b29d783ec70491c1bfcf7f96c7f2f4e2a00d01a3.mp3"
+    },
+    {
+      "id": "body:neck_back",
+      "language": "zh-Hans",
+      "text": "后颈",
+      "src": "/speech/zh-Hans-8740b67ddbe3e0240bfd374d3ba00071e5754a8bf4d9fa80e7cf70a665c4ea1a.mp3"
+    },
+    {
+      "id": "body:upper_back",
+      "language": "zh-Hans",
+      "text": "上背部",
+      "src": "/speech/zh-Hans-0fb7b0ae99ca67d07070cdb71dd1dc39aa74f8b152346ab69de3518636dd67a3.mp3"
+    },
+    {
+      "id": "body:lower_back",
+      "language": "zh-Hans",
+      "text": "腰部",
+      "src": "/speech/zh-Hans-b877e62920f6d88da561a3de12ce0c83f16272904aeeab55e9bba80c35942ed6.mp3"
+    },
+    {
+      "id": "body:right_shoulder",
+      "language": "zh-Hans",
+      "text": "右肩",
+      "src": "/speech/zh-Hans-b4142a0638bc6c445f25478597fa6a8b33b531038fbe58e8a0dddaab1cab4a5e.mp3"
+    },
+    {
+      "id": "body:left_shoulder",
+      "language": "zh-Hans",
+      "text": "左肩",
+      "src": "/speech/zh-Hans-71c459a8d3e58e0f8dcef77c8bdbcc3c2dd0efc2360cadf61e182862e0db19b1.mp3"
+    },
+    {
+      "id": "body:right_upper_arm",
+      "language": "zh-Hans",
+      "text": "右上臂",
+      "src": "/speech/zh-Hans-36db40cc81843f8a80d4b10134cb82c55e68746f24047cee93fafa1730a39efa.mp3"
+    },
+    {
+      "id": "body:right_upper_arm",
+      "language": "zh-Hans",
+      "text": "右上臂",
+      "src": "/speech/zh-Hans-36db40cc81843f8a80d4b10134cb82c55e68746f24047cee93fafa1730a39efa.mp3"
+    },
+    {
+      "id": "body:left_upper_arm",
+      "language": "zh-Hans",
+      "text": "左上臂",
+      "src": "/speech/zh-Hans-b86c86f77a7f68bfd4f563c99dbc76f2c46838f1a121616a8fdf654c14ec993f.mp3"
+    },
+    {
+      "id": "body:left_upper_arm",
+      "language": "zh-Hans",
+      "text": "左上臂",
+      "src": "/speech/zh-Hans-b86c86f77a7f68bfd4f563c99dbc76f2c46838f1a121616a8fdf654c14ec993f.mp3"
+    },
+    {
+      "id": "body:right_elbow",
+      "language": "zh-Hans",
+      "text": "右肘",
+      "src": "/speech/zh-Hans-954287c70b3723b350e1222167066333dcdaade632899c8cef0391f2d4e663ad.mp3"
+    },
+    {
+      "id": "body:right_elbow",
+      "language": "zh-Hans",
+      "text": "右肘",
+      "src": "/speech/zh-Hans-954287c70b3723b350e1222167066333dcdaade632899c8cef0391f2d4e663ad.mp3"
+    },
+    {
+      "id": "body:left_elbow",
+      "language": "zh-Hans",
+      "text": "左肘",
+      "src": "/speech/zh-Hans-9b22dd9610cd30c28aeeeff419ac760e4a582e46a1ac963ca0c5aebeade4eccf.mp3"
+    },
+    {
+      "id": "body:left_elbow",
+      "language": "zh-Hans",
+      "text": "左肘",
+      "src": "/speech/zh-Hans-9b22dd9610cd30c28aeeeff419ac760e4a582e46a1ac963ca0c5aebeade4eccf.mp3"
+    },
+    {
+      "id": "body:right_forearm",
+      "language": "zh-Hans",
+      "text": "右前臂",
+      "src": "/speech/zh-Hans-d80804f4f192d83c420f3f231b30dc7769bfa24255ff5c2054711a8e24a05b2d.mp3"
+    },
+    {
+      "id": "body:right_forearm",
+      "language": "zh-Hans",
+      "text": "右前臂",
+      "src": "/speech/zh-Hans-d80804f4f192d83c420f3f231b30dc7769bfa24255ff5c2054711a8e24a05b2d.mp3"
+    },
+    {
+      "id": "body:left_forearm",
+      "language": "zh-Hans",
+      "text": "左前臂",
+      "src": "/speech/zh-Hans-41ceb299b7035f130734c066452a9d2016bd46be4de812d4ac57eca173318824.mp3"
+    },
+    {
+      "id": "body:left_forearm",
+      "language": "zh-Hans",
+      "text": "左前臂",
+      "src": "/speech/zh-Hans-41ceb299b7035f130734c066452a9d2016bd46be4de812d4ac57eca173318824.mp3"
+    },
+    {
+      "id": "body:right_hand",
+      "language": "zh-Hans",
+      "text": "右手",
+      "src": "/speech/zh-Hans-1cefc2ba6ced098d64240488b537fbf4473e381a0628b413ad71b9c3466e93ca.mp3"
+    },
+    {
+      "id": "body:right_hand",
+      "language": "zh-Hans",
+      "text": "右手",
+      "src": "/speech/zh-Hans-1cefc2ba6ced098d64240488b537fbf4473e381a0628b413ad71b9c3466e93ca.mp3"
+    },
+    {
+      "id": "body:left_hand",
+      "language": "zh-Hans",
+      "text": "左手",
+      "src": "/speech/zh-Hans-0cbcd2e51f746b587d81149eff4b16177b10dc662ed72b891cac27fbe0802214.mp3"
+    },
+    {
+      "id": "body:left_hand",
+      "language": "zh-Hans",
+      "text": "左手",
+      "src": "/speech/zh-Hans-0cbcd2e51f746b587d81149eff4b16177b10dc662ed72b891cac27fbe0802214.mp3"
+    },
+    {
+      "id": "body:right_hip",
+      "language": "zh-Hans",
+      "text": "右髋部",
+      "src": "/speech/zh-Hans-cee17dcce0b9a6b58ab50573ce8345527bafee31a3c5cc504ffdb3aa1b6ff449.mp3"
+    },
+    {
+      "id": "body:left_hip",
+      "language": "zh-Hans",
+      "text": "左髋部",
+      "src": "/speech/zh-Hans-0ff4cc52f82b63bb35eb49ffa59aedb59b156b35e633908f68fa33bd15b469b2.mp3"
+    },
+    {
+      "id": "body:right_thigh",
+      "language": "zh-Hans",
+      "text": "右大腿",
+      "src": "/speech/zh-Hans-d85db6291c23fafeb5aab09b16cd2c99f88076efbea6001ef775fccdd5b12ed7.mp3"
+    },
+    {
+      "id": "body:left_thigh",
+      "language": "zh-Hans",
+      "text": "左大腿",
+      "src": "/speech/zh-Hans-f8de1c0cf0fb88bbd82ed69f1aa01055c82d2d84c0e7cce70136226d4baafb44.mp3"
+    },
+    {
+      "id": "body:right_knee",
+      "language": "zh-Hans",
+      "text": "右膝",
+      "src": "/speech/zh-Hans-5c328b217182f9e8dd31cc9738c433e624888cc4f7d0b134f893e7904a594d6f.mp3"
+    },
+    {
+      "id": "body:left_knee",
+      "language": "zh-Hans",
+      "text": "左膝",
+      "src": "/speech/zh-Hans-2d3fa394f1b69d7861774ae946d1878e6f54eed0b5322d6f1016302f435bb095.mp3"
+    },
+    {
+      "id": "body:right_shin",
+      "language": "zh-Hans",
+      "text": "右小腿前侧",
+      "src": "/speech/zh-Hans-36cd510c475ab5b0b396c739437c9a4a9dc65408bb65259cb559b1fc2088f431.mp3"
+    },
+    {
+      "id": "body:left_shin",
+      "language": "zh-Hans",
+      "text": "左小腿前侧",
+      "src": "/speech/zh-Hans-ef32dcacb760c6f085182717d8162171c213766d9652b8e29e2ebbd1efe9838d.mp3"
+    },
+    {
+      "id": "body:right_foot",
+      "language": "zh-Hans",
+      "text": "右脚",
+      "src": "/speech/zh-Hans-5732732791fe8924e4087dc632babd9d76af8c0ec27bb1adcae604d7802caf5f.mp3"
+    },
+    {
+      "id": "body:left_foot",
+      "language": "zh-Hans",
+      "text": "左脚",
+      "src": "/speech/zh-Hans-08524074a53665e3cfe876e7888cebc79a274de90edc3f9068c147f4a53daa46.mp3"
+    },
+    {
+      "id": "body:right_shoulder_blade",
+      "language": "zh-Hans",
+      "text": "右肩胛",
+      "src": "/speech/zh-Hans-b3c42f042e88b14d6828718117ccacdcd20d84084dfc2bbf37912a30a74d4611.mp3"
+    },
+    {
+      "id": "body:left_shoulder_blade",
+      "language": "zh-Hans",
+      "text": "左肩胛",
+      "src": "/speech/zh-Hans-06a8a2764ddabcc8cb61917e02c19311085aeef285213d3268900d5e2fac6e84.mp3"
+    },
+    {
+      "id": "body:right_buttock",
+      "language": "zh-Hans",
+      "text": "右臀部",
+      "src": "/speech/zh-Hans-d790d8172c5b520ef42180478ea6f34b7e0bd0f74b3dd97cc45278e98a0bf851.mp3"
+    },
+    {
+      "id": "body:left_buttock",
+      "language": "zh-Hans",
+      "text": "左臀部",
+      "src": "/speech/zh-Hans-8ef31abd4a801b377cdf229e0dc4445b149ce66e8185dc891df5b565c8d77755.mp3"
+    },
+    {
+      "id": "body:right_thigh_back",
+      "language": "zh-Hans",
+      "text": "右大腿后侧",
+      "src": "/speech/zh-Hans-35fc48d28d9b27bb0e14810f447cd9788c7a0fedc683fc67ac8984df929a977d.mp3"
+    },
+    {
+      "id": "body:left_thigh_back",
+      "language": "zh-Hans",
+      "text": "左大腿后侧",
+      "src": "/speech/zh-Hans-273f6a387d445c403ae0f1b7ac164e4a402e8d2cb23f6421cdc850e59aa0e4ca.mp3"
+    },
+    {
+      "id": "body:right_knee_back",
+      "language": "zh-Hans",
+      "text": "右膝后侧",
+      "src": "/speech/zh-Hans-abbc4aced0511f0ad18500b2a6c284f34abfd7bb5a4b326397965faf09f962f2.mp3"
+    },
+    {
+      "id": "body:left_knee_back",
+      "language": "zh-Hans",
+      "text": "左膝后侧",
+      "src": "/speech/zh-Hans-f293832b1afff334e24e7e538c884d3334b9b3f4a8906fba2d90cd1c5b3d6d8c.mp3"
+    },
+    {
+      "id": "body:right_calf",
+      "language": "zh-Hans",
+      "text": "右小腿肚",
+      "src": "/speech/zh-Hans-4bc826be5ec3834449020e983d5dd02e5314c1fad1cdcb33236e84c30c9f3c04.mp3"
+    },
+    {
+      "id": "body:left_calf",
+      "language": "zh-Hans",
+      "text": "左小腿肚",
+      "src": "/speech/zh-Hans-7713e1239ca1a15a7552d850a1dc9a1c8da79975ff206814785eb5e792cc5820.mp3"
+    },
+    {
+      "id": "body:right_heel",
+      "language": "zh-Hans",
+      "text": "右脚跟",
+      "src": "/speech/zh-Hans-4c22342adf2a3b37dea956e20b152367ea30ad754fc436f0336ac3b4787827ff.mp3"
+    },
+    {
+      "id": "body:left_heel",
+      "language": "zh-Hans",
+      "text": "左脚跟",
+      "src": "/speech/zh-Hans-c3dd4145e86131992d9568feca96df4669ec06222e425870551f5f061351f904.mp3"
+    }
+  ]
+}
