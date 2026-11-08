@@ -9,6 +9,8 @@ export function translatePrompt(questions: Question[]): string {
     "Use questionId and the question definitions below to interpret guided answers. Preserve negation, uncertainty, duration, and severity scales.",
     "Return only JSON with original, translated, backTranslation, summary, lowConfidence, and redactions.",
     "summary has chiefComplaint (string), symptoms (string[]), optional duration (string), and redFlags (string[]). Include only reported concerns, not inferred diagnoses or triage advice.",
+    'Translate nonclinical questions and ordinary conversation normally. If no clinical concern is stated, use summary {"chiefComplaint":"Not stated","symptoms":[],"redFlags":[]}. Do not turn an ordinary question into a symptom.',
+    "When no duration is stated, omit summary.duration entirely. Never return null, a number, an object or an empty string for duration.",
     "original is the redacted input values joined with spaces. backTranslation renders the English translation back into context.language.",
     "lowConfidence is an array of { phrase, reason } for ambiguous or unavailable translations. redactions is a nonnegative integer. No extra fields.",
     "If translation is unavailable, say so explicitly and do not pretend to translate. This demo uses synthetic input only.",

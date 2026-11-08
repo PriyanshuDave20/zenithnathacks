@@ -71,7 +71,9 @@ this is not automated triage. English clinical headings and values are determini
 across languages. Draft wording produces a review notice in `lowConfidence`.
 
 Free-form model outputs still undergo strict schema validation and best-effort
-redaction. Provider/invalid-output errors return generic 502 responses; the frontend
+redaction. Nonclinical conversation is translated normally with no invented clinical
+fields. An explicitly null optional provider duration is normalized to omission;
+other malformed fields still fail validation. Provider/invalid-output errors return generic 502 responses; the frontend
 retains the draft. The reply prompt has a fixed `Translation unavailable.` sentinel
 for unsupported translation; the UI shows interpreter guidance instead of asking
 the patient to confirm that placeholder. No existing HTTP schema fields changed.

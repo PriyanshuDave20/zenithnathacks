@@ -12,6 +12,17 @@ import { guidedPack, resolveGuided, summarizeGuided, type GuidedAnswer } from ".
 import { InvalidTranslateInputError } from "./errors";
 export { InvalidTranslateInputError } from "./errors";
 
+/** Providers sometimes use null for an absent optional duration. Keep the HTTP contract optional, never null. */
+function normalizeAbsentDuration(value: unknown): unknown {
+  if (value === null || typeof value !== "object" || Array.isArray(value) || !("summary" in value)) return value;
+  const summary = value.summary;
+  if (summary === null || typeof summary !== "object" || Array.isArray(summary)
+    || !("duration" in summary) || summary.duration !== null) return value;
+  const normalized: Record<string, unknown> = { ...summary };
+  delete normalized.duration;
+  return { ...value, summary: normalized };
+}
+
 /** Per-request processing only. The caller validates the HTTP request with the shared schema. */
 export async function translate(
   request: TranslateRequest,
@@ -59,7 +70,7 @@ export async function translate(
       system: translatePrompt(questions),
       user: JSON.stringify({ task: "translate", request: { context: request.context, inputs: freeInputs } }),
     });
-    free = TranslateResponseSchema.parse(JSON.parse(raw));
+    free = TranslateResponseSchema.parse(normalizeAbsentDuration(JSON.parse(raw)));
     if (![free.translated, free.backTranslation, free.summary.chiefComplaint].every((s) => s.trim())) {
       throw new Error("Translation returned an empty required field.");
     }

@@ -193,3 +193,38 @@ test("an uncached guided language fails explicitly instead of generating transla
   ] }, async () => { calls += 1; return "{}"; }), InvalidTranslateInputError);
   assert.equal(calls, 0);
 });
+
+test("nonclinical speech keeps its translation when the model represents absent duration as null", async () => {
+  const result = await translate({
+    context: { ...context, language: "es" },
+    inputs: [{ kind: "speech_transcript", value: "Dónde está la biblioteca" }],
+  }, async ({ system }) => {
+    assert.match(system, /Translate nonclinical questions/);
+    assert.match(system, /omit summary.duration/);
+    return JSON.stringify({
+      original: "Dónde está la biblioteca", translated: "Where is the library?", backTranslation: "¿Dónde está la biblioteca?",
+      summary: { chiefComplaint: "Not stated", symptoms: [], duration: null, redFlags: [] },
+      lowConfidence: [], redactions: 0,
+    });
+  });
+  assert.equal(result.translated, "Where is the library?");
+  assert.deepEqual(result.summary, { chiefComplaint: "Not stated", symptoms: [], redFlags: [] });
+  assert.equal(Object.hasOwn(result.summary, "duration"), false);
+  TranslateResponseSchema.parse(result);
+});
+
+test("absent-duration normalization keeps valid durations and rejects other invalid provider fields", async () => {
+  const base = { ...STORIES[0].translateResponse, summary: { chiefComplaint: "Not stated", symptoms: [], redFlags: [] } };
+  for (const duration of [123, false, [], {}]) {
+    await assert.rejects(translate(STORIES[0].translateRequest, async () => JSON.stringify({
+      ...base, summary: { ...base.summary, duration },
+    })));
+  }
+  for (const summary of [null, { ...base.summary, chiefComplaint: null }, { ...base.summary, symptoms: null }]) {
+    await assert.rejects(translate(STORIES[0].translateRequest, async () => JSON.stringify({ ...base, summary })));
+  }
+  const valid = await translate(STORIES[0].translateRequest, async () => JSON.stringify({
+    ...base, summary: { ...base.summary, duration: "2 days" },
+  }));
+  assert.equal(valid.summary.duration, "2 days");
+});
