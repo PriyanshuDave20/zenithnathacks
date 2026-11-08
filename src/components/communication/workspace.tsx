@@ -24,7 +24,6 @@ import { BodyDiagram, BodyMap } from "@/components/input/body-diagram";
 import { spotLabels, spotParts, spotsToInputs, type BodyFigure, type BodySpot } from "@/lib/input/body-parts";
 import {
   PATIENT_LANGUAGES,
-  QUESTIONS,
   PHRASES,
   CLINICIAN_REPLIES,
   type Mode,
@@ -34,6 +33,7 @@ import {
   type RespondResponse,
 } from "@/lib/mocks";
 import { translate, respond, isReplyUnavailable } from "@/components/session/api";
+import { getGuidedQuestions } from "@/lib/questions/localization";
 import { STRINGS } from "@/components/session/strings";
 import { useRecognition, useSpeak } from "@/components/session/use-speech";
 import { useIdle } from "@/components/session/use-idle";
@@ -220,6 +220,7 @@ export function CommunicationWorkspace() {
   const main = useRef<HTMLElement>(null);
   const stream = useRef<HTMLDivElement>(null);
   const meta = PATIENT_LANGUAGES.find((l) => l.code === language)!;
+  const guidedQuestions = useMemo(() => getGuidedQuestions(language), [language]);
   const text = STRINGS[language];
   const copy = COPY[language];
   const speech = useRecognition(role === "patient" ? meta.speech : "en-US");
@@ -379,15 +380,9 @@ export function CommunicationWorkspace() {
     try {
       const id = nextId.current++;
       if (role === "patient") {
-        const painLabel = {
-          en: "Pain intensity",
-          es: "Intensidad del dolor",
-          ar: "شدة الألم",
-          "zh-Hans": "疼痛程度",
-        }[language];
         const inputs: TranslateInput[] = [
           ...(severity !== null
-            ? [{ kind: "text" as const, value: `${painLabel}: ${severity}/10` }]
+            ? [{ questionId: "how_strong", kind: "option" as const, value: `s${severity}` }]
             : []),
           ...selected,
           ...spotsToInputs(bodySpots),
@@ -817,6 +812,7 @@ export function CommunicationWorkspace() {
                 mode={mode}
                 figure={bodyFigure}
                 onSubmit={submitPatient}
+                onUnavailable={() => setPatientPath("free")}
               />
             ) : (
               <IntakeFree
@@ -1001,7 +997,7 @@ export function CommunicationWorkspace() {
                           <p className={s.translation}>
                             Demo only:{" "}
                             {t.role === "patient"
-                              ? "canned example or translation unavailable; check the communication summary."
+                              ? t.translation?.lowConfidence.map((c) => c.reason).join(" ")
                               : "translation unavailable; ask an interpreter."}
                           </p>
                         ) : null}
@@ -1212,11 +1208,17 @@ export function CommunicationWorkspace() {
                             ) : null}
                           </div>
                         ) : null}
-                        {channel === "pictures" ? (
+                        {channel === "pictures" && !guidedQuestions ? (
+                          <p className={s.notice} role="status">
+                            {text.couldNotTranslate}{" "}
+                            <button type="button" onClick={() => setChannel("type")}>{text.typeInstead}</button>
+                          </p>
+                        ) : null}
+                        {channel === "pictures" && guidedQuestions ? (
                           <>
-                            <h3>{QUESTIONS[0].text[language]}</h3>
+                            <h3>{guidedQuestions[0].text[language]}</h3>
                             <div className={s.tiles}>
-                              {QUESTIONS[0].options.map((o) => (
+                              {guidedQuestions[0].options.map((o) => (
                                 <button
                                   type="button"
                                   key={o.id}
@@ -1295,7 +1297,7 @@ export function CommunicationWorkspace() {
                                 ))}
                               </div>
                             </div>
-                            {[QUESTIONS[1], QUESTIONS[4]].map((q) => (
+                            {[guidedQuestions[1], guidedQuestions[4]].map((q) => (
                               <div key={q.id}>
                                 <h3 className={s.question}>
                                   {q.text[language]}
@@ -1332,12 +1334,9 @@ export function CommunicationWorkspace() {
                                 type="button"
                                 key={p.id}
                                 disabled={busy}
+                                aria-pressed={selected.some((i) => i.questionId === "chief_complaint" && i.value === `phrase:${p.id}`)}
                                 onClick={() => {
-                                  setDraft((d) =>
-                                    [d, p.text[language]]
-                                      .filter(Boolean)
-                                      .join(" "),
-                                  );
+                                  toggle("chief_complaint", `phrase:${p.id}`);
                                   if (mode === "mute" && audio)
                                     voice.speak(p.text[language], meta.speech);
                                 }}
@@ -1415,8 +1414,8 @@ export function CommunicationWorkspace() {
                         </button>
                         {role === "clinician" ? (
                           <p className={s.notice}>
-                            Offline demo: “Please point to where it hurts.” has
-                            a canned translated reply. Other replies are unavailable.
+                            Replies use the configured translation service.
+                            Review the meaning; some translations may be unavailable.
                           </p>
                         ) : null}
                       </>

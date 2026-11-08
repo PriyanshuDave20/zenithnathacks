@@ -8,29 +8,19 @@ import { QUESTIONS } from "../../questions";
 import { callModel } from "../llm";
 import { redact } from "../redact";
 import { translatePrompt } from "./prompts";
+import { guidedPack, resolveGuided, summarizeGuided, type GuidedAnswer } from "./guided";
+import { InvalidTranslateInputError } from "./errors";
+export { InvalidTranslateInputError } from "./errors";
 
-export class InvalidTranslateInputError extends Error {
-  constructor() {
-    super("Provide nonempty input and valid, unambiguous question-bank selections.");
-  }
-}
-
-function resolveInput(input: TranslateInput): TranslateInput {
-  const question = QUESTIONS.find(({ id }) => id === input.questionId);
-  if (input.questionId !== undefined && !question) throw new InvalidTranslateInputError();
-
-  if (input.kind === "text" || input.kind === "speech_transcript") {
-    if (!input.value.trim()) throw new InvalidTranslateInputError();
-    return input;
-  }
-
-  // IDs such as "yes" and pictograms such as "arm" are not globally unique.
-  if (!question) throw new InvalidTranslateInputError();
-  const options = question.options.filter((option) => input.kind === "option"
-    ? option.id === input.value
-    : option.pictogram === input.value);
-  if (options.length !== 1) throw new InvalidTranslateInputError();
-  return { ...input, value: options[0].label };
+/** Providers sometimes use null for an absent optional duration. Keep the HTTP contract optional, never null. */
+function normalizeAbsentDuration(value: unknown): unknown {
+  if (value === null || typeof value !== "object" || Array.isArray(value) || !("summary" in value)) return value;
+  const summary = value.summary;
+  if (summary === null || typeof summary !== "object" || Array.isArray(summary)
+    || !("duration" in summary) || summary.duration !== null) return value;
+  const normalized: Record<string, unknown> = { ...summary };
+  delete normalized.duration;
+  return { ...value, summary: normalized };
 }
 
 /** Per-request processing only. The caller validates the HTTP request with the shared schema. */
@@ -52,19 +42,60 @@ export async function translate(
     redactions += result.count;
     return result.text;
   };
-  const inputs = request.inputs.map(resolveInput).map((input) => ({ ...input, value: mask(input.value) }));
-  const original = inputs.map(({ value }) => value).join(" ").trim();
-  const questions = QUESTIONS.filter(({ id }) => inputs.some(({ questionId }) => questionId === id));
-  const raw = await model({
-    system: translatePrompt(questions),
-    user: JSON.stringify({ task: "translate", request: { context: request.context, inputs } }),
-  });
-  const response = TranslateResponseSchema.parse(JSON.parse(raw));
+  const hasGuided = request.inputs.some((i) => i.kind === "option" || i.kind === "pictogram");
+  const pack = hasGuided ? guidedPack(request.context.language) : undefined;
+  const answers: GuidedAnswer[] = [];
+  const freeInputs: TranslateInput[] = [];
+  const originals: string[] = [];
+  for (const input of request.inputs) {
+    if (input.kind === "option" || input.kind === "pictogram") {
+      const answer = resolveGuided(input, pack!);
+      answers.push(answer);
+      originals.push(answer.patient);
+    } else {
+      if (!input.value.trim() || (input.questionId !== undefined && !QUESTIONS.some((q) => q.id === input.questionId))) {
+        throw new InvalidTranslateInputError();
+      }
+      const value = mask(input.value);
+      freeInputs.push({ ...input, value });
+      originals.push(value);
+    }
+  }
+  const guided = pack ? summarizeGuided(answers, pack) : undefined;
+  let free: TranslateResponse | undefined;
+  // No model/config/key/network access at all for pure guided communication.
+  if (freeInputs.length) {
+    const questions = QUESTIONS.filter(({ id }) => freeInputs.some(({ questionId }) => questionId === id));
+    const raw = await model({
+      system: translatePrompt(questions),
+      user: JSON.stringify({ task: "translate", request: { context: request.context, inputs: freeInputs } }),
+    });
+    free = TranslateResponseSchema.parse(normalizeAbsentDuration(JSON.parse(raw)));
+    if (![free.translated, free.backTranslation, free.summary.chiefComplaint].every((s) => s.trim())) {
+      throw new Error("Translation returned an empty required field.");
+    }
+  }
+  const parts = [guided, free].filter((value): value is TranslateResponse => value !== undefined);
+  const join = (values: (string | undefined)[]) => [...new Set(values.filter((s): s is string => s !== undefined))].join("\n");
+  const duration = join(parts.map((p) => p.summary.duration));
+  const response: TranslateResponse = {
+    original: originals.join(" ").trim(),
+    translated: join(parts.map((p) => p.translated)),
+    backTranslation: join(parts.map((p) => p.backTranslation)),
+    summary: {
+      chiefComplaint: join(parts.map((p) => p.summary.chiefComplaint)),
+      symptoms: [...new Set(parts.flatMap((p) => p.summary.symptoms))],
+      ...(duration ? { duration } : {}),
+      redFlags: [...new Set(parts.flatMap((p) => p.summary.redFlags))],
+    },
+    lowConfidence: parts.flatMap((p) => p.lowConfidence),
+    redactions: 0,
+  };
 
   // The pipeline owns original/count: the mock redacts again and would otherwise report zero.
   // Mask every other returned string too; never trust a provider to omit identifiers by itself.
   const result = {
-    original,
+    original: response.original,
     translated: mask(response.translated),
     backTranslation: mask(response.backTranslation),
     summary: {
