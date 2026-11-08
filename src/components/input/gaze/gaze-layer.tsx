@@ -221,6 +221,7 @@ export function GazeLayer() {
   const calibDotRef = useRef<HTMLDivElement | null>(null);
   const calibBarRef = useRef<HTMLDivElement | null>(null);
   const calibTimerRef = useRef<HTMLSpanElement | null>(null);
+  const calibDotTimerRef = useRef<HTMLSpanElement | null>(null);
   const elementKeysRef = useRef(new WeakMap<Element, number>());
   const nextKeyRef = useRef(1);
   const noFaceRef = useRef(false);
@@ -509,6 +510,12 @@ export function GazeLayer() {
         const { x: dx, y: dy } = waypoints[fixation.index];
         const dot = calibDotRef.current;
         if (dot) dot.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+        const dotTimer = calibDotTimerRef.current;
+        if (dotTimer) {
+          const remaining = ((fixation.index + 1) * CALIBRATION_MS) / waypoints.length - t;
+          const label = `${Math.max(1, Math.ceil(remaining / 1000))}s`;
+          if (dotTimer.textContent !== label) dotTimer.textContent = label;
+        }
         const bar = calibBarRef.current;
         if (bar) bar.style.width = `${Math.min(Math.max(t / CALIBRATION_MS, 0), 1) * 100}%`;
         const timer = calibTimerRef.current;
@@ -698,6 +705,7 @@ export function GazeLayer() {
             style={{ transform: "translate3d(-100px, -100px, 0)" }}
           >
             <span className="block size-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue shadow-lift ring-4 ring-white/80" />
+            <span ref={calibDotTimerRef} className="absolute left-0 top-6 -translate-x-1/2 whitespace-nowrap text-sm font-semibold tabular-nums text-on-navy-soft">4s</span>
           </div>
           <button
             type="button"

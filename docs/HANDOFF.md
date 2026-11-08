@@ -1,5 +1,12 @@
 # Handoff Log
 
+### 2026-11-08 Zach / Codex · per-dot calibration countdown
+- Added a small seconds countdown 10px below the calibration dot. Moves with the dot and resets for each position; calculated from the same calibration clock/slot as the target (includes the initial lead-in). Existing overall 30-second timer remains.
+- Uses 14px semibold tabular numerals and existing On-Navy Mist token; no pulsing/moving digits or per-frame React state. Part of the existing aria-hidden visual target, so no repeated screen-reader announcements. No calibration timing/fit changes.
+- Typecheck and changed-file lint pass. Browser camera startup remained pending in isolated Playwright, so cancelled it and checked an exact markup/CSS visual fixture at 1200px and 390px: centred, 10px gap, readable; removed fixture afterward. Actual live-camera countdown not verified here. Existing regression-suite result recorded in commit/session output.
+- Impeccable context and ICU surface brief read; preserved incumbent styling and scope. No design-system files changed. Existing brief still describes older moving-dot/strict-dwell behavior; no unrelated brief repair.
+- Files: `src/components/input/gaze/gaze-layer.tsx`, task board and handoff.
+
 ### 2026-11-08 Zach / Codex · dwell jitter tolerance and pixel-correct landmark anchoring
 - Zach confirms the stationary-dot/optional-aperture revision is definitely improved. Remaining report: brief accidental jitter resets the selection counter. Suggested landmark anchoring/trigonometry. Scope remains Backend 2 input files.
 - DwellController now allows 250ms excursions: pauses progress rather than zeroing immediately, adds NO off-target/invalid time, resumes the original button if gaze returns promptly. A sustained different target starts at zero; sustained look away clears progress. Actual activation requires current key == accumulating key, so retained progress can never fire a transient neighbouring control. `jitterGraceMs: 0` retains strict legacy semantics.
