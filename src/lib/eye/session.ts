@@ -17,9 +17,11 @@ export type EyeState = {
   muted: boolean;
   lastSaid: string | null; // the last sentence spoken for the patient, kept on screen for staff
   lastIntake: string | null; // the finished intake summary, shown on the done screen
+  intake: FlowAnswers | null; // the finished intake, kept so the clinician can read it during conversation
+  log: { at: number; text: string; help: boolean }[]; // what the device said for the patient, oldest first
 };
 
-const INITIAL: EyeState = { mode: null, screen: "mode", answers: EMPTY_ANSWERS, muted: false, lastSaid: null, lastIntake: null };
+const INITIAL: EyeState = { mode: null, screen: "mode", answers: EMPTY_ANSWERS, muted: false, lastSaid: null, lastIntake: null, intake: null, log: [] };
 
 let state: EyeState = INITIAL;
 const listeners = new Set<() => void>();
@@ -52,17 +54,17 @@ export const eye = {
     set({ answers });
   },
   /** Say it aloud (unless muted), keep it on screen for staff. */
-  say(text: string) {
+  say(text: string, help = false) {
     if (!text.trim()) return;
     if (!state.muted) speakAloud(text);
-    set({ lastSaid: text });
+    set({ lastSaid: text, log: [...state.log, { at: Date.now(), text, help }].slice(-40) });
   },
   setMuted(muted: boolean) {
     if (muted) stopSpeaking();
     set({ muted });
   },
-  finishIntake(summary: string) {
-    set({ lastIntake: summary, screen: "done" });
+  finishIntake(intake: FlowAnswers, summary: string) {
+    set({ intake, lastIntake: summary, screen: "done" });
   },
   /** Back to the mode's home screen with this message's answers cleared. */
   home() {

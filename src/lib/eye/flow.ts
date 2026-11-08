@@ -156,6 +156,20 @@ export function describeAnswers(a: FlowAnswers): string[] {
   return parts.filter((p): p is string => Boolean(p));
 }
 
+/** Labelled rows for the clinician: [["Pain", "Yes"], ["Where", "Leg"], ["Side", "Left side"], ...]. Only what was answered. */
+export function describeRows(a: FlowAnswers): { label: string; value: string }[] {
+  const rows: { label: string; value: string | null }[] = [
+    { label: "Pain", value: a.hurts === "yes" ? "Yes" : a.hurts === "no" ? "No" : null },
+    { label: "Where", value: labelOf(WHERE_OPTIONS, a.where) },
+    { label: "Side", value: labelOf(SIDE_OPTIONS, a.side) },
+    { label: "How strong", value: labelOf(STRENGTH_OPTIONS, a.strength) },
+    { label: "How long", value: labelOf(DURATION_OPTIONS, a.duration) },
+    { label: "Worse when", value: labelOf(WORSE_OPTIONS, a.worse) },
+    { label: "Also", value: labelOf(OTHER_OPTIONS, a.other) },
+  ];
+  return rows.filter((r): r is { label: string; value: string } => r.value !== null);
+}
+
 /** What the app says aloud for the patient, as plain sentences. */
 export function speakableSummary(a: FlowAnswers): string {
   const out: string[] = [];
