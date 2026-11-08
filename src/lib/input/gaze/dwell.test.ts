@@ -16,8 +16,11 @@ test("dwell accumulates on one target and fires at the duration", () => {
   s = d.update(2100, "a");
   assert.equal(s.target, null);
   assert.equal(s.progress, 0);
-  // After the cooldown a fresh dwell starts from zero.
-  s = d.update(2000 + DEFAULT_DWELL.cooldownMs, "a");
+  // A continuous stare must not activate the same control twice.
+  assert.equal(d.update(10000, "a").target, null);
+  d.update(10001, null);
+  // Looking away rearms the control after the cooldown.
+  s = d.update(10002 + DEFAULT_DWELL.cooldownMs, "a");
   assert.equal(s.target, "a");
   assert.equal(s.progress, 0);
 });

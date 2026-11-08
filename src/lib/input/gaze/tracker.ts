@@ -14,14 +14,19 @@ export class GazeTracker {
   private video: HTMLVideoElement | null = null;
   private lastFrameTime = -1;
   private detectErrors = 0;
+  private generation = 0;
 
   /** Ask for the camera and load the face model. Throws with a plain message on failure. */
   async start(video: HTMLVideoElement): Promise<void> {
-    this.stream = await navigator.mediaDevices.getUserMedia({
+    const generation = ++this.generation;
+    const stream = await navigator.mediaDevices.getUserMedia({
       video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
       audio: false,
     });
-    video.srcObject = this.stream;
+    if (generation !== this.generation) { stream.getTracks().forEach(t => t.stop()); throw new Error("Tracking cancelled"); }
+    this.stream = stream;
+    this.video = video;
+    video.srcObject = stream;
     video.muted = true;
     video.playsInline = true;
     await video.play();
@@ -36,18 +41,20 @@ export class GazeTracker {
     });
     // CPU delegate on purpose: the GPU/WebGL path throws intermittently mid-run on some
     // machines ("finishProcessing" errors), and XNNPACK CPU keeps ~30 fps with none of that.
-    this.landmarker = await FaceLandmarker.createFromOptions(fileset, options("CPU"));
-    this.video = video;
+    const landmarker = await FaceLandmarker.createFromOptions(fileset, options("CPU"));
+    if (generation !== this.generation) { landmarker.close(); throw new Error("Tracking cancelled"); }
+    this.landmarker = landmarker;
   }
 
   /**
-   * One inference pass over the newest camera frame. Returns null between camera frames (the
+   * One inference pass over the newest camera frame. Returns undefined between camera frames (the
    * webcam delivers ~30 fps; the render loop runs faster, so this throttles the model itself).
+   * Null means a new frame had no usable face; callers must cancel dwell for that frame.
    */
-  detect(nowMs: number): NormalizedLandmark[] | null {
+  detect(nowMs: number): NormalizedLandmark[] | null | undefined {
     if (!this.landmarker || !this.video) return null;
     if (this.video.readyState < 2 || this.video.videoWidth === 0) return null;
-    if (this.video.currentTime === this.lastFrameTime) return null;
+    if (this.video.currentTime === this.lastFrameTime) return undefined;
     this.lastFrameTime = this.video.currentTime;
     try {
       const result = this.landmarker.detectForVideo(this.video, nowMs);
@@ -68,6 +75,7 @@ export class GazeTracker {
 
   /** Stop everything: the camera light must go out the moment gaze is disabled. */
   stop() {
+    this.generation++;
     this.landmarker?.close();
     this.landmarker = null;
     this.stream?.getTracks().forEach((t) => t.stop());

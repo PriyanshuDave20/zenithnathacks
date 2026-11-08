@@ -67,7 +67,8 @@ const INTERACTIVE = [
 
 function selectableTarget(el: Element | null): Element | null {
   if (!el || el.closest("[data-gaze-ignore]")) return null;
-  return el.closest(INTERACTIVE);
+  const target = el.closest(INTERACTIVE);
+  return target?.matches(":disabled, [aria-disabled=\"true\"]") || target?.closest("[inert]") ? null : target;
 }
 
 /** One stare = one activation: the full pointer + click sequence, as a real press would bubble. */
@@ -79,7 +80,9 @@ function activate(el: Element, x: number, y: number) {
   }
   el.dispatchEvent(new MouseEvent("mousedown", init));
   el.dispatchEvent(new MouseEvent("mouseup", init));
-  el.dispatchEvent(new MouseEvent("click", init));
+  const click = new MouseEvent("click", init);
+  Object.defineProperty(click, "synapseInputChannel", { value: "gaze" });
+  el.dispatchEvent(click);
 }
 
 function cameraDenied(e: unknown) {
@@ -112,13 +115,20 @@ export function GazeLayer() {
   const nextKeyRef = useRef(1);
   const noFaceRef = useRef(false);
   const unstableRef = useRef(false);
+  const generationRef = useRef(0);
 
   const active = phase === "calibrating" || phase === "on";
 
   const enable = useCallback(async () => {
+    const generation = ++generationRef.current;
     setPhase("starting");
     setStatus("Gaze is starting - allow the camera and keep this tab visible.");
     setNoFace(false);
+    noFaceRef.current = false;
+    unstableRef.current = false;
+    setUnstable(false);
+    mappingRef.current = null;
+    dwellRef.current = new DwellController();
     setCalibIndex(0);
     samplesRef.current = [];
     calibBufferRef.current = [];
@@ -126,9 +136,11 @@ export function GazeLayer() {
     if (!trackerRef.current) trackerRef.current = new GazeTracker();
     try {
       await trackerRef.current.start(videoRef.current!);
+      if (generation !== generationRef.current) { trackerRef.current.stop(); return; }
       setStatus(null);
       setPhase("calibrating");
     } catch (e) {
+      if (generation !== generationRef.current) return;
       trackerRef.current.stop();
       setStatus(
         cameraDenied(e)
@@ -140,6 +152,7 @@ export function GazeLayer() {
   }, []);
 
   const disable = useCallback(() => {
+    generationRef.current++;
     trackerRef.current?.stop();
     dwellRef.current = new DwellController();
     smootherRef.current.reset();
@@ -149,13 +162,26 @@ export function GazeLayer() {
     setPhase("off");
   }, []);
 
-  const skipCalibration = useCallback(() => {
-    mappingRef.current = null; // default mirrored mapping
-    setPhase("on");
+
+  const recalibrate = useCallback(() => {
+    samplesRef.current = [];
+    calibBufferRef.current = [];
+    calibHoldStartRef.current = performance.now();
+    mappingRef.current = null;
+    dwellRef.current = new DwellController();
+    setCalibIndex(0);
+    setStatus(null);
+    setPhase("calibrating");
   }, []);
 
+  useEffect(() => {
+    if (phase !== "on") return;
+    window.addEventListener("resize", recalibrate);
+    return () => window.removeEventListener("resize", recalibrate);
+  }, [phase, recalibrate]);
+
   // The camera must go out when the layer unmounts, whatever the phase.
-  useEffect(() => () => trackerRef.current?.stop(), []);
+  useEffect(() => () => { generationRef.current++; trackerRef.current?.stop(); }, []);
 
   // Calibration: visit each target, harvest the median features seen while looking at it.
   // (Buffers and the target index reset in enable(); this effect only schedules the visits.)
@@ -179,7 +205,13 @@ export function GazeLayer() {
             }
           }
           if (i === CALIBRATION_POINTS.length) {
-            mappingRef.current = fitGazeMapping(samplesRef.current); // null falls back to the default mapping
+            mappingRef.current = samplesRef.current.length >= 8 ? fitGazeMapping(samplesRef.current) : null;
+            if (!mappingRef.current) {
+              trackerRef.current?.stop();
+              setStatus("Calibration needs another try. Keep your head steady, use even lighting, and look at every dot.");
+              setPhase("error");
+              return;
+            }
             featureSmootherRef.current.reset();
             smootherRef.current.reset();
             setPhase("on");
@@ -212,7 +244,20 @@ export function GazeLayer() {
       const dt = Math.min(now - last, 250);
       last = now;
 
-      const landmarks = trackerRef.current?.detect(now) ?? null;
+      if (document.hidden) {
+        dwell.update(now, null);
+        lastSmoothed = null;
+        return;
+      }
+      const featureDt = now - lastFeatureAt;
+      const landmarks = trackerRef.current?.detect(now);
+      if (landmarks === undefined) {
+        if (now - lastFeatureAt > BLINK_GRACE_MS) {
+          dwell.update(now, null);
+          ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
+        }
+        return;
+      }
       const features = gazeFeatures(landmarks);
       if (features) {
         lastFeatureAt = now;
@@ -242,7 +287,7 @@ export function GazeLayer() {
       if (!cursor) return;
 
       // Blink grace: a dropped prediction for a moment (a blink) holds the last known gaze
-      // instead of snapping the cursor and resetting the dwell; past the grace it is lost.
+      // instead of snapping the cursor; dwell still resets, so a blink cannot confirm a choice.
       const held = !features && lastSmoothed && now - lastFeatureAt <= BLINK_GRACE_MS;
       if (!features && !held) {
         lastSmoothed = null;
@@ -252,7 +297,7 @@ export function GazeLayer() {
         return;
       }
 
-      const smoothed = features ? featureSmoother.next(features, dt) : lastSmoothed!;
+      const smoothed = features ? featureSmoother.next(features, featureDt) : lastSmoothed!;
       if (features) lastSmoothed = smoothed;
       const point = applyGazeMapping(mappingRef.current, smoothed);
       const x = point.x * window.innerWidth;
@@ -271,13 +316,14 @@ export function GazeLayer() {
         }
         key = String(k);
       }
-      const state = dwell.update(now, key);
+      // Never let a held/stale prediction finish a dwell during a blink or dropped camera frame.
+      const state = dwell.update(now, features ? key : null);
 
       if (ringRef.current) ringRef.current.style.strokeDashoffset = String(RING_C * (1 - state.progress));
 
       // Gaze scrolling: rest the gaze in the top or bottom band to move the page, but only
       // while it is not resting on a control (a dwell there means "press", not "scroll").
-      if (!state.target) {
+      if (features && !target) {
         const h = window.innerHeight;
         let v = 0;
         if (p.y < EDGE_ZONE) v = -1100 * (1 - p.y / EDGE_ZONE);
@@ -309,7 +355,7 @@ export function GazeLayer() {
           className="pointer-events-none fixed left-0 top-0 z-[70] will-change-transform"
           style={{ opacity: 0, transition: "opacity 300ms" }}
         >
-          <svg width="72" height="72" viewBox="0 0 72 72" className="-ml-9 -mt-9 block drop-shadow-[0_1px_4px_rgb(16_30_52/0.35)]">
+          <svg width="36" height="36" viewBox="0 0 72 72" className="-ml-[18px] -mt-[18px] block drop-shadow-[0_1px_4px_rgb(16_30_52/0.35)]">
             <circle cx="36" cy="36" r="22" fill="none" className="stroke-white/70" strokeWidth="3" />
             <circle
               ref={ringRef}
@@ -347,10 +393,10 @@ export function GazeLayer() {
           ))}
           <button
             type="button"
-            onClick={skipCalibration}
+            onClick={disable}
             className="press absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-6 py-3 text-base font-semibold text-white hover:bg-white/20"
           >
-            Skip calibration
+            Cancel calibration
           </button>
         </div>
       ) : null}
@@ -359,16 +405,24 @@ export function GazeLayer() {
         <p
           role="status"
           aria-live="polite"
-          className="pointer-events-none fixed end-2 top-[calc(50%+3.5rem)] z-[70] max-w-48 rounded-field bg-surface p-3 text-sm font-medium leading-snug text-ink shadow-soft ring-1 ring-line"
+          className="pointer-events-none fixed end-2 top-[calc(50%+6rem)] z-[70] max-w-48 rounded-field bg-surface p-3 text-sm font-medium leading-snug text-ink shadow-soft ring-1 ring-line"
         >
           {status ?? (unstable ? "Tracking is struggling - try brighter, even lighting." : "No face seen - sit centred in front of the camera.")}
         </p>
+      ) : null}
+
+      {phase === "on" ? (
+        <button type="button" onClick={recalibrate}
+          className="press fixed end-2 top-[calc(50%+2rem)] z-[70] min-h-11 rounded-full bg-surface px-3 text-xs font-semibold text-ink shadow-soft ring-1 ring-line">
+          Recalibrate
+        </button>
       ) : null}
 
       <button
         type="button"
         onClick={active || phase === "starting" ? disable : enable}
         aria-pressed={active}
+        disabled={phase === "starting"}
         aria-label={toggleLabel}
         title="Gaze control (webcam)"
         className={`press fixed end-2 top-1/2 z-[70] grid size-11 -translate-y-1/2 place-items-center rounded-full shadow-soft ring-1 motion-reduce:transition-none ${

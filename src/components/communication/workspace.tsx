@@ -181,7 +181,7 @@ export function CommunicationWorkspace() {
   const [language, setLanguage] = useState<PatientLanguage>("es");
   const [mode, setMode] = useState<Mode>("standard");
   const [role, setRole] = useState<"patient" | "clinician">("clinician");
-  const [setupMode, setSetupMode] = useState<SetupMode>("standard");
+  const [setupMode, setSetupMode] = useState<SetupMode>("icu");
   const [patientPath, setPatientPath] = useState<"free" | "guided">("free");
   // Which body drawing the patient and clinician see. Display only: not sent or stored.
   const [bodyFigure, setBodyFigure] = useState<BodyFigure>("male");
@@ -766,7 +766,7 @@ export function CommunicationWorkspace() {
             <h1>Pass the device to the patient</h1>
             <p>
               {setupMode === "icu"
-                ? "The eye-selection interface is ready to preview. Eye tracking is not connected."
+                ? "Eye mode is ready. Use the eye control to enable the camera and calibrate before selecting by gaze."
                 : readyForReply
                   ? lastReply?.unavailable
                     ? "Translation is unavailable. Return to the clinician or ask for an interpreter."

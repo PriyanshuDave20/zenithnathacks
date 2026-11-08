@@ -3,31 +3,17 @@
 import { useRef, type KeyboardEvent } from "react";
 import { languages, summary } from "./data";
 import { Bubble } from "./phone";
+import { EyeDemo } from "./eye-demo";
 import { BodyPicture } from "@/components/input/body-diagram";
 import { useModesState } from "./rail-store";
 import {
   Captions,
   Check,
   Keyboard,
-  PictoPain,
-  PictoYes,
-  PictoNo,
-  PictoHelp,
-  Handoff,
-  Shield,
   Speaker,
 } from "./icons";
 
 type ModeId = "language" | "deaf" | "literacy" | "mute" | "eye";
-
-const EYE_CHOICES = [
-  { label: "Yes", Icon: PictoYes },
-  { label: "No", Icon: PictoNo },
-  { label: "Pain", Icon: PictoPain },
-  { label: "Help", Icon: PictoHelp },
-  { label: "Move me", Icon: Handoff },
-  { label: "Take a break", Icon: Shield },
-];
 
 export const modes: { id: ModeId; tab: string; short: string; arrives: string; intro: string }[] = [
   {
@@ -63,7 +49,7 @@ export const modes: { id: ModeId; tab: string; short: string; arrives: string; i
     tab: "Eye mode",
     short: "Eye mode",
     arrives: "A choice from the communication board",
-    intro: "For patients who cannot speak or move comfortably: six large choices, then a clinician review. Try the board below. This is a manual preview; camera tracking and dwell selection are not connected yet.",
+    intro: "Watch a patient look toward a choice, hold their gaze for two seconds, and confirm their message. The small cursor shows where they are looking. This simulated example uses no camera.",
   },
 ];
 
@@ -72,7 +58,6 @@ export function Panel({
   lang,
   setLang,
   compact = false,
-  eyeChoice,
   setEyeChoice,
 }: {
   mode: ModeId;
@@ -86,25 +71,7 @@ export function Panel({
   const l = languages[lang];
   switch (mode) {
     case "eye":
-      return (
-        <div className="flex flex-col gap-3">
-          <p className="font-display text-xl font-bold">What would you like to say?</p>
-          <p className="text-sm text-ink-soft">Manual preview · Tap a choice</p>
-          <div className="grid grid-cols-2 gap-2">
-            {EYE_CHOICES.map(({ label, Icon }) => (
-              <button key={label} type="button" aria-pressed={eyeChoice === label}
-                onClick={() => setEyeChoice(label)}
-                className={`press flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl p-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-deep ${eyeChoice === label ? "bg-blue-deep text-white" : "bg-surface text-ink ring-1 ring-line"}`}>
-                <Icon size={26} />
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
-          <p role="status" className="rounded-2xl bg-blue-soft p-3 text-sm font-semibold text-blue-deeper">
-            {eyeChoice ? `You chose: ${eyeChoice}` : "Choose what you want to say."}
-          </p>
-        </div>
-      );
+      return <EyeDemo compact={compact} onChoice={setEyeChoice} />;
     case "language":
       return (
         <div className="flex flex-col gap-3">
@@ -290,7 +257,7 @@ export function Modes() {
               <div className="mt-4" aria-live="polite">
                 <p className="text-sm text-on-navy-soft">What the patient chose</p>
                 <p className="mt-2 font-display text-2xl font-semibold">{eyeChoice ?? "No choice yet"}</p>
-                <p className="mt-4 text-base text-on-navy-soft">On the real board, pass to clinician to review the choice. Preview selections do not notify staff.</p>
+                <p className="mt-4 text-base text-on-navy-soft">The confirmed choice appears here for review. This is a simulated conversation; no staff are notified.</p>
               </div>
             ) : <>
             <p className="mt-4 text-sm font-medium text-on-navy-soft">Chief complaint</p>

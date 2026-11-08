@@ -82,7 +82,7 @@ export const steps: Step[] = [
     id: "start",
     holder: "Clinician",
     title: "Set up the visit in a few taps",
-    body: "On the clinician’s own phone, tablet, or laptop: the patient’s language, how they communicate, where they start, and which body diagram they see. Eye mode opens a separate six-choice board preview. Then pass the device. Nothing for the patient to install.",
+    body: "On the clinician’s own phone, tablet, or laptop: the patient’s language, how they communicate, where they start, and which body diagram they see. Eye mode opens a separate six-choice communication board. Then pass the device. Nothing for the patient to install.",
   },
   {
     id: "intake",

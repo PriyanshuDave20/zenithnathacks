@@ -49,22 +49,31 @@ function dist(a: { x: number; y: number }, b: { x: number; y: number }) {
 export function gazeFeatures(landmarks: { x: number; y: number }[] | null | undefined): GazeFeatures | null {
   if (!landmarks || landmarks.length <= R_IRIS + 4) return null;
   const lm = landmarks;
+  const required = [L_IRIS, R_IRIS, L_OUTER, L_INNER, R_INNER, R_OUTER, L_UPPER, L_LOWER, R_UPPER, R_LOWER, NOSE, CHEEK_L, CHEEK_R, BROW, CHIN];
+  if (required.some(i => !lm[i] || !Number.isFinite(lm[i].x) || !Number.isFinite(lm[i].y))) return null;
+  if (dist(lm[L_OUTER], lm[L_INNER]) < 0.005 || dist(lm[R_OUTER], lm[R_INNER]) < 0.005) return null;
 
   // Per-eye measures, written against stable references (corners, eye width) so they survive
   // the user leaning towards or away from the camera.
   const eye = (outer: { x: number; y: number }, inner: { x: number; y: number }, upper: { x: number; y: number }, lower: { x: number; y: number }, iris: { x: number; y: number }) => {
     const eyeW = Math.max(dist(outer, inner), 1e-6);
     const centre = mid(outer, inner);
-    const along = (iris.x - outer.x) / (inner.x - outer.x || 1e-6);
-    const lineY = outer.y + (inner.y - outer.y) * along; // corner-to-corner line at the iris
+    // Project onto the eye's own axes, so a small head roll does not look like gaze movement.
+    const direction = inner.x >= outer.x ? 1 : -1;
+    const ux = (inner.x - outer.x) / eyeW * direction;
+    const uy = (inner.y - outer.y) / eyeW * direction;
+    const dx = iris.x - centre.x, dy = iris.y - centre.y;
     return {
-      x: (iris.x - centre.x) / eyeW,
-      y: (iris.y - lineY) / eyeW,
+      x: (dx * ux + dy * uy) / eyeW,
+      y: (-dx * uy + dy * ux) / eyeW,
       a: dist(upper, lower) / eyeW,
     };
   };
   const l = eye(lm[L_OUTER], lm[L_INNER], lm[L_UPPER], lm[L_LOWER], lm[L_IRIS]);
   const r = eye(lm[R_OUTER], lm[R_INNER], lm[R_UPPER], lm[R_LOWER], lm[R_IRIS]);
+
+  // Closed eyes and blinks do not provide a trustworthy gaze sample.
+  if (l.a < 0.08 || r.a < 0.08) return null;
 
   const faceW = Math.max(dist(lm[CHEEK_L], lm[CHEEK_R]), 1e-6);
   const faceH = Math.max(dist(lm[BROW], lm[CHIN]), 1e-6);
@@ -93,6 +102,9 @@ export type GazeMapping = { x: [number, number]; y: [number, number, number, num
  */
 export function fitGazeMapping(samples: CalibrationSample[]): GazeMapping | null {
   if (samples.length < 4) return null;
+  if (samples.some(s => [...Object.values(s.features), s.screen.x, s.screen.y].some(v => !Number.isFinite(v)))) return null;
+  const xs = samples.map(s => s.screen.x), ys = samples.map(s => s.screen.y);
+  if (Math.max(...xs) - Math.min(...xs) < 0.5 || Math.max(...ys) - Math.min(...ys) < 0.25) return null;
   // A cue that never moved during calibration cannot be fitted (the ridge would just predict
   // the mean): require the horizontal feature and at least one vertical cue to have spread.
   const spread = (pick: (s: CalibrationSample) => number) => {
@@ -116,7 +128,7 @@ export function fitGazeMapping(samples: CalibrationSample[]): GazeMapping | null
   for (const c of [...mapping.x, ...mapping.y]) if (Math.abs(c) > 8) return null;
   for (const s of samples) {
     const p = applyGazeMapping(mapping, s.features);
-    if (Math.abs(p.x - s.screen.x) > 0.4 || Math.abs(p.y - s.screen.y) > 0.4) return null;
+    if (Math.abs(p.x - s.screen.x) > 0.22 || Math.abs(p.y - s.screen.y) > 0.22) return null;
   }
   return mapping;
 }

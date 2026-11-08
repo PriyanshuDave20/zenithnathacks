@@ -1,5 +1,13 @@
 # Handoff Log
 
+### 2026-11-07 Zach / Codex · zach/eye-mode-showcase (gaze integration)
+- Merged fetched origin/zenith/gaze-tracking at dc4a3e5 (merge 8ce2670), preserving both handoff histories. A fresh fetch failed DNS, so later remote updates are unverified. Existing .codex/config.toml remains untouched/uncommitted.
+- Landing Eye mode now plays a synthetic Pain → Yes → Take a break sequence automatically: small moving cursor, two-second dwell ring, confirmed choice mirrored to clinician review. Pause/Play, reduced-motion still, hidden/offscreen suspension, responsive mobile/desktop playback; no camera or real input events in the demo.
+- Clinician setup defaults to Eye mode. Patient board uses the merged gaze layer and retains tap/keyboard; gaze activation is marked so onSelect preserves channel=gaze under the existing SelectEvent contract. Stale manual-preview wording and fake hover-dwell styling removed. No API/contract/storage changes.
+- Tracking improvements: eye-axis projection compensates head roll; invalid/closed-eye samples rejected; weak/incomplete calibration requests retry instead of silently using defaults. Fresh camera frames are distinguished from no-face frames, feature smoothing uses camera timing, stale/blink/hidden frames cannot finish a dwell, and a target needs look-away before reactivation. Smaller real cursor, Recalibrate button, viewport-resize recalibration, cancellation cleanup.
+- Checked: 64 tests pass (3 new regression tests); full lint 0 errors/188 existing bundled-skill warnings; diff whitespace clean. React checklist applied. Typecheck currently fails only because @mediapipe/tasks-vision is not installed: npm install failed ENOTFOUND registry.npmjs.org. User asked to run npm install locally. Browser host unavailable; native Safari access timed out. No live-camera accuracy claim or mobile/desktop visual signoff.
+- Next: install dependency, rerun typecheck, visually check landing Eye demo and clinician setup/patient handoff at 390px and desktop, then test/calibrate against a real webcam. Stop/restart dev server after installing if needed. Changes are committed locally on zach/eye-mode-showcase. Push failed DNS (github.com); push this branch after connectivity is restored.
+
 ### 2026-11-07 Zach / Codex · zach/eye-mode-showcase
 - Renamed patient-facing ICU labels to Eye mode (existing /icu URL and internal identifiers retained for compatibility).
 - Landing modes now include an interactive six-choice Eye board with shared selection in the desktop phone/mobile panel and corresponding clinician review. Explicit manual-preview status; gaze/camera integration remains unconnected. No fabricated clinical summary for Eye choices.

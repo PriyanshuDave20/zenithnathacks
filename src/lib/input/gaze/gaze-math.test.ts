@@ -133,3 +133,27 @@ test("median and the smoothers behave", () => {
   fz.reset();
   assert.deepEqual(fz.next({ x: 1, y: 2, a: 0.3, p: 0 }, 16), { x: 1, y: 2, a: 0.3, p: 0 });
 });
+
+
+test("gaze rejects blinks, collapsed eyes, and non-finite landmarks", () => {
+  assert.equal(gazeFeatures(face({159: {x: 0.45, y: 0.46}, 145: {x: 0.45, y: 0.46}})), null);
+  assert.equal(gazeFeatures(face({133: {x: 0.42, y: 0.46}})), null);
+  assert.equal(gazeFeatures(face({468: {x: NaN, y: 0.46}})), null);
+});
+
+test("iris displacement is invariant under eye roll", () => {
+  const original = face({468: {x: 0.46, y: 0.47}, 473: {x: 0.56, y: 0.47}});
+  const angle = 0.25;
+  const rolled = original.map(p => ({...p, x: 0.5 + (p.x - 0.5) * Math.cos(angle) - (p.y - 0.5) * Math.sin(angle), y: 0.5 + (p.x - 0.5) * Math.sin(angle) + (p.y - 0.5) * Math.cos(angle)}));
+  const a = gazeFeatures(original)!;
+  const b = gazeFeatures(rolled)!;
+  assert.ok(Math.abs(a.y - b.y) < 1e-8);
+  assert.ok(Math.abs(a.a - b.a) < 1e-8);
+});
+
+test("calibration rejects non-finite input and incomplete screen coverage", () => {
+  const samples = Array.from({length: 9}, (_, i) => ({features: {x: i / 10, y: i / 10, a: 0.3, p: 0}, screen: {x: 0.4 + i / 100, y: 0.4 + i / 100}}));
+  assert.equal(fitGazeMapping(samples), null);
+  samples[0].features.x = Infinity;
+  assert.equal(fitGazeMapping(samples), null);
+});

@@ -7,7 +7,7 @@ export type DwellConfig = {
   radius: number;
   /** How long the gaze must stay on one target before it fires. */
   durationMs: number;
-  /** After firing, ignore dwell for this long so one stare is one activation. */
+  /** Minimum cooldown after firing. The fired target also requires looking away to rearm. */
   cooldownMs: number;
 };
 
@@ -24,6 +24,7 @@ export class DwellController {
   private target: string | null = null;
   private start = 0;
   private blockedUntil = 0;
+  private firedTarget: string | null = null;
 
   constructor(private cfg: DwellConfig = DEFAULT_DWELL) {}
 
@@ -32,6 +33,8 @@ export class DwellController {
    * no face is seen). Passing a different key, or null, restarts the dwell from zero.
    */
   update(now: number, target: string | null): DwellState {
+    if (target !== this.firedTarget) this.firedTarget = null;
+    if (target && target === this.firedTarget) return { target: null, progress: 0 };
     if (now < this.blockedUntil) return { target: null, progress: 0 };
     if (target !== this.target) {
       this.target = target;
@@ -43,6 +46,7 @@ export class DwellController {
 
   /** Call right after activating a target; blocks new dwells for the cooldown period. */
   fired(now: number) {
+    this.firedTarget = this.target;
     this.blockedUntil = now + this.cfg.cooldownMs;
     this.target = null;
     this.start = now;
