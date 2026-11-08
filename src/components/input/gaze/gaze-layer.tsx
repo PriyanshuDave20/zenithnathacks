@@ -99,9 +99,10 @@ export function GazeLayer() {
   const trackerRef = useRef<GazeTracker | null>(null);
   const dwellRef = useRef(new DwellController());
   // Two smoothing stages: the raw features wobble most (and the mapping magnifies it), so they
-  // get the steadier filter; the pixel filter just takes the residual edge off.
-  const featureSmootherRef = useRef(new FeatureSmoother(0.3, 0.75, 0.06));
-  const smootherRef = useRef(new SmoothedPoint(0.2, 0.55, 0.02, 2));
+  // get the steadier filter; the pixel filter takes the residual edge off, and its deadzone
+  // swallows small tremor entirely.
+  const featureSmootherRef = useRef(new FeatureSmoother(0.22, 0.55, 0.04));
+  const smootherRef = useRef(new SmoothedPoint(0.15, 0.45, 0.015, 4));
   const mappingRef = useRef<GazeMapping | null>(null);
   const calibBufferRef = useRef<GazeFeatures[]>([]);
   const samplesRef = useRef<CalibrationSample[]>([]);
