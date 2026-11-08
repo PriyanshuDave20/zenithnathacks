@@ -15,6 +15,15 @@ Do not put secrets or patient data here.
 
 ## Entries
 
+### 2026-11-08  Zach / Claude  zach/language-search
+- Done: patient languages are now searchable and scale past the four demo languages (no new languages added).
+  - Setup screen (`communication/session-setup.tsx`): a "Search languages" box above the language cards. Matching ignores case and accents and checks the native name, English name, code and `aliases` ("chinese" finds 中文, "espanol" finds Español). Enter picks the first match; Escape clears. The chosen language stays visible while searching, and a no-match message appears. The cards are sorted by English name and scroll inside their box past four rows.
+  - In-session switcher (`communication/workspace.tsx`, clinician turn): the row of language buttons is now a "Patient language" dropdown.
+- Adding a language later (Backend or frontend): add a row to `PATIENT_LANGUAGES` in `src/lib/mocks/data.ts` (new `LanguageOption` type: code, name, english, dir, speech, optional aliases) and the code to `PatientLanguage`. The patient-facing text keyed by `PatientLanguage` (workspace copy, questions, phrases, replies, body-part labels in `src/lib/input/body-parts.ts`) also needs that language, or TypeScript will flag the gaps.
+- Notes: `/start` now runs on `src/components/communication/` (PR #5). The old `src/components/session/*` screens are no longer imported anywhere, so edit the communication components, not session. Graphify graph: `~/.graphify/zenithnathacks/graphify-out/graph.json` (rebuild after big changes).
+- Checked: typecheck, 48 tests, lint 0 errors. Browser at 390x844: search by alias, no match, Enter-to-pick (Arabic), and the in-session dropdown.
+- Touched: `communication/{session-setup.tsx,language-search.ts,workspace.tsx,flow.css,workspace.css}`, `src/lib/mocks/data.ts`, docs.
+
 ### 2026-11-07  Zach / Codex  zach/communication-overhaul (clinician-led patient flow)
 - Done: addressed Zach’s patient-usability feedback. `/start` now opens clinician-owned language/mode setup, including ICU as one of five equal choices. Clinician chooses free/guided intake plus optional display/reply-audio settings, then explicitly passes the device. Patients get the existing focused `IntakeFree` / one-question-at-a-time `IntakeGuided`, followed by read-back and a pass-to-clinician ritual. Only clinicians see the new conversation workspace, mode/language controls and dual summaries. Replies and teach-back use explicit patient/clinician handoffs.
 - ICU: setup opens a patient board with all six choices visible at 390x844, collapsed clinician guidance, and a local clinician acknowledgment showing the chosen phrase. No camera, calibration, gaze processing, automatic dwell selection, backend actions or notifications. Frontend preview only; English-only limit disclosed before entry.

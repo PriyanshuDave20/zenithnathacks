@@ -22,6 +22,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 | Clinician accounts UI: sign in (Google + email), sign up, forgot password, profile; sign-in required before `/start` (on a mock) | Frontend | Zach | zach/clinician-auth (PR #16) | Done, merged (impeccable seed waiver for the auth pages still pending) |
 | Clinician accounts backend: auth routes, sessions, Google OAuth, `Clinician` table (see `docs/API.md`) | Backend | TBD | | Todo |
 | Infrastructure overhaul (scope to be confirmed with Zach); graphify graph kept outside the repo | Tooling / docs | Claude (next session) | TBD | Handed over 2026-11-07, not started: see top of `docs/HANDOFF.md` |
+| Searchable patient-language picker (setup search + in-session dropdown), data-driven so more languages can be added | Frontend | Zach / Claude | zach/language-search | Done: no new languages; see HANDOFF for how to add one |
 | **Phase 1: Contracts & foundation (~8h)** | | | | |
 | Foundation: Zod contracts matching `docs/API.md`, `llm.ts` with mock provider (no model SDK/key), redaction + tests, question-bank skeleton, synthetic fixtures | Backend 1 + shared contracts | Prem / Codex | prem/backend-foundation (PR #18) | Done, merged; no API routes or real-provider integration |
 | Mocks in `src/lib/mocks/` matching the contracts | Frontend | Zach | zach/start-flow | Done (see `src/lib/mocks/AGENTS.md`) |

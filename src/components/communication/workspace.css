@@ -315,20 +315,38 @@
 }
 .sc-languages {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 6px;
   margin: 0 0 20px;
+  max-width: 360px;
 }
-.sc-languages button {
-  min-height: 44px;
+.sc-languages > span {
+  font-size: 0.875em;
+  font-weight: 600;
+  color: var(--muted);
+}
+/* Dropdown so the switcher holds any number of languages. */
+.sc-languages select {
+  min-height: 48px;
   border: 1px solid var(--stroke);
-  padding: 8px 14px;
   border-radius: 99px;
+  background: var(--paper)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232d5f8b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")
+    no-repeat right 16px center / 18px;
+  color: var(--text);
+  padding: 0 44px 0 18px;
+  font: inherit;
+  font-weight: 600;
+  appearance: none;
+  cursor: pointer;
 }
-.sc-languages button[aria-pressed="true"] {
-  background: var(--action);
-  color: white;
-  border-color: var(--action);
+.sc-languages select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.sc-languages select:focus-visible {
+  outline: 3px solid var(--action);
+  outline-offset: 2px;
 }
 .sc-field {
   width: 100%;
@@ -560,7 +578,6 @@
 .sc-high .sc-primary,
 .sc-high .sc-tile[aria-pressed="true"],
 .sc-high .sc-choices button[aria-pressed="true"],
-.sc-high .sc-languages button[aria-pressed="true"],
 .sc-high .sc-mic {
   background: #ffea00;
   color: black;

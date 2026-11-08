@@ -4,10 +4,24 @@ import type { Question } from "./types";
 
 export type PatientLanguage = "en" | "es" | "ar" | "zh-Hans";
 
-export const PATIENT_LANGUAGES: { code: PatientLanguage; name: string; english: string; dir: "ltr" | "rtl"; speech: string }[] = [
-  { code: "es", name: "Español", english: "Spanish", dir: "ltr", speech: "es-ES" },
-  { code: "ar", name: "العربية", english: "Arabic", dir: "rtl", speech: "ar-SA" },
-  { code: "zh-Hans", name: "中文", english: "Mandarin", dir: "ltr", speech: "zh-CN" },
+/**
+ * Patient languages offered on the start screen (searchable list, sorted by English name). To add one: add a row
+ * here, add `PatientLanguage`'s code, then its patient UI text (session/strings.ts, QUESTIONS, PHRASES, replies,
+ * body-diagram labels in src/lib/input/body-parts.ts). `aliases` are extra search words.
+ */
+export type LanguageOption = {
+  code: PatientLanguage;
+  name: string; // the language's own name
+  english: string;
+  dir: "ltr" | "rtl";
+  speech: string; // BCP-47 tag for speech recognition and read-aloud
+  aliases?: string[];
+};
+
+export const PATIENT_LANGUAGES: LanguageOption[] = [
+  { code: "es", name: "Español", english: "Spanish", dir: "ltr", speech: "es-ES", aliases: ["Castellano"] },
+  { code: "ar", name: "العربية", english: "Arabic", dir: "rtl", speech: "ar-SA", aliases: ["Arabi"] },
+  { code: "zh-Hans", name: "中文", english: "Mandarin", dir: "ltr", speech: "zh-CN", aliases: ["Chinese", "Simplified Chinese", "Putonghua", "普通话"] },
   { code: "en", name: "English", english: "English", dir: "ltr", speech: "en-US" },
 ];
 
