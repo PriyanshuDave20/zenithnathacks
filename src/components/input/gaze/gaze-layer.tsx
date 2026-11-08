@@ -7,7 +7,8 @@
 // are never uploaded, stored, or logged. Nothing here modifies the page: the cursor, calibration
 // and status layers are pointer-events-none, so the site behaves exactly as before when gaze is off.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { cancelGazeRequest, getGazeAvailable, getGazeRequested, setGazeError, setGazePhase, subscribeGaze } from "./gaze-availability";
 import { DwellController } from "@/lib/input/gaze/dwell";
 import {
   applyGazeMapping,
@@ -127,6 +128,10 @@ function cameraDenied(e: unknown) {
 }
 
 export function GazeLayer() {
+  // Only screens that declare they want gaze (the patient's Eye mode board) get the control at all.
+  const available = useSyncExternalStore(subscribeGaze, getGazeAvailable, () => false);
+  // ...and the camera waits for the clinician's Start, so both people can be looking when it begins.
+  const requested = useSyncExternalStore(subscribeGaze, getGazeRequested, () => false);
   const [phase, setPhase] = useState<Phase>("off");
   const [status, setStatus] = useState<string | null>(null);
   const [noFace, setNoFace] = useState(false);
@@ -204,6 +209,33 @@ export function GazeLayer() {
   useEffect(() => {
     window.addEventListener("synapse:gaze-stop", disable);
     return () => window.removeEventListener("synapse:gaze-stop", disable);
+  }, [disable]);
+
+  // Camera and calibration start when the clinician taps Start on the board; when the board goes away
+  // (handoff, review, cleared, other page) or calibration is cancelled, the camera goes off.
+  useEffect(() => {
+    // Next tick, cancellable: a quick on/off (or a dev double-run) never starts and stops the camera.
+    const timer = setTimeout(() => {
+      if (available && requested) void enable();
+      else disable();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [available, requested, enable, disable]);
+
+  // Tell the screen where we have got to; a failure goes back to the ready step with its message.
+  useEffect(() => {
+    setGazePhase(phase);
+    if (phase === "error") {
+      setGazeError(status);
+      cancelGazeRequest();
+    }
+  }, [phase, status]);
+  useEffect(() => () => setGazePhase("off"), []);
+
+  // Cancelling calibration returns to the ready step instead of leaving a lone toggle.
+  const cancelCalibration = useCallback(() => {
+    disable();
+    cancelGazeRequest();
   }, [disable]);
 
   useEffect(() => {
@@ -393,6 +425,8 @@ export function GazeLayer() {
 
   const toggleLabel = active ? "Turn off gaze control" : "Turn on gaze control (webcam)";
 
+  if (!available) return null;
+
   return (
     <>
       {/* Always present so the ref is stable; it carries no stream until gaze is enabled. */}
@@ -426,7 +460,7 @@ export function GazeLayer() {
       ) : null}
 
       {phase === "calibrating" ? (
-        <dialog ref={calibrationDialog} aria-modal="true" aria-label="Gaze calibration" onCancel={(event) => { event.preventDefault(); disable(); }} className="fixed inset-0 z-[70] m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-navy/90 text-white">
+        <dialog ref={calibrationDialog} aria-modal="true" aria-label="Gaze calibration" onCancel={(event) => { event.preventDefault(); cancelCalibration(); }} className="fixed inset-0 z-[70] m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-navy/90 text-white">
           <p className="mx-auto mt-[max(4rem,10svh)] max-w-md px-6 text-center text-lg font-semibold leading-snug">
             Follow the dot with your eyes for 30 seconds. Keep your head still and let your eyes do the moving.
           </p>
@@ -446,7 +480,7 @@ export function GazeLayer() {
           </div>
           <button
             type="button"
-            onClick={disable}
+            onClick={cancelCalibration}
             className="press absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-6 py-3 text-base font-semibold text-white hover:bg-white/20"
           >
             Cancel calibration
@@ -471,22 +505,24 @@ export function GazeLayer() {
         </button>
       ) : null}
 
-      <button
-        type="button"
-        onClick={active || phase === "starting" ? disable : enable}
-        aria-pressed={active}
-        disabled={phase === "starting"}
-        aria-label={toggleLabel}
-        title="Gaze control (webcam)"
-        className={`press fixed end-2 top-1/2 z-[70] grid size-11 -translate-y-1/2 place-items-center rounded-full shadow-soft ring-1 motion-reduce:transition-none ${
-          active ? "bg-blue-deep text-white ring-blue-deep" : "bg-surface/95 text-ink-soft ring-line hover:text-ink"
-        }`}
-      >
-        <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z" />
-          <circle cx="12" cy="12" r="2.75" />
-        </svg>
-      </button>
+      {requested ? (
+        <button
+          type="button"
+          onClick={active || phase === "starting" ? cancelCalibration : enable}
+          aria-pressed={active}
+          disabled={phase === "starting"}
+          aria-label={toggleLabel}
+          title="Gaze control (webcam)"
+          className={`press fixed end-2 top-1/2 z-[70] grid size-11 -translate-y-1/2 place-items-center rounded-full shadow-soft ring-1 motion-reduce:transition-none ${
+            active ? "bg-blue-deep text-white ring-blue-deep" : "bg-surface/95 text-ink-soft ring-line hover:text-ink"
+          }`}
+        >
+          <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z" />
+            <circle cx="12" cy="12" r="2.75" />
+          </svg>
+        </button>
+      ) : null}
     </>
   );
 }
