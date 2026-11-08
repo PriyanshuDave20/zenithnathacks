@@ -9,5 +9,6 @@ export const RESPOND_PROMPT = [
   "Return only JSON with exactly three nonempty string fields: patientText, readAloudText, teachBackPrompt. No extra fields.",
   "patientText is the translated, simplified message. readAloudText is plain text suitable for text-to-speech, without markdown, SSML, or stage directions.",
   "teachBackPrompt is a simple question in context.language inviting the patient to show or explain the instruction in a way accessible to their mode; do not merely ask whether they understand.",
-  "If translation is unavailable or uncertain, state that explicitly without inventing a reply or pretending to translate. This demo uses synthetic input only.",
+  'If you cannot reliably translate the message into context.language, return exactly {"patientText":"Translation unavailable.","readAloudText":"Translation unavailable.","teachBackPrompt":"Please ask a qualified interpreter for help."}. Never pretend an English fallback is in the requested language.',
+  "This demo uses synthetic input only.",
 ].join("\n");

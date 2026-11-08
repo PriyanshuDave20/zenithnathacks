@@ -1,7 +1,8 @@
 "use client";
 
 import { useId, useState, type ReactNode } from "react";
-import { PHRASES, QUESTIONS, type Mode, type PatientLanguage, type TranslateInput, type TranslateResponse } from "@/lib/mocks";
+import { PHRASES, type Mode, type PatientLanguage, type TranslateInput, type TranslateResponse } from "@/lib/mocks";
+import { getGuidedQuestions } from "@/lib/questions/localization";
 import {
   ArrowLeft,
   ArrowRight,
@@ -106,7 +107,7 @@ export function IntakeFree({
   function submit() {
     rec.stop();
     const inputs: TranslateInput[] = [];
-    if (composed) inputs.push({ kind: "text", value: composed });
+    inputs.push(...phrases.map((id) => ({ questionId: "chief_complaint", kind: "option" as const, value: `phrase:${id}` })));
     if (value) inputs.push({ kind: effectiveTyping ? "text" : "speech_transcript", value });
     onSubmit(inputs);
   }
@@ -229,6 +230,7 @@ export function IntakeGuided({
   mode,
   figure,
   onSubmit,
+  onUnavailable,
 }: {
   lang: LangMeta;
   mode: Mode;
@@ -236,6 +238,7 @@ export function IntakeGuided({
   figure?: BodyFigure;
   /** `spots` are the exact places touched on the body diagram, for the clinician's map. */
   onSubmit: (inputs: TranslateInput[], spots?: BodySpot[]) => void;
+  onUnavailable?: () => void;
 }) {
   const t = STRINGS[lang.code];
   const [index, setIndex] = useState(0);
@@ -246,8 +249,16 @@ export function IntakeGuided({
   const [spots, setSpots] = useState<BodySpot[]>([]);
   const parts = spotParts(spots);
   const { speak } = useSpeak();
-  const q = QUESTIONS[index];
-  const last = index === QUESTIONS.length - 1;
+  const questions = getGuidedQuestions(lang.code);
+  if (!questions) return (
+    <Screen label="Guided questions unavailable" dir={lang.dir} lang={lang.code}>
+      <Title>{t.couldNotTranslate}</Title>
+      <p lang="en" dir="ltr">Guided questions are not available in this language yet. Use typing or ask your clinician for help.</p>
+      {onUnavailable ? <PrimaryButton onClick={onUnavailable}>{t.typeInstead}</PrimaryButton> : null}
+    </Screen>
+  );
+  const q = questions[index];
+  const last = index === questions.length - 1;
   const isWhere = q.id === "where";
   const bodyOn = isWhere && useBody;
   const chosen = bodyOn ? parts.length > 0 : Boolean(answers[q.id]);
@@ -264,7 +275,7 @@ export function IntakeGuided({
   function next() {
     if (!last) return setIndex(index + 1);
     onSubmit(
-      QUESTIONS.flatMap((x) =>
+      questions!.flatMap((x) =>
         x.id === "where" && useBody
           ? spotsToInputs(spots)
           : answers[x.id]
@@ -279,9 +290,9 @@ export function IntakeGuided({
     <Screen label="Patient answers questions" dir={lang.dir} lang={lang.code}>
       <div lang={lang.code} dir={lang.dir} className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <span className="text-base font-semibold text-ink-soft">{t.questionOf(index + 1, QUESTIONS.length)}</span>
+          <span className="text-base font-semibold text-ink-soft">{t.questionOf(index + 1, questions.length)}</span>
           <span className="flex flex-1 gap-1.5" aria-hidden="true">
-            {QUESTIONS.map((x, i) => (
+            {questions.map((x, i) => (
               <span key={x.id} className={`h-1.5 flex-1 rounded-full ${i <= index ? "bg-blue-deep" : "bg-line"}`} />
             ))}
           </span>
@@ -295,7 +306,7 @@ export function IntakeGuided({
               <BodyDiagram regions={RegionIdSchema.options} onSelect={() => {}} lang={lang.code} spots={spots} onSpotsChange={changeSpots} figure={figure} />
             </div>
           ) : isScale ? (
-            <div className="mt-4 grid grid-cols-5 gap-2 sm:gap-3">
+            <div className="mt-4 grid grid-cols-4 gap-2 sm:gap-3">
               {q.options.map((o, i) => {
                 const on = answers[q.id] === o.id;
                 return (
@@ -303,14 +314,14 @@ export function IntakeGuided({
                     key={o.id}
                     type="button"
                     aria-pressed={on}
-                    aria-label={o.label}
+                    aria-label={o.text[lang.code]}
                     onClick={() => setAnswers({ ...answers, [q.id]: o.id })}
                     className={`press flex aspect-square min-h-14 flex-col items-center justify-center rounded-full font-display text-[clamp(1.5rem,6vw,2.25rem)] font-bold ${
                       on ? "bg-blue-deep text-white shadow-soft" : "bg-surface text-ink ring-1 ring-line hover:bg-blue-soft"
                     }`}
                   >
-                    {o.text[lang.code]}
-                    <span aria-hidden="true" className={`mt-1 block h-1.5 rounded-full ${on ? "bg-white" : "bg-blue"}`} style={{ width: `${(i + 1) * 18}%` }} />
+                    {/^s\d+$/.test(o.id) ? new Intl.NumberFormat(lang.code).format(Number(o.id.slice(1))) : <span className="text-sm">{o.text[lang.code]}</span>}
+                    {/^s\d+$/.test(o.id) ? <span aria-hidden="true" className={`mt-1 block h-1.5 rounded-full ${on ? "bg-white" : "bg-blue"}`} style={{ width: `${Math.min(90, (i + 1) * 8)}%` }} /> : null}
                   </button>
                 );
               })}
