@@ -46,8 +46,10 @@ const response = TranslateResponseSchema.parse(JSON.parse(text));
 
 It returns the four synthetic fixture translations and one canned clinician reply
 in those languages. Other valid requests get an explicit mock-unavailable response,
-never an invented clinical summary or a pretend translation. Guided options are
-left for the real translate pipeline. Mock replies are fixed examples; they do not
+never an invented clinical summary or a pretend translation. The translate pipeline
+now handles guided options deterministically from static language packs without
+calling either provider; mixed requests send only free text/transcripts to the model.
+See `docs/TRANSLATION.md` for generation/review and canonical question IDs. Mock replies are fixed examples; they do not
 implement reading-level adaptation. Invalid structured tasks throw a generic error without
 including prompt content. This envelope is a mock convention, not an HTTP contract;
-no API routes or frontend integration are included in the foundation.
+the current HTTP routes validate and redact around this internal interface.
