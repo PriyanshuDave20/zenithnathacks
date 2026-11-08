@@ -1,5 +1,5 @@
 export type Point = { x: number; y: number; z: number };
-export type Stage = { x: number; top: number; height: number; radius: number; dockX: number; dockY: number };
+export type Stage = { x: number; top: number; height: number; radius: number; dockX: number; dockY: number; sway?: number };
 
 export const clamp = (n: number, min = 0, max = 1) => Math.max(min, Math.min(max, n));
 export const mix = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -8,24 +8,31 @@ export function ease(a: number, b: number, n: number) {
   return t * t * (3 - 2 * t);
 }
 
-/** One continuous route: helix around the staff, then a tangent-aligned curve to the header. */
+/** Parametric length of the journey: coil 0-1, unwind 1-(1+rise), then rest at the header dock. */
+export const ROUTE = 1.6;
+
+/**
+ * One continuous corkscrew, smooth in position and heading everywhere. The climb never pauses:
+ * above the crown the same rotation carries on while the radius loosens to nothing, so the snake
+ * unscrews itself into a straight vertical line and arrives at the header heading straight up.
+ * There is no separate orbit or launch curve, so nothing can kink, reverse or circle empty air.
+ */
 export function journeyPoint(distance: number, stage: Stage): Point {
-  const { x, top, height, radius, dockX, dockY } = stage;
+  const { x, top, height, radius, dockX, dockY, sway = 0 } = stage;
+  const rise = clamp((top - dockY) / height, 0.08, 0.45);
   if (distance <= 1) {
-    const angle = distance * Math.PI * 5;
+    // `sway` is zero at both ends so the coil stays joined to the foot and the unwind.
+    const angle = distance * Math.PI * 6 + sway * Math.sin(distance * Math.PI);
     return { x: x + Math.sin(angle) * radius, y: top + height * (1 - distance), z: Math.cos(angle) };
   }
-  if (distance >= 1.65) {
-    return { x: mix(x, dockX, ease(1.65, 2.15, distance)), y: dockY, z: 1 };
-  }
-  const t = clamp((distance - 1) / 0.65);
-  const a = 1 - t;
-  // A tight release from the tip; the head accelerates upward instead of swinging sideways.
-  const reach = Math.min(20, height * 0.07);
+  if (distance >= 1 + rise) return { x: dockX, y: dockY, z: 1 };
+  const u = (distance - 1) / rise;
+  const loosen = u * u * (3 - 2 * u);
+  const angle = distance * Math.PI * 6;
   return {
-    x: a ** 3 * x + 3 * a * a * t * (x - reach) + 3 * a * t * t * x + t ** 3 * x,
-    y: a ** 3 * top + 3 * a * a * t * (top - reach) + 3 * a * t * t * dockY + t ** 3 * dockY,
-    z: 1,
+    x: x + Math.sin(angle) * radius * (1 - loosen),
+    y: mix(top, dockY, u),
+    z: mix(Math.cos(angle), 1, loosen),
   };
 }
 
