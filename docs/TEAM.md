@@ -22,6 +22,42 @@ The tool does not matter; the lane does. Stay in your folders even if you use a 
 | Prompts | `translate/prompts.ts` | `respond/prompts.ts` |
 | Data | n/a | `src/lib/questions/` (questions, options, pictogram ids, pre-translations, region to questions map) |
 
+## Project-local Backend 1 team
+
+Invoke `$synapse-backend-team`, for example:
+
+> Use $synapse-backend-team to investigate and fix this backend bug: <steps and expected/actual behavior>. Use independent review before pushing.
+
+The main conversation coordinates. Native project roles are defined in
+`.codex/agents/synapse-backend.toml` (scoped implementer) and
+`.codex/agents/synapse-reviewer.toml` (independent reviewer with no source edits).
+The reusable workflow lives in `.agents/skills/synapse-backend-team/SKILL.md`.
+For substantial Backend 1 tasks, Prem has authorized this small team workflow;
+simple questions/trivial edits stay in the main thread. Cap spawned agents at two.
+Use one implementer and then a reviewer; add a second writer only for independent,
+disjoint files and run review after the writers finish. Workers do not delegate.
+
+Give every worker an isolated worktree, exact file scope and pinned base/candidate
+SHAs. The coordinator owns shared documentation, final checks, integration and
+remote Git operations; delegated workers return handoff notes for consolidation.
+This preserves the one-agent-per-checkout rule. Never copy `.env` or credentials
+into worktrees. Reviews use synthetic data/offline checks and return findings to
+the coordinator without editing tracked files. A reviewer role inherits the
+session's sandbox; its no-edit instructions are not an independent OS sandbox.
+
+The setup inherits the parent's Codex model/provider/permissions and preserves the
+existing Playwright config and UI hooks. It adds no AWS plugins/MCP servers,
+approval bypasses or team logging hooks. The application's NVIDIA provider remains
+independent of this developer tooling. Start a new Codex thread to refresh native
+role/skill discovery; an existing thread can explicitly read the role/skill files
+and delegate through its available tools. If delegation is unavailable, report
+sequential execution and the missing independent review instead of claiming it ran.
+
+Design references: [OpenAI subagent documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents)
+and [AWS sample workflow](https://github.com/aws-samples/sample-codex-agent-team).
+This is a small original Synapse configuration inspired by those patterns; the full
+sample bundle is not installed. Existing lane, contract and privacy rules apply.
+
 ## Backend 2: input channels (ICU and sign)
 All browser-side; camera video never leaves the device. Build in this order:
 1. Body diagram component with tap selection (`src/components/input/body-diagram/`).
