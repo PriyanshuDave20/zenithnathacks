@@ -12,7 +12,7 @@ export function AccountLink({ compact = false }: { compact?: boolean }) {
     return (
       <Link
         href="/signin"
-        className={`press inline-flex min-h-11 items-center rounded-full px-4 text-base font-semibold text-on-navy-soft hover:bg-navy-raised hover:text-white ${compact ? "" : ""}`}
+        className={`press inline-flex min-h-11 items-center whitespace-nowrap rounded-full px-3 text-base sm:px-4 font-semibold text-on-navy-soft hover:bg-navy-raised hover:text-white ${compact ? "" : ""}`}
       >
         Sign in
       </Link>
