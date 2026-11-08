@@ -88,7 +88,8 @@ test("output redaction covers every clinical and confidence field", async () => 
 });
 
 test("malformed model JSON, contract drift and provider failures reject", async () => {
-  for (const raw of ["not JSON", "{}", JSON.stringify({ ...STORIES[0].translateResponse, extra: "field" })]) {
+  for (const raw of ["not JSON", "{}", JSON.stringify({ ...STORIES[0].translateResponse, extra: "field" }),
+    JSON.stringify({ summary: { chiefComplaint: "Synthetic report", symptoms: [] }, lowConfidence: [] })]) {
     await assert.rejects(translate(STORIES[0].translateRequest, async () => raw));
   }
   await assert.rejects(translate(STORIES[0].translateRequest, async () => { throw new Error("Provider failed"); }));
