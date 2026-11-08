@@ -39,7 +39,7 @@ const OPTIONS = [
   },
 ];
 
-/** Presentation boundary for future input-channel integration. Manual preview emits tap, never fake gaze events. */
+/** Uses the shared gaze layer; its marked activation preserves the existing SelectEvent contract. */
 export function IcuBoard({
   onSelect,
 }: {
@@ -64,7 +64,7 @@ export function IcuBoard({
           <Link href="/start" aria-label="Back to communication workspace">
             <SynapseWordmark accent="#77a0c4" />
           </Link>
-          <span className={s.holder}>ICU · Eye selection</span>
+          <span className={s.holder}>Eye mode</span>
           <div className={s.headerActions}>
             <button
               type="button"
@@ -109,8 +109,7 @@ export function IcuBoard({
                 : "No choice was made"}
             </p>
             <p>
-              This is a manual interface preview. No request has been sent to
-              staff.
+              This is the patient’s selected phrase. No request has been sent to staff.
             </p>
             <div className="sf-clinician-actions">
               <button
@@ -121,7 +120,7 @@ export function IcuBoard({
                 Return to patient’s board
               </button>
               <Link href="/start" className={s.quiet}>
-                Finish ICU preview
+                Finish Eye mode
               </Link>
             </div>
           </section>
@@ -134,7 +133,7 @@ export function IcuBoard({
               <p>One clear choice at a time, with room to rest.</p>
             </div>
             <span className={s.badge}>
-              Interface preview · Eye tracking not connected
+              Eye control available · Camera opt-in
             </span>
           </div>
           <div className={i.layout}>
@@ -142,7 +141,7 @@ export function IcuBoard({
               <div className={s.panelHead}>
                 <div>
                   <h2 id="icu-prompt">What would you like to say?</h2>
-                  <p>Tap or use Tab and Enter to preview a choice.</p>
+                  <p>Turn on the eye control at the screen edge, calibrate, then look at a choice for two seconds. Tap and keyboard also work.</p>
                 </div>
               </div>
               <div className="sf-icu-status" role="status" aria-live="polite">
@@ -163,10 +162,12 @@ export function IcuBoard({
                     type="button"
                     key={id}
                     className={i.target}
+                    data-gaze-target={id}
                     aria-pressed={selected === id}
-                    onClick={() => {
+                    onClick={(event) => {
                       setSelected(id);
-                      onSelect?.({ channel: "tap", optionId: id });
+                      const channel = (event.nativeEvent as MouseEvent & { synapseInputChannel?: string }).synapseInputChannel === "gaze" ? "gaze" : "tap";
+                      onSelect?.({ channel, optionId: id });
                     }}
                   >
                     <Icon size={36} />
@@ -193,13 +194,10 @@ export function IcuBoard({
               </p>
               <h3>Eye control</h3>
               <p>
-                Camera access, calibration, gaze detection, and dwell selection
-                will be connected by the input-channel team.
+                Use the eye button at the screen edge to enable the camera and complete the 30-second moving-dot calibration. Keep the device and head steady; recalibrate after moving either.
               </p>
               <p className={s.notice}>
-                This page only previews the interface. Hover or keyboard focus
-                shows a dwell indicator; it does not select a target. No camera
-                is accessed.
+                A ring around the gaze cursor fills while looking at a choice. A completed two-second dwell selects it. Camera frames are processed on this device; tracking can be turned off using the eye button.
               </p>
               <p>
                 Choices here do not notify staff or trigger clinical actions.
@@ -210,7 +208,7 @@ export function IcuBoard({
                 disabled={!selected}
                 onClick={() => setSelected(null)}
               >
-                Clear preview choice
+                Clear choice
               </button>
               <p>
                 <Speaker size={18} /> Keep spoken reassurance and a human
@@ -224,8 +222,7 @@ export function IcuBoard({
         <footer className={s.footer}>
           <div className={s.footerInner}>
             <p>
-              No camera feed, recording, or stored selections. Frontend preview
-              only.
+              Camera processing stays on this device. Selections are kept only for this conversation.
             </p>
             <button
               type="button"

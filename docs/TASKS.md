@@ -9,6 +9,8 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 
 | Task | Lane | Owner | Branch | Status |
 |------|------|-------|--------|--------|
+| Eye mode naming and current landing-page examples | Frontend | Zach / Codex | zach/eye-mode-showcase | Implemented: automatic gaze demo with cursor/dwell/confirmed clinician choice, camera-free playback and reduced motion; merged zenith/gaze-tracking; Eye selected in clinician setup; typecheck and 64 tests pass; webcam/visual recheck pending |
+| Session confirmation, voice clear and patient read-back polish | Frontend | Zach / Codex | zach/session-ui-fixes | Done: legible end/clear confirmation, voice transcript reset, message retained during read-back loading, compact inline intake actions; mobile/desktop browser checks and 64 tests pass |
 | **Done** | | | | |
 | Repository sync, project orientation, shared skills and baseline verification | Tooling / docs | Zach / Codex | zach/setup-verification | Done: main current; all 13 project skills present; typecheck and 22 tests pass; lint 0 errors |
 | Scaffold, agent skills, landing page | Both | Prem | prem/landing-hero | Done |
@@ -51,7 +53,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 | Phone-viewport testing, accessibility pass, bug fixes | Both | TBD | | Todo |
 | Pitch slides; verify every statistic against its source before use | Both | TBD | | Todo |
 | **Stretch (in order)** | | | | |
-| ICU mode: webcam eye-gaze dwell-to-select (calibration, large targets), wired to body diagram and narrowed questions | Backend 2 | TBD | | Todo |
+| ICU mode: webcam eye-gaze dwell-to-select (calibration, large targets), wired to body diagram and narrowed questions | Backend 2 | zenith / Claude | zenith/gaze-tracking | First pass done: opt-in site-wide gaze; calibration v3 (30-second pursuit sweep, iris-height + aperture + pitch cues, ridge fit) after a live-webcam round fixed vertical movement and rigidity; integrated on zach/eye-mode-showcase with roll-aware features, blink/invalid-sample rejection, stricter calibration, fresh-frame dwell, look-away rearm and recalibration; real-webcam re-check, body-diagram/question narrowing and offline assets still todo |
 | Full back-and-forth conversation (turn-taking, speaker control) | Both | TBD | | Todo |
 | Sign proof of concept: small vocabulary via on-device hand tracking (not full sign translation) | Backend 2 | TBD | | Todo |
 | Patient joins from own phone via QR | Both | TBD | | Todo |

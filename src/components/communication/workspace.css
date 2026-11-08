@@ -966,3 +966,14 @@
     scroll-margin-top: 180px;
   }
 }
+
+/* Header confirmation stays legible on the navy surface in every state. */
+.sc-header .sc-confirmClear {
+  background: #77a0c4;
+  color: #101e34;
+  font-weight: 600;
+}
+.sc-header .sc-confirmClear:hover { background: #fff; }
+.sc-headerActions button { white-space: nowrap; }
+.sc-high .sc-header .sc-confirmClear { background: #ffea00; color: #000; }
+.sc-header button:focus-visible { outline-color: #77a0c4; }
