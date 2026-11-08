@@ -8,6 +8,25 @@ const WASM_BASE = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.2/wa
 const MODEL_URL =
   "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
 
+let infoRouted = false;
+/**
+ * MediaPipe's WASM runtime writes informational lines ("INFO: Created TensorFlow Lite XNNPACK
+ * delegate for CPU.") to console.error. Next's dev overlay shows every console.error as an error and
+ * covers the page with it. Route those lines to console.info; real errors still pass through.
+ */
+function routeMediapipeInfo() {
+  if (infoRouted || typeof console === "undefined") return;
+  infoRouted = true;
+  const original = console.error;
+  console.error = (...args: unknown[]) => {
+    if (typeof args[0] === "string" && /^INFO: /.test(args[0])) {
+      console.info(...args);
+      return;
+    }
+    original.apply(console, args);
+  };
+}
+
 export class GazeTracker {
   private landmarker: FaceLandmarker | null = null;
   private stream: MediaStream | null = null;
@@ -34,6 +53,7 @@ export class GazeTracker {
   }
 
   private async begin(video: HTMLVideoElement): Promise<void> {
+    routeMediapipeInfo();
     const generation = ++this.generation;
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },

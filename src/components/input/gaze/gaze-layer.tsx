@@ -14,10 +14,15 @@ import {
   applyGazeMapping,
   BlinkGuard,
   FeatureSmoother,
+  FixationFilter,
   fitGazeCalibration,
   gazeFeatures,
+  medianFeatures,
+  pickGazeTarget,
+  recenterMapping,
   SmoothedPoint,
   type CalibrationSample,
+  type GazeBox,
   type GazeFeatures,
   type GazeFit,
   type GazeFitFailure,
@@ -126,7 +131,31 @@ function activate(el: Element, x: number, y: number) {
   el.dispatchEvent(click);
 }
 
-const FAIR_MESSAGE = "Eye control is on, but accuracy is approximate. Brighter even light and a steady head help; tap Recalibrate to try again.";
+const RECENTER_MS = 2400; // look at the centre dot this long...
+const RECENTER_SETTLE_MS = 800; // ...ignoring the first part while the eyes get there
+const RECENTER_MIN_READS = 12;
+
+const clampNum = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+/** Every control the gaze could mean right now, with its box. Controls covered by something else (a dialog) are left out. */
+function gazeCandidates(): { el: Element; box: GazeBox }[] {
+  const out: { el: Element; box: GazeBox }[] = [];
+  for (const el of Array.from(document.querySelectorAll(INTERACTIVE))) {
+    if (selectableTarget(el) !== el) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width < 8 || r.height < 8 || r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth) continue;
+    const top = document.elementFromPoint(clampNum(r.left + r.width / 2, 0, window.innerWidth - 1), clampNum(r.top + r.height / 2, 0, window.innerHeight - 1));
+    if (!top || !(top === el || el.contains(top))) continue;
+    out.push({ el, box: { id: out.length, left: r.left, top: r.top, right: r.right, bottom: r.bottom } });
+  }
+  return out;
+}
+
+const percent = (fraction: number) => Math.round(fraction * 100);
+const fairMessage = (error: number) =>
+  `Eye control is on, but accuracy is approximate (typical error about ${percent(error)}% of the screen). Brighter even light and a steady head help; tap Recalibrate to try again, or Recenter if the pointer sits to one side.`;
+const goodMessage = (error: number) =>
+  `Calibrated: typical error about ${percent(error)}% of the screen. If the pointer drifts to one side, tap Recenter and look at the dot.`;
 
 /** What to tell the person when calibration is refused: each reason has a different fix. */
 function calibrationFailureMessage(reason: GazeFitFailure, samples: number, error?: number) {
@@ -170,6 +199,13 @@ export function GazeLayer() {
   const smootherRef = useRef(new SmoothedPoint(0.2, 0.539, 0.02, 2));
   // Drops the frames of a blink, so closing eyelids cannot drag the pointer.
   const blinkGuardRef = useRef(new BlinkGuard());
+  // A steady look is averaged over a longer window, so tracking jitter does not decide which button is chosen.
+  const fixationRef = useRef(new FixationFilter());
+  const stickyTargetRef = useRef<Element | null>(null);
+  const candidatesRef = useRef<{ at: number; items: { el: Element; box: GazeBox }[] }>({ at: 0, items: [] });
+  // One-point drift correction in progress (null when not recentering).
+  const recenterRef = useRef<{ start: number; reads: GazeFeatures[] } | null>(null);
+  const [recentering, setRecentering] = useState(false);
   const mappingRef = useRef<GazeMapping | null>(null);
   const samplesRef = useRef<CalibrationSample[]>([]);
   const calibStartRef = useRef(0);
@@ -196,6 +232,10 @@ export function GazeLayer() {
     mappingRef.current = null;
     dwellRef.current = new DwellController();
     blinkGuardRef.current.reset();
+    fixationRef.current.reset();
+    stickyTargetRef.current = null;
+    recenterRef.current = null;
+    setRecentering(false);
     samplesRef.current = [];
     calibStartRef.current = performance.now();
     if (!trackerRef.current) trackerRef.current = new GazeTracker();
@@ -222,6 +262,10 @@ export function GazeLayer() {
     trackerRef.current?.stop();
     dwellRef.current = new DwellController();
     blinkGuardRef.current.reset();
+    fixationRef.current.reset();
+    stickyTargetRef.current = null;
+    recenterRef.current = null;
+    setRecentering(false);
     smootherRef.current.reset();
     mappingRef.current = null;
     setStatus(null);
@@ -279,8 +323,22 @@ export function GazeLayer() {
     mappingRef.current = null;
     dwellRef.current = new DwellController();
     blinkGuardRef.current.reset();
+    fixationRef.current.reset();
+    stickyTargetRef.current = null;
+    recenterRef.current = null;
+    setRecentering(false);
     setStatus(null);
     setPhase("calibrating");
+  }, []);
+
+  // One-point drift correction: after the head shifts (or the device is passed round) the whole pointer
+  // sits to one side. Looking at one dot for a couple of seconds removes that offset without a full calibration.
+  const recenter = useCallback(() => {
+    if (!mappingRef.current) return;
+    recenterRef.current = { start: performance.now(), reads: [] };
+    dwellRef.current = new DwellController();
+    setStatus(null);
+    setRecentering(true);
   }, []);
 
   useEffect(() => {
@@ -371,10 +429,9 @@ export function GazeLayer() {
           featureSmoother.reset();
           smoother.reset();
           // Usable but approximate: turn it on and say so, rather than sending the person round again.
-          if (fit.quality === "fair") {
-            setStatus(FAIR_MESSAGE);
-            setTimeout(() => setStatus((current) => (current === FAIR_MESSAGE ? null : current)), 15000);
-          }
+          const note = fit.quality === "fair" ? fairMessage(fit.medianError) : goodMessage(fit.medianError);
+          setStatus(note);
+          setTimeout(() => setStatus((current) => (current === note ? null : current)), fit.quality === "fair" ? 15000 : 10000);
           setPhase("on");
           return;
         }
@@ -418,11 +475,48 @@ export function GazeLayer() {
       const point = applyGazeMapping(mappingRef.current, smoothed);
       const x = point.x * window.innerWidth;
       const y = point.y * window.innerHeight;
-      const p = smoother.next({ x, y }, dt);
+      const p0 = smoother.next({ x, y }, dt);
+      const jump = clampNum(Math.min(window.innerWidth, window.innerHeight) * 0.12, 60, 140);
+      const p = fixationRef.current.next(p0, now, jump);
       cursor.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
       cursor.style.opacity = "1";
 
-      const target = selectableTarget(document.elementFromPoint(p.x, p.y));
+      // Drift correction in progress: collect a steady reading of the eyes on the centre dot; no selecting meanwhile.
+      const rc = recenterRef.current;
+      if (rc) {
+        const spent = now - rc.start;
+        if (features && spent > RECENTER_SETTLE_MS) rc.reads.push(smoothed);
+        if (spent > RECENTER_MS) {
+          recenterRef.current = null;
+          const middle = medianFeatures(rc.reads);
+          if (middle && rc.reads.length >= RECENTER_MIN_READS && mappingRef.current) {
+            mappingRef.current = recenterMapping(mappingRef.current, middle);
+            featureSmoother.reset();
+            smoother.reset();
+            fixationRef.current.reset();
+            setStatus("Recentered.");
+            setTimeout(() => setStatus((current) => (current === "Recentered." ? null : current)), 4000);
+          } else {
+            setStatus("The camera could not see your eyes during the recenter. Face the camera and try again.");
+          }
+          setRecentering(false);
+        }
+        dwell.update(now, null);
+        ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
+        return;
+      }
+
+      // Which control is meant: the one under the pointer, else the nearest within reach, and it sticks
+      // unless another is clearly closer. Webcam tracking is only good to a fraction of a screen.
+      if (now - candidatesRef.current.at > 200) candidatesRef.current = { at: now, items: gazeCandidates() };
+      const items = candidatesRef.current.items;
+      const previous = items.find((c) => c.el === stickyTargetRef.current)?.box.id ?? null;
+      const reach = clampNum(Math.min(window.innerWidth, window.innerHeight) * 0.14, 56, 130);
+      const chosen = pickGazeTarget(p, items.map((c) => c.box), { radius: reach, previous });
+      const target = chosen == null ? null : (items.find((c) => c.box.id === chosen)?.el ?? null);
+      stickyTargetRef.current = target;
+      // Edge scrolling asks whether the pointer is actually ON a control, not merely near one.
+      const onControl = selectableTarget(document.elementFromPoint(p.x, p.y));
       let key: string | null = null;
       if (target) {
         let k = elementKeysRef.current.get(target);
@@ -439,16 +533,20 @@ export function GazeLayer() {
 
       // Gaze scrolling: rest the gaze in the top or bottom band to move the page, but only
       // while it is not resting on a control (a dwell there means "press", not "scroll").
-      if (features && !target) {
+      if (features && !onControl) {
         const h = window.innerHeight;
         let v = 0;
         if (p.y < EDGE_ZONE) v = -1100 * (1 - p.y / EDGE_ZONE);
         else if (p.y > h - EDGE_ZONE) v = 1100 * (1 - (h - p.y) / EDGE_ZONE);
-        if (v) window.scrollBy(0, (v * dt) / 1000);
+        if (v) {
+          window.scrollBy(0, (v * dt) / 1000);
+          candidatesRef.current.at = 0; // the page moved: re-measure the controls
+        }
       }
 
       if (state.progress >= 1 && target && key) {
-        activate(target, p.x, p.y);
+        const box = target.getBoundingClientRect();
+        activate(target, box.left + box.width / 2, box.top + box.height / 2);
         dwell.fired(now);
       }
     };
@@ -526,7 +624,8 @@ export function GazeLayer() {
         <p
           role="status"
           aria-live="polite"
-          className="pointer-events-none fixed end-2 top-[calc(50%+6rem)] z-[70] max-w-48 rounded-field bg-surface p-3 text-sm font-medium leading-snug text-ink shadow-soft ring-1 ring-line"
+          className="pointer-events-none fixed end-2 z-[70] max-w-48 rounded-field bg-surface p-3 text-sm font-medium leading-snug text-ink shadow-soft ring-1 ring-line"
+          style={{ top: "calc(50% + 8.4rem)" }}
         >
           {status ?? (unstable ? "Tracking is struggling - try brighter, even lighting." : "No face seen - sit centred in front of the camera.")}
         </p>
@@ -537,6 +636,30 @@ export function GazeLayer() {
           className="press fixed end-2 top-[calc(50%+2rem)] z-[70] min-h-11 rounded-full bg-surface px-3 text-xs font-semibold text-ink shadow-soft ring-1 ring-line">
           Recalibrate
         </button>
+      ) : null}
+
+      {phase === "on" && !recentering ? (
+        <button
+          type="button"
+          onClick={recenter}
+          className="press"
+          style={{ position: "fixed", insetInlineEnd: 8, top: "calc(50% + 4.9rem)", zIndex: 70, minHeight: 44, padding: "0 12px", borderRadius: 9999, background: "#fff", color: "#101e34", fontSize: 12, fontWeight: 600, boxShadow: "0 1px 2px rgb(16 30 52 / 0.12), inset 0 0 0 1px #d5e0eb" }}
+        >
+          Recenter
+        </button>
+      ) : null}
+
+      {recentering ? (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{ position: "fixed", inset: 0, zIndex: 69, pointerEvents: "none", background: "rgba(16, 30, 52, 0.82)", color: "#fff", display: "grid", placeItems: "center" }}
+        >
+          <p style={{ position: "absolute", top: "max(5rem, 12svh)", left: 0, right: 0, textAlign: "center", fontSize: 22, fontWeight: 700, padding: "0 24px" }}>
+            Look at the dot in the middle and keep your head steady
+          </p>
+          <span style={{ width: 30, height: 30, borderRadius: 9999, background: "#77a0c4", boxShadow: "0 0 0 6px rgba(255,255,255,0.85)" }} />
+        </div>
       ) : null}
 
       {requested ? (

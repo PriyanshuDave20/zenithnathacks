@@ -9,6 +9,10 @@ import {
   fitGazeMapping,
   gazeFeatures,
   median,
+  medianFeatures,
+  pickGazeTarget,
+  recenterMapping,
+  FixationFilter,
   SmoothedPoint,
 } from "./gaze-math";
 
@@ -324,4 +328,80 @@ test("BlinkGuard does not freeze the pointer when the person simply looks lower"
   let dropped = 0;
   for (let i = 0; i < 600; i++) if (!steady.next({ x: 0, y: 0, a: 0.26 + Math.sin(i * 12.9898) * 0.003, p: 0 }, i * 33)) dropped++;
   assert.equal(dropped, 0);
+});
+
+test("recenterMapping removes a steady offset and keeps the map's gains", () => {
+  const map = { x: [-4, 0.9] as [number, number], y: [2.5, 4, 0, -0.54] as [number, number, number, number] };
+  const centreLook = { x: 0.1, y: 0, a: 0.26, p: 0 }; // this map puts it at (0.5, 0.5)
+  assert.deepEqual(applyGazeMapping(map, centreLook), { x: 0.5, y: 0.5 });
+  // The head has shifted since calibration: looking at the centre now reads differently.
+  const shifted = { x: 0.1 + 0.03, y: 0.01, a: 0.25, p: 0 };
+  const off = applyGazeMapping(map, shifted);
+  assert.ok(Math.hypot(off.x - 0.5, off.y - 0.5) > 0.1, "the shift moves the pointer well off the centre");
+  const fixed = recenterMapping(map, shifted);
+  const back = applyGazeMapping(fixed, shifted);
+  assert.ok(Math.abs(back.x - 0.5) < 1e-9 && Math.abs(back.y - 0.5) < 1e-9, "the shifted reading now lands on the centre");
+  assert.deepEqual([fixed.x[0], fixed.y[0], fixed.y[1], fixed.y[2]], [map.x[0], map.y[0], map.y[1], map.y[2]], "gains are unchanged");
+  // Looking elsewhere moves the pointer by the same amount as before, just from the corrected origin.
+  const lookA = { x: 0.05, y: 0.02, a: 0.27, p: 0 };
+  const lookB = { x: 0.15, y: -0.02, a: 0.25, p: 0 };
+  const moveBefore = { x: applyGazeMapping(map, lookB).x - applyGazeMapping(map, lookA).x, y: applyGazeMapping(map, lookB).y - applyGazeMapping(map, lookA).y };
+  const moveAfter = { x: applyGazeMapping(fixed, lookB).x - applyGazeMapping(fixed, lookA).x, y: applyGazeMapping(fixed, lookB).y - applyGazeMapping(fixed, lookA).y };
+  assert.ok(Math.abs(moveBefore.x - moveAfter.x) < 1e-9 && Math.abs(moveBefore.y - moveAfter.y) < 1e-9);
+  // An offset big enough to pin the pointer on an edge is still measured correctly (no clamping).
+  const far = recenterMapping(map, { x: -0.5, y: 0.4, a: 0.26, p: 0 });
+  const landed = applyGazeMapping(far, { x: -0.5, y: 0.4, a: 0.26, p: 0 });
+  assert.ok(Math.abs(landed.x - 0.5) < 1e-9 && Math.abs(landed.y - 0.5) < 1e-9);
+  assert.equal(medianFeatures([]), null);
+  assert.deepEqual(medianFeatures([{ x: 3, y: 0, a: 1, p: 0 }, { x: 1, y: 0, a: 3, p: 0 }, { x: 2, y: 0, a: 2, p: 0 }]), { x: 2, y: 0, a: 2, p: 0 });
+});
+
+test("pickGazeTarget takes the control under the point, else the nearest, and does not flip on a boundary", () => {
+  // A 3 x 2 board like Eye mode's: 260 x 210 buttons with 20 px gaps.
+  const boxes = [] as { id: number; left: number; top: number; right: number; bottom: number }[];
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) boxes.push({ id: r * 3 + c, left: 215 + c * 280, top: 330 + r * 230, right: 475 + c * 280, bottom: 540 + r * 230 });
+  const pick = (x: number, y: number, previous?: number | null) => pickGazeTarget({ x, y }, boxes, { radius: 110, previous });
+  assert.equal(pick(300, 400), 0, "on a button");
+  assert.equal(pick(485, 430), 0, "in the gap, closer to the left button: snaps to it");
+  assert.equal(pick(495, 430), 1, "in the gap, closer to the right button");
+  assert.equal(pick(300, 700), 3, "below the board still reaches the nearest button inside the radius");
+  assert.equal(pick(300, 1000), null, "far from everything: nothing");
+  // Hysteresis: hovering on the line between two buttons keeps the one it was on.
+  assert.equal(pick(496, 430, 0), 0, "slightly nearer the right button, but it stays on the left one");
+  assert.equal(pick(540, 430, 0), 1, "clearly on the right button: it switches");
+  // Nested controls: the smaller one wins.
+  const nested = [
+    { id: 10, left: 0, top: 0, right: 400, bottom: 100 },
+    { id: 11, left: 20, top: 20, right: 60, bottom: 60 },
+  ];
+  assert.equal(pickGazeTarget({ x: 30, y: 30 }, nested, { radius: 50 }), 11);
+});
+
+test("FixationFilter steadies a long look and starts over at once when the eyes jump", () => {
+  const filter = new FixationFilter();
+  // A steady look at (400, 300) with jitter, then a jump to (900, 500).
+  let jitter = 0;
+  const noisy = (cx: number, cy: number) => {
+    jitter += 1;
+    return { x: cx + Math.sin(jitter * 2.3) * 30, y: cy + Math.cos(jitter * 1.7) * 30 };
+  };
+  let out = { x: 0, y: 0 };
+  let rawWorst = 0;
+  let steadyWorst = 0;
+  for (let i = 0; i < 40; i++) {
+    const p = noisy(400, 300);
+    out = filter.next(p, i * 33, 100);
+    if (i >= 20) {
+      rawWorst = Math.max(rawWorst, Math.hypot(p.x - 400, p.y - 300));
+      steadyWorst = Math.max(steadyWorst, Math.hypot(out.x - 400, out.y - 300));
+    }
+  }
+  assert.ok(steadyWorst < rawWorst * 0.45, `a held look should be much steadier (${steadyWorst.toFixed(1)} vs ${rawWorst.toFixed(1)})`);
+  // The eyes move: within a few frames the output is at the new place, not dragged back toward the old.
+  let landed = -1;
+  for (let i = 0; i < 12; i++) {
+    out = filter.next(noisy(900, 500), (40 + i) * 33, 100);
+    if (landed < 0 && Math.hypot(out.x - 900, out.y - 500) < 60) landed = i;
+  }
+  assert.ok(landed >= 0 && landed <= 4, `a real move should be followed within a few frames (took ${landed})`);
 });

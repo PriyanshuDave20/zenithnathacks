@@ -228,6 +228,58 @@ export function fitGazeCalibration(samples: CalibrationSample[]): GazeFit {
   return { mapping: model.mapping, quality: med <= GOOD_MEDIAN && p80 <= GOOD_P80 ? "good" : "fair", medianError: med };
 }
 
+/** Middle (per-component median) of a set of readings, e.g. what the eyes looked like during a steady look. */
+export function medianFeatures(list: GazeFeatures[]): GazeFeatures | null {
+  if (!list.length) return null;
+  const m = (pick: (f: GazeFeatures) => number) => median(list.map(pick)) as number;
+  return { x: m((f) => f.x), y: m((f) => f.y), a: m((f) => f.a), p: m((f) => f.p) };
+}
+
+/**
+ * One-point drift correction. After a calibration the whole pointer slides to one side whenever the
+ * head has shifted a little (or the device has been passed round), which wrecks selection even though
+ * the map itself is still good. Given a steady reading taken while the person looked at a known point,
+ * this moves the map so that reading lands exactly on that point, leaving the map's gains alone.
+ */
+export function recenterMapping(mapping: GazeMapping, features: GazeFeatures, target: ScreenPoint = { x: 0.5, y: 0.5 }): GazeMapping {
+  // Unclamped, so a pointer that was pinned against an edge still gives the true offset.
+  const rawX = mapping.x[0] * features.x + mapping.x[1];
+  const rawY = mapping.y[0] * features.y + mapping.y[1] * features.a + mapping.y[2] * features.p + mapping.y[3];
+  return {
+    x: [mapping.x[0], mapping.x[1] + (target.x - rawX)],
+    y: [mapping.y[0], mapping.y[1], mapping.y[2], mapping.y[3] + (target.y - rawY)],
+  };
+}
+
+export type GazeBox = { id: number; left: number; top: number; right: number; bottom: number };
+
+/**
+ * Which control the pointer means. Webcam tracking is only good to a fraction of a screen, so a
+ * pointer that must land exactly inside a button flickers between neighbours or lands on nothing.
+ * This takes the control the point is on (the smallest, if they nest), otherwise the nearest one
+ * within `radius`, and keeps the previous choice unless another is clearly closer (`stickPx`), so the
+ * choice does not flip while the eyes hover on a boundary.
+ */
+export function pickGazeTarget(
+  point: { x: number; y: number },
+  boxes: GazeBox[],
+  opts: { radius: number; previous?: number | null; stickPx?: number },
+): number | null {
+  const stick = opts.stickPx ?? 28;
+  const scored = boxes
+    .map((b) => ({
+      id: b.id,
+      d: Math.hypot(Math.max(b.left - point.x, 0, point.x - b.right), Math.max(b.top - point.y, 0, point.y - b.bottom)),
+      area: (b.right - b.left) * (b.bottom - b.top),
+    }))
+    .sort((a, b) => a.d - b.d || a.area - b.area);
+  const best = scored[0];
+  if (!best || best.d > opts.radius) return null;
+  const prev = opts.previous == null ? undefined : scored.find((c) => c.id === opts.previous);
+  if (prev && prev.d <= opts.radius * 1.35 && prev.d <= best.d + stick) return prev.id;
+  return best.id;
+}
+
 /** Same fit, for callers that only want the map: null when the calibration was refused. */
 export function fitGazeMapping(samples: CalibrationSample[]): GazeMapping | null {
   return fitGazeCalibration(samples).mapping;
@@ -420,6 +472,50 @@ export class BlinkGuard {
     this.stableFrames = 0;
     this.blinkStart = -1;
     this.settleUntil = -1;
+  }
+}
+
+/**
+ * Fixation filter. A steady look is not one point: webcam tracking jitters around it, and deciding
+ * from the last few frames means that jitter decides which button is chosen. During a steady look
+ * this reports the middle (median) of the points since the eyes last jumped, so the noise averages
+ * out and the estimate gets steadier the longer the look holds. When the eyes move to somewhere new
+ * (two points in a row well away from the fixation so far) it starts over at once, so a real move is
+ * not dragged back toward the old spot. Works in viewport pixels.
+ */
+export class FixationFilter {
+  private pts: { t: number; x: number; y: number }[] = [];
+  private away = 0;
+
+  constructor(
+    private windowMs = 700, // how far back a steady look is averaged
+    private rampPoints = 8, // points before it trusts the average fully (until then it follows the newest point)
+  ) {}
+
+  /** `jumpPx` is how far from the current fixation counts as looking somewhere else. */
+  next(p: { x: number; y: number }, nowMs: number, jumpPx: number): { x: number; y: number } {
+    if (this.pts.length >= 3) {
+      const c = this.centre();
+      this.away = Math.hypot(p.x - c.x, p.y - c.y) > jumpPx ? this.away + 1 : 0;
+      if (this.away >= 2) {
+        this.pts = [];
+        this.away = 0;
+      }
+    }
+    this.pts.push({ t: nowMs, x: p.x, y: p.y });
+    this.pts = this.pts.filter((q) => nowMs - q.t <= this.windowMs);
+    const c = this.centre();
+    const w = Math.min(1, (this.pts.length - 1) / this.rampPoints);
+    return { x: p.x + (c.x - p.x) * w, y: p.y + (c.y - p.y) * w };
+  }
+
+  private centre() {
+    return { x: median(this.pts.map((q) => q.x)) ?? 0, y: median(this.pts.map((q) => q.y)) ?? 0 };
+  }
+
+  reset() {
+    this.pts = [];
+    this.away = 0;
   }
 }
 
