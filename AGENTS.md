@@ -51,6 +51,13 @@ A Python backend may be added later; if so it lives in `api/` and contracts go i
 ## Task board
 Active tasks and owners live in `docs/TASKS.md`. Update it when you start/finish something.
 
+## Backend agent team
+Prem enabled the project-local `synapse-backend-team` skill for substantial Backend 1 work and explicit team requests.
+The main thread coordinates; `synapse-backend` implements scoped work and `synapse-reviewer` independently reviews it.
+Use isolated worktrees, at most two subagents, and disjoint writable files. Keep simple work in the main thread.
+The coordinator owns shared task/handoff updates and integration. All lanes, privacy rules and existing authorization still apply.
+Setup and invocation: `docs/TEAM.md` (Project-local Backend 1 team).
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know

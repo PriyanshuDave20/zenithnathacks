@@ -1,0 +1,4 @@
+interface:
+  display_name: "Synapse Backend Team"
+  short_description: "Scoped backend implementation and independent review"
+  default_prompt: "Use $synapse-backend-team to fix the backend issue I describe, then independently review the change."

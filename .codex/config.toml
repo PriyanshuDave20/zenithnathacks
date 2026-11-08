@@ -1,3 +1,7 @@
 [mcp_servers.playwright]
 command = "npx"
 args = ["-y", "@playwright/mcp@0.0.84", "--isolated"]
+
+# Main thread coordinates at most two workers; inherit its model/provider/permissions.
+[agents]
+max_concurrent_threads_per_session = 2
