@@ -334,7 +334,7 @@ export function CommunicationWorkspace() {
         turns.length > 0 ||
         patientInputs.length > 0 ||
         !!draft),
-    idleMs: 270000,
+    idleMs: 570000, // 9:30 of inactivity, then the 30 s warning: cleared after 10 minutes
     graceMs: 30000,
     onExpire: () => clear(true),
   });
