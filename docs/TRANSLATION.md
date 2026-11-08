@@ -58,14 +58,14 @@ maintenance commands are never called by a route, page or server startup.
 All generated packs are **drafts**. Clinical and fluent-speaker review must check
 meaning, negation, side, uncertainty, numbers and accessibility before marking a
 pack `reviewed`. Schema tests and successful live calls do not establish translation
-accuracy. Existing packs were generated with Nemotron before the Azure layer and
-have not been silently replaced or marked reviewed. Arabic/Chinese are not listed
-among that model card's supported languages. Earlier generation exposed mixed-script
-Arabic labels and English filler in Chinese
-scale answers. The checked-in draft records five Arabic source-vocabulary corrections
-in `reviewNotes`; numeric scale formatting is now deterministic. Wrong-script output
-fails validation and is never served as a valid pack. These corrections are not a
-fluent-speaker or clinical sign-off.
+accuracy. The current Spanish, Arabic and Simplified Chinese packs were explicitly
+regenerated with Azure Translator on 2026-11-08 and remain drafts. Their English
+source snapshots, question/answer IDs and clinical mappings are unchanged.
+Earlier Nemotron generation exposed mixed-script Arabic labels and English filler
+in Chinese scale answers; those packs have now been replaced. Numeric scale
+formatting remains deterministic. Wrong-script output fails validation and is never
+served as a valid pack. Successful Azure generation is not a fluent-speaker or
+clinical sign-off.
 
 ## Reports and failure behavior
 

@@ -2,8 +2,8 @@
   {
     "schemaVersion": 1,
     "language": "es",
-    "generatedBy": "nvidia/nemotron-3.5-lightning-30b-a3b",
-    "generatedAt": "2026-11-08T02:49:44.706Z",
+    "generatedBy": "Azure Translator REST v3",
+    "generatedAt": "2026-11-08T07:43:20.176Z",
     "reviewStatus": "draft",
     "source": {
       "chief_complaint": {
@@ -231,55 +231,55 @@
     },
     "questions": {
       "chief_complaint": {
-        "text": "¿Cuál es el problema principal que lo trajo aquí hoy?",
+        "text": "¿Cuál es el principal problema que te ha traído aquí hoy?",
         "options": {
           "pain": "Dolor",
           "breathing": "Dificultad para respirar",
           "fever": "Fiebre",
-          "other": "Algo más",
-          "unsure": "No seguro"
+          "other": "Otra cosa",
+          "unsure": "No estoy seguro"
         }
       },
       "onset": {
-        "text": "¿Cuándo comenzó? ¿De repente o poco a poco?",
+        "text": "¿Cuándo empezó? ¿Fue repentino o lento?",
         "options": {
           "sudden": "De repente",
-          "gradual": "Poco a poco",
+          "gradual": "Despacio",
           "today": "Hoy",
           "days": "Hace unos días",
-          "longer": "Hace más tiempo",
-          "unsure": "No seguro"
+          "longer": "Hace mucho tiempo",
+          "unsure": "No estoy seguro"
         }
       },
       "where": {
-        "text": "¿Dónde lo siente? Por favor, señale con un dedo.",
+        "text": "¿Dónde lo sientes? Por favor, señala con un dedo.",
         "options": {
           "head": "Cabeza",
           "neck": "Cuello",
           "chest": "Pecho",
           "abdomen": "Estómago",
-          "back": "Espalda",
+          "back": "Atrás",
           "left_arm": "Brazo izquierdo",
           "right_arm": "Brazo derecho",
           "left_leg": "Pierna izquierda",
           "right_leg": "Pierna derecha",
-          "elsewhere": "Algún otro lugar",
-          "unsure": "No seguro"
+          "elsewhere": "En otro lugar",
+          "unsure": "No estoy seguro"
         }
       },
       "how_long": {
-        "text": "¿Cuánto tiempo dura? ¿Está siempre ahí o viene y va?",
+        "text": "¿Cuánto dura? ¿Está ahí todo el tiempo o va y viene?",
         "options": {
-          "minutes": "Minutos",
-          "hours": "Horas",
+          "minutes": "Actas",
+          "hours": "Horarios",
           "days": "Días",
-          "constant": "Siempre",
-          "intermittent": "Viene y va",
-          "unsure": "No seguro"
+          "constant": "Todo el tiempo",
+          "intermittent": "Va y viene",
+          "unsure": "No estoy seguro"
         }
       },
       "how_strong": {
-        "text": "De 0 (ningún dolor) a 10 (el dolor más fuerte que puedas imaginar), ¿qué tan fuerte es?",
+        "text": "De 0 (sin dolor) a 10 (el peor dolor que puedas imaginar), ¿qué tan grave es?",
         "options": {
           "s0": "0/10",
           "s1": "1/10",
@@ -292,140 +292,139 @@
           "s8": "8/10",
           "s9": "9/10",
           "s10": "10/10",
-          "unsure": "No seguro"
+          "unsure": "No estoy seguro"
         }
       },
       "character": {
-        "text": "¿Cómo se siente? Agudo, sordo, quemazón, presión, o algo más?",
+        "text": "¿Cómo se siente? ¿Aguda, sorda, ardiente, apretando o algo más?",
         "options": {
-          "sharp": "Agudo",
-          "dull": "Sordo",
-          "burning": "Quemazón",
-          "squeezing": "Presión",
-          "other": "Algo más",
-          "unsure": "No seguro"
+          "sharp": "Sharp",
+          "dull": "Aburrido",
+          "burning": "Quema",
+          "squeezing": "Apretar",
+          "other": "Otra cosa",
+          "unsure": "No estoy seguro"
         }
       },
       "aggravating_factors": {
         "text": "¿Qué lo empeora?",
         "options": {
-          "moving": "Moviéndose",
-          "breathing": "Al respirar",
-          "eating": "Al comer",
+          "moving": "Mudanza",
+          "breathing": "Respiración",
+          "eating": "Alimentación",
           "nothing": "Nada en particular",
-          "other": "Algo más",
+          "other": "Otra cosa",
           "unsure": "No estoy seguro"
         }
       },
       "relieving_factors": {
-        "text": "¿Qué lo mejora?",
+        "text": "¿Qué lo hace mejor?",
         "options": {
-          "rest": "Descansando",
-          "medicine": "Medicamento",
-          "position": "Cambiar de posición",
+          "rest": "Descanso",
+          "medicine": "Medicina",
+          "position": "Cambio de posición",
           "nothing": "Nada",
-          "other": "Algo más",
+          "other": "Otra cosa",
           "unsure": "No estoy seguro"
         }
       },
       "radiation": {
-        "text": "¿Se mueve el dolor a otra parte de su cuerpo?",
+        "text": "¿El dolor se mueve a otra parte de tu cuerpo?",
         "options": {
           "stays": "Se queda en un solo lugar",
-          "moves": "Se mueve a otro lugar",
+          "moves": "Se muda a otro sitio",
           "unsure": "No estoy seguro"
         }
       },
       "associated_symptoms": {
-        "text": "¿Tiene algo más con ello, como fiebre, vómitos o dificultad para respirar?",
+        "text": "¿Tienes algo más relacionado con ella, como fiebre, vómitos o dificultad para respirar?",
         "options": {
           "fever": "Fiebre",
-          "vomiting": "Vómitos",
+          "vomiting": "Vomitar",
           "short_breath": "Dificultad para respirar",
           "none": "Nada más",
-          "other": "Algo más",
-          "unsure": "No seguro"
+          "other": "Otra cosa",
+          "unsure": "No estoy seguro"
         }
       },
       "red_flags": {
-        "text": "¿Ha tenido dolor en el pecho, dificultad para respirar, desmayos o debilidad en un lado del cuerpo?",
+        "text": "¿Has tenido dolor en el pecho, dificultad para respirar, desmayos o debilidad en un lado del cuerpo?",
         "options": {
           "chest_pain": "Dolor en el pecho",
           "short_breath": "Dificultad para respirar",
           "fainting": "Desmayos",
           "one_sided_weakness": "Debilidad en un lado",
-          "none": "Ninguno de estos",
-          "unsure": "No seguro"
+          "none": "Ninguna de estas",
+          "unsure": "No estoy seguro"
         }
       },
       "allergies": {
-        "text": "¿Es alérgico a algún medicamento, alimento o algo más? ¿Qué sucede cuando reacciona?",
+        "text": "¿Eres alérgico a algún medicamento, comida o a cualquier otra cosa? ¿Qué ocurre cuando reaccionas?",
         "options": {
           "medicine": "Alergia a medicamentos",
-          "food": "Alergia a alimentos",
+          "food": "Alergia alimentaria",
           "other": "Otra alergia",
-          "none": "No hay alergias conocidas",
-          "unsure": "No seguro"
+          "none": "No tengo alergias conocidas",
+          "unsure": "No estoy seguro"
         }
       },
       "current_medications": {
-        "text": "¿Qué medicamentos toma? Incluya vitaminas, productos herbales y cualquier cosa que compre sin receta.",
+        "text": "¿Qué medicamentos tomas? Por favor, incluye vitaminas, productos herbales y cualquier cosa que compres sin receta.",
         "options": {
-          "prescription": "Medicina con receta",
-          "nonprescription": "Medicina comprada sin receta",
+          "prescription": "Medicamentos con receta",
+          "nonprescription": "Medicamentos comprados sin receta",
           "supplements": "Vitaminas o productos herbales",
-          "none": "No toma medicamentos",
-          "unsure": "No seguro"
+          "none": "Sin medicinas",
+          "unsure": "No estoy seguro"
         }
       },
       "past_medical_history": {
-        "text": "¿Ha tenido alguna enfermedad grave, cirugía o estancia hospitalaria?",
+        "text": "¿Has tenido alguna enfermedad grave, cirugía o estancia hospitalaria?",
         "options": {
           "illness": "Enfermedad grave",
           "surgery": "Cirugía",
           "hospital": "Estancia hospitalaria",
           "none": "Ninguna de estas",
-          "unsure": "No seguro"
+          "unsure": "No estoy seguro"
         }
       },
       "family_history": {
-        "text": "¿Alguna persona de su familia ha tenido enfermedad cardíaca, diabetes, cáncer o accidente cerebrovascular?",
+        "text": "¿Alguien en tu familia ha tenido enfermedades cardíacas, diabetes, cáncer o ictus?",
         "options": {
-          "heart_disease": "Enfermedad cardíaca",
+          "heart_disease": "Enfermedades cardíacas",
           "diabetes": "Diabetes",
           "cancer": "Cáncer",
-          "stroke": "Accidente cerebrovascular",
+          "stroke": "Golpe",
           "none": "Ninguna de estas",
-          "unsure": "No seguro"
+          "unsure": "No estoy seguro"
         }
       },
       "pregnancy": {
-        "text": "¿Podría estar embarazada?",
+        "text": "¿Podrías estar embarazada?",
         "options": {
           "yes": "Sí",
           "no": "No",
-          "unsure": "No sure",
-          "prefer_not_to_say": "Prefiere no decir"
+          "unsure": "No estoy seguro",
+          "prefer_not_to_say": "Prefiero no decirlo"
         }
       },
       "substance_use": {
-        "text": "Fuma, toma alcohol o consume alguna droga?",
+        "text": "¿Fumas, bebes alcohol o consumes alguna droga?",
         "options": {
           "smoking": "Fumar",
           "alcohol": "Alcohol",
-          "drugs": "Otras drogas",
+          "drugs": "Otros fármacos",
           "none": "Ninguna de estas",
-          "prefer_not_to_say": "Prefiere no decir"
+          "prefer_not_to_say": "Prefiero no decirlo"
         }
       }
-    },
-    "reviewNotes": "Machine-generated draft. Numeric severity answers are formatted from numeric IDs as value/10; clinical and fluent-speaker review remains pending."
+    }
   },
   {
     "schemaVersion": 1,
     "language": "ar",
-    "generatedBy": "nvidia/nemotron-3.5-lightning-30b-a3b",
-    "generatedAt": "2026-11-08T02:49:58.261Z",
+    "generatedBy": "Azure Translator REST v3",
+    "generatedAt": "2026-11-08T07:43:22.015Z",
     "reviewStatus": "draft",
     "source": {
       "chief_complaint": {
@@ -653,55 +652,55 @@
     },
     "questions": {
       "chief_complaint": {
-        "text": "ما المشكلة الرئيسية التي جاءت بك إلى هنا اليوم؟",
+        "text": "ما هي المشكلة الرئيسية التي أوصلتك إلى هنا اليوم؟",
         "options": {
-          "pain": "ألم",
+          "pain": "الألم",
           "breathing": "صعوبة في التنفس",
-          "fever": "حمى",
+          "fever": "الحمى",
           "other": "شيء آخر",
-          "unsure": "لا أعرف"
+          "unsure": "لست متأكدا"
         }
       },
       "onset": {
-        "text": "متى بدأ؟ هل كان مفاجئاً أم تدريجياً؟",
+        "text": "متى بدأ ذلك؟ هل كان مفاجئا أم بطيئا؟",
         "options": {
-          "sudden": "مفاجئ",
-          "gradual": "بطيء",
+          "sudden": "فجأة",
+          "gradual": "ببطء",
           "today": "اليوم",
-          "days": "منذ بضعة أيام",
-          "longer": "منذ وقت أطول",
-          "unsure": "لا أعرف"
+          "days": "قبل عدة أيام",
+          "longer": "منذ زمن بعيد",
+          "unsure": "لست متأكدا"
         }
       },
       "where": {
-        "text": "أين تشعر به؟ يرجى الإشارة بإصبع واحد.",
+        "text": "أين تشعر بها؟ يرجى الإشارة بإصبع واحد.",
         "options": {
-          "head": "رأس",
-          "neck": "رقبة",
-          "chest": "صدر",
-          "abdomen": "بطن",
-          "back": "ظهر",
+          "head": "رئيس",
+          "neck": "الرقبة",
+          "chest": "الصدر",
+          "abdomen": "المعدة",
+          "back": "العودة",
           "left_arm": "الذراع اليسرى",
           "right_arm": "الذراع اليمنى",
           "left_leg": "الساق اليسرى",
           "right_leg": "الساق اليمنى",
-          "elsewhere": "مكان آخر",
-          "unsure": "لا أعرف"
+          "elsewhere": "في مكان آخر",
+          "unsure": "لست متأكدا"
         }
       },
       "how_long": {
-        "text": "كم من الوقت يستمر؟ هل هو موجود طوال الوقت، أم يأتي ويذهب؟",
+        "text": "كم من الوقت تستمر؟ هل هي موجودة طوال الوقت، أم أنها تأتي وتذهب؟",
         "options": {
-          "minutes": "دقائق",
-          "hours": "ساعات",
-          "days": "أيام",
+          "minutes": "المحاضر",
+          "hours": "ساعات العمل",
+          "days": "الأيام",
           "constant": "طوال الوقت",
           "intermittent": "يأتي ويذهب",
-          "unsure": "لا أعرف"
+          "unsure": "لست متأكدا"
         }
       },
       "how_strong": {
-        "text": "من 0 (لا ألم) إلى 10 (أشد ألم يمكنك تخيله)، كم شدته؟",
+        "text": "من 0 (بدون ألم) إلى 10 (أسوأ ألم يمكن تخيله)، ما مدى سوء الأمر؟",
         "options": {
           "s0": "0/10",
           "s1": "1/10",
@@ -714,140 +713,139 @@
           "s8": "8/10",
           "s9": "9/10",
           "s10": "10/10",
-          "unsure": "لا أعرف"
+          "unsure": "لست متأكدا"
         }
       },
       "character": {
-        "text": "ما هو شعوره؟ حاد، خفيف، حارق، ضاغط، أم شيء آخر؟",
+        "text": "كيف يشعر ذلك؟ حاد، باهت، حارق، ضغط، أم شيء آخر؟",
         "options": {
-          "sharp": "حاد",
-          "dull": "خفيف",
-          "burning": "حارق",
-          "squeezing": "ضاغط",
+          "sharp": "شارب",
+          "dull": "ممل",
+          "burning": "الحرق",
+          "squeezing": "الضغط",
           "other": "شيء آخر",
-          "unsure": "لا أعرف"
+          "unsure": "لست متأكدا"
         }
       },
       "aggravating_factors": {
-        "text": "ماذا يجعله أسوأ؟",
+        "text": "ما الذي يجعل الأمر أسوأ؟",
         "options": {
-          "moving": "حركة",
+          "moving": "الانتقال",
           "breathing": "التنفس",
           "eating": "الأكل",
-          "nothing": "لا شيء على وجه الخصوص",
+          "nothing": "لا شيء محدد",
           "other": "شيء آخر",
-          "unsure": "لا أعرف"
+          "unsure": "لست متأكدا"
         }
       },
       "relieving_factors": {
-        "text": "ماذا يجعله أفضل؟",
+        "text": "ما الذي يجعله أفضل؟",
         "options": {
           "rest": "الراحة",
-          "medicine": "الدواء",
-          "position": "تغيير الوضعية",
+          "medicine": "الطب",
+          "position": "تغيير الموقع",
           "nothing": "لا شيء",
           "other": "شيء آخر",
-          "unsure": "لا أعرف"
+          "unsure": "لست متأكدا"
         }
       },
       "radiation": {
-        "text": "ينتشر الألم إلى أي مكان آخر في جسمك؟",
+        "text": "هل يتحرك الألم في أي مكان آخر في جسمك؟",
         "options": {
           "stays": "يبقى في مكان واحد",
-          "moves": "يتحرك إلى مكان آخر",
-          "unsure": "لا أعرف"
+          "moves": "ينتقل إلى مكان آخر",
+          "unsure": "لست متأكدا"
         }
       },
       "associated_symptoms": {
-        "text": "هل لديك أي أعراض أخرى معه، مثل الحمى، القيء، أو صعوبة التنفس؟",
+        "text": "هل لديك أي شيء آخر معه مثل الحمى، أو التقيؤ، أو صعوبة في التنفس؟",
         "options": {
-          "fever": "حمى",
-          "vomiting": "قيء",
+          "fever": "الحمى",
+          "vomiting": "التقيؤ",
           "short_breath": "صعوبة في التنفس",
           "none": "لا شيء آخر",
           "other": "شيء آخر",
-          "unsure": "لا أعرف"
+          "unsure": "لست متأكدا"
         }
       },
       "red_flags": {
-        "text": "هل عانيت من ألم في الصدر، صعوبة في التنفس، إغماء، أو ضعف في جانب واحد من الجسم؟",
+        "text": "هل عانيت من ألم في الصدر، أو صعوبة في التنفس، أو إغماء، أو ضعف في جانب واحد من جسمك؟",
         "options": {
           "chest_pain": "ألم في الصدر",
           "short_breath": "صعوبة في التنفس",
-          "fainting": "إغماء",
-          "one_sided_weakness": "ضعف في جانب واحد",
-          "none": "لا شيء من هذه الأعراض",
-          "unsure": "لا أعرف"
+          "fainting": "الإغماء",
+          "one_sided_weakness": "ضعف من جهة واحدة",
+          "none": "لا شيء من هذه",
+          "unsure": "لست متأكدا"
         }
       },
       "allergies": {
-        "text": "هل أنت حساس لأي دواء، طعام، أو شيء آخر؟ ماذا يحدث عند حدوث رد فعل؟",
+        "text": "هل لديك حساسية تجاه أي دواء أو طعام أو أي شيء آخر؟ ماذا يحدث عندما تتفاعل؟",
         "options": {
-          "medicine": "حساسية من دواء",
-          "food": "حساسية من طعام",
+          "medicine": "حساسية الأدوية",
+          "food": "حساسية الطعام",
           "other": "حساسية أخرى",
           "none": "لا توجد حساسية معروفة",
-          "unsure": "لا أعرف"
+          "unsure": "لست متأكدا"
         }
       },
       "current_medications": {
-        "text": "ما الأدوية التي تتناولها؟ بما في ذلك الفيتامينات والمنتجات العشبية وأي شيء تشتريه دون وصفة طبية.",
+        "text": "ما هي الأدوية التي تتناولها؟ يرجى تضمين الفيتامينات، والمنتجات العشبية، وأي شيء تشتريه بدون وصفة طبية.",
         "options": {
-          "prescription": "أدوية بوصفة طبية",
-          "nonprescription": "أدوية تشتريها دون وصفة طبية",
-          "supplements": "فيتامينات أو منتجات عشبية",
-          "none": "لا توجد أدوية",
-          "unsure": "لا أعرف"
+          "prescription": "الأدوية الموصوفة",
+          "nonprescription": "دواء تم شراؤه بدون وصفة طبية",
+          "supplements": "الفيتامينات أو المنتجات العشبية",
+          "none": "لا أدوية",
+          "unsure": "لست متأكدا"
         }
       },
       "past_medical_history": {
-        "text": "هل عانيت من أي مرض خطير، أو عملية جراحية، أو إقامة في المستشفى؟",
+        "text": "هل تعرضت لأي مرض خطير أو جراحة أو إقامة في المستشفى؟",
         "options": {
           "illness": "مرض خطير",
-          "surgery": "عملية جراحية",
-          "hospital": "إقامة في المستشفى",
+          "surgery": "الجراحة",
+          "hospital": "الإقامة في المستشفى",
           "none": "لا شيء من هذه",
-          "unsure": "لا أعرف"
+          "unsure": "لست متأكدا"
         }
       },
       "family_history": {
-        "text": "هل عانى أي من أفراد عائلتك من أمراض القلب، أو السكري، أو السرطان، أو السكتة الدماغية؟",
+        "text": "هل أصيب أحد في عائلتك بأمراض قلبية، أو سكري، أو سرطان، أو سكتة دماغية؟",
         "options": {
           "heart_disease": "أمراض القلب",
-          "diabetes": "سكري",
-          "cancer": "سرطان",
-          "stroke": "سكتة دماغية",
+          "diabetes": "السكري",
+          "cancer": "السرطان",
+          "stroke": "السكتة الدماغية",
           "none": "لا شيء من هذه",
-          "unsure": "لا أعرف"
+          "unsure": "لست متأكدا"
         }
       },
       "pregnancy": {
-        "text": "هل يمكن أن تكوني حاملاً؟",
+        "text": "هل يمكن أن تكوني حامل؟",
         "options": {
           "yes": "نعم",
           "no": "لا",
-          "unsure": "لا أعرف",
-          "prefer_not_to_say": "لا أريد أن أقول"
+          "unsure": "لست متأكدا",
+          "prefer_not_to_say": "أفضل ألا أقول"
         }
       },
       "substance_use": {
-        "text": "هل تدخن الكحول أو المخدرات؟",
+        "text": "هل تدخن أو تشرب الكحول أو تستخدم أي مخدرات؟",
         "options": {
           "smoking": "التدخين",
           "alcohol": "الكحول",
-          "drugs": "المخدرات",
+          "drugs": "أدوية أخرى",
           "none": "لا شيء من هذه",
-          "prefer_not_to_say": "لا أريد أن أقول"
+          "prefer_not_to_say": "أفضل ألا أقول"
         }
       }
-    },
-    "reviewNotes": "Machine-generated draft. Numeric severity answers are formatted from numeric IDs as value/10; clinical and fluent-speaker review remains pending. Five mixed-script Arabic strings were corrected: the chief-complaint question and four left/right limb labels. These source-vocabulary corrections are still drafts, not a clinical or fluent-speaker sign-off."
+    }
   },
   {
     "schemaVersion": 1,
     "language": "zh-Hans",
-    "generatedBy": "nvidia/nemotron-3.5-lightning-30b-a3b",
-    "generatedAt": "2026-11-08T02:52:49.337Z",
+    "generatedBy": "Azure Translator REST v3",
+    "generatedAt": "2026-11-08T07:43:23.244Z",
     "reviewStatus": "draft",
     "source": {
       "chief_complaint": {
@@ -1075,55 +1073,55 @@
     },
     "questions": {
       "chief_complaint": {
-        "text": "今天您主要是因为什么来的？",
+        "text": "今天把你带到这里的主要问题是什么？",
         "options": {
           "pain": "疼痛",
           "breathing": "呼吸困难",
-          "fever": "发热",
-          "other": "其他",
-          "unsure": "不确定"
+          "fever": "发烧",
+          "other": "别的什么",
+          "unsure": "不太确定"
         }
       },
       "onset": {
-        "text": "它是什么时候开始的？是突然开始还是慢慢开始？",
+        "text": "这一切是什么时候开始的？是突然的还是缓慢的？",
         "options": {
           "sudden": "突然",
-          "gradual": "慢慢",
-          "today": "今天",
+          "gradual": "慢慢来",
+          "today": "现今",
           "days": "几天前",
           "longer": "更久以前",
-          "unsure": "不确定"
+          "unsure": "不太确定"
         }
       },
       "where": {
-        "text": "您在哪里感到疼痛？请用一根手指指向部位。",
+        "text": "你感觉到哪里？请用一根手指。",
         "options": {
-          "head": "头",
-          "neck": "颈部",
+          "head": "首领",
+          "neck": "琴颈",
           "chest": "胸部",
-          "abdomen": "腹部",
-          "back": "背部",
+          "abdomen": "胃部",
+          "back": "返回",
           "left_arm": "左臂",
           "right_arm": "右臂",
           "left_leg": "左腿",
           "right_leg": "右腿",
-          "elsewhere": "其他部位",
-          "unsure": "不确定"
+          "elsewhere": "别的地方",
+          "unsure": "不太确定"
         }
       },
       "how_long": {
-        "text": "多久会持续？是时刻存在，还是来去不定？",
+        "text": "这种感觉持续多久？是一直存在，还是时有时无？",
         "options": {
           "minutes": "分钟",
-          "hours": "小时",
-          "days": "天",
-          "constant": "时刻存在",
-          "intermittent": "来去不定",
-          "unsure": "不确定"
+          "hours": "开放时间",
+          "days": "日子",
+          "constant": "一直都是",
+          "intermittent": "时来去去",
+          "unsure": "不太确定"
         }
       },
       "how_strong": {
-        "text": "从0（无痛）到10（你能想象到的最严重的疼痛），疼有多严重？",
+        "text": "从0（无痛）到10（你能想象到的最痛），有多严重？",
         "options": {
           "s0": "0/10",
           "s1": "1/10",
@@ -1136,133 +1134,132 @@
           "s8": "8/10",
           "s9": "9/10",
           "s10": "10/10",
-          "unsure": "不确定"
+          "unsure": "不太确定"
         }
       },
       "character": {
-        "text": "感觉如何？锐利、钝痛、灼热、绞痛，还是其他？",
+        "text": "感觉如何？尖锐、钝痛、灼烧、挤压，还是别的什么？",
         "options": {
-          "sharp": "锐利",
-          "dull": "钝痛",
-          "burning": "灼热",
-          "squeezing": "绞痛",
-          "other": "其他",
-          "unsure": "不确定"
+          "sharp": "夏普",
+          "dull": "无聊",
+          "burning": "焚烧",
+          "squeezing": "挤压",
+          "other": "别的什么",
+          "unsure": "不太确定"
         }
       },
       "aggravating_factors": {
-        "text": "什么让它更严重？",
+        "text": "什么让情况更糟？",
         "options": {
-          "moving": "移动",
+          "moving": "搬家",
           "breathing": "呼吸",
-          "eating": "进食",
-          "nothing": "无特别原因",
-          "other": "其他",
-          "unsure": "不确定"
+          "eating": "饮食",
+          "nothing": "没什么特别的",
+          "other": "别的什么",
+          "unsure": "不太确定"
         }
       },
       "relieving_factors": {
-        "text": "什么让它好转？",
+        "text": "是什么让它更好？",
         "options": {
           "rest": "休息",
-          "medicine": "药物",
-          "position": "改变体位",
-          "nothing": "无",
-          "other": "其他",
-          "unsure": "不确定"
+          "medicine": "医学",
+          "position": "立场变动",
+          "nothing": "什么都没有",
+          "other": "别的什么",
+          "unsure": "不太确定"
         }
       },
       "radiation": {
-        "text": "疼痛是否扩散到身体其他部位？",
+        "text": "疼痛会转移到身体的其他地方吗？",
         "options": {
-          "stays": "局限于一处",
-          "moves": "向其他部位移动",
-          "unsure": "不确定"
+          "stays": "停留在一个地方",
+          "moves": "搬到别处",
+          "unsure": "不太确定"
         }
       },
       "associated_symptoms": {
-        "text": "你是否有发烧、呕吐或呼吸困难等其他症状？",
+        "text": "你还有其他症状吗，比如发烧、呕吐或呼吸困难？",
         "options": {
           "fever": "发烧",
           "vomiting": "呕吐",
           "short_breath": "呼吸困难",
-          "none": "无其他症状",
-          "other": "其他",
-          "unsure": "不确定"
+          "none": "别无他物",
+          "other": "别的什么",
+          "unsure": "不太确定"
         }
       },
       "red_flags": {
-        "text": "你是否有胸痛、呼吸困难、晕厥或身体一侧无力？",
+        "text": "你有没有出现胸痛、呼吸困难、晕倒或身体一侧无力？",
         "options": {
           "chest_pain": "胸痛",
           "short_breath": "呼吸困难",
-          "fainting": "晕厥",
-          "one_sided_weakness": "身体一侧无力",
-          "none": "无上述症状",
-          "unsure": "不确定"
+          "fainting": "晕倒",
+          "one_sided_weakness": "一侧无力",
+          "none": "这些都不是",
+          "unsure": "不太确定"
         }
       },
       "allergies": {
-        "text": "你是否对任何药物、食物或其他东西过敏？过敏时会发生什么？",
+        "text": "你对任何药物、食物或其他东西过敏吗？你反应时会发生什么？",
         "options": {
           "medicine": "药物过敏",
           "food": "食物过敏",
-          "other": "其他过敏",
-          "none": "无已知过敏",
-          "unsure": "不确定"
+          "other": "又是过敏",
+          "none": "没有已知的过敏",
+          "unsure": "不太确定"
         }
       },
       "current_medications": {
-        "text": "您服用哪些药物？请包括维生素、草本产品和任何非处方药。",
+        "text": "你服用哪些药物？请包括维生素、草药产品以及任何未经处方购买的药物。",
         "options": {
           "prescription": "处方药",
-          "nonprescription": "非处方药",
+          "nonprescription": "无处方购买的药物",
           "supplements": "维生素或草本产品",
-          "none": "不服用药物",
-          "unsure": "不确定"
+          "none": "没有药物",
+          "unsure": "不太确定"
         }
       },
       "past_medical_history": {
-        "text": "您是否患有严重疾病、接受过手术或住院？",
+        "text": "你有没有经历过严重疾病、手术或住院？",
         "options": {
-          "illness": "严重疾病",
+          "illness": "重病",
           "surgery": "手术",
           "hospital": "住院",
-          "none": "以上都不是",
-          "unsure": "不确定"
+          "none": "这些都不是",
+          "unsure": "不太确定"
         }
       },
       "family_history": {
-        "text": "您的家族中是否有心脏病、糖尿病、癌症或中风病史？",
+        "text": "你家里有人患过心脏病、糖尿病、癌症或中风吗？",
         "options": {
           "heart_disease": "心脏病",
           "diabetes": "糖尿病",
           "cancer": "癌症",
           "stroke": "中风",
-          "none": "以上都不是",
-          "unsure": "不确定"
+          "none": "这些都不是",
+          "unsure": "不太确定"
         }
       },
       "pregnancy": {
-        "text": "你是否可能怀孕？",
+        "text": "你会怀孕吗？",
         "options": {
-          "yes": "是",
-          "no": "否",
-          "unsure": "不确定",
-          "prefer_not_to_say": "不想回答"
+          "yes": "是的",
+          "no": "不",
+          "unsure": "不太确定",
+          "prefer_not_to_say": "我宁愿不说"
         }
       },
       "substance_use": {
-        "text": "你吸烟、饮酒或使用药物吗？",
+        "text": "你抽烟、喝酒或使用任何毒品吗？",
         "options": {
           "smoking": "吸烟",
-          "alcohol": "饮酒",
+          "alcohol": "酒精",
           "drugs": "其他药物",
-          "none": "以上都不包括",
-          "prefer_not_to_say": "不想回答"
+          "none": "这些都不是",
+          "prefer_not_to_say": "我宁愿不说"
         }
       }
-    },
-    "reviewNotes": "Machine-generated draft. Numeric severity answers are formatted from numeric IDs as value/10; clinical and fluent-speaker review remains pending."
+    }
   }
 ]

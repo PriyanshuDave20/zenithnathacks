@@ -9,6 +9,8 @@ export function translatePrompt(questions: Question[]): string {
     "Guided option/pictogram answers are handled separately and never included in this request.",
     "Use questionId and the English question definitions below as context. Preserve negation, uncertainty, duration and severity scales.",
     "Return only JSON with exactly summary and lowConfidence. summary has chiefComplaint (string), symptoms (string[]), optional duration (string), redFlags (string[]).",
+    "The summary MUST always include chiefComplaint, symptoms and redFlags, even when no symptoms or red flags are reported. Use [] for empty symptoms, redFlags and lowConfidence; never omit these arrays or return null for them.",
+    'Required output shape: {"summary":{"chiefComplaint":"Not stated","symptoms":[],"redFlags":[]},"lowConfidence":[]}. Replace values using only the supplied facts; add summary.duration only when stated.',
     'For nonclinical questions and ordinary conversation, use summary {"chiefComplaint":"Not stated","symptoms":[],"redFlags":[]}. Include only reported concerns, never inferred diagnoses or triage advice.',
     "When no duration is stated, omit summary.duration entirely. Never return null, a number, an object or an empty string for duration.",
     "lowConfidence is an array of { phrase, reason }, both in English, for ambiguous source wording. No extra fields.",
