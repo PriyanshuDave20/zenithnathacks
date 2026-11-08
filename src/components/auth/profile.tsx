@@ -15,16 +15,13 @@ import { signOut, updateProfile, useClinician, USING_MOCK_AUTH, type ClinicianPr
 import { FormError, initials, SubmitButton, TextField } from "./auth-ui";
 import { RolePicker } from "./forms";
 
-// Languages a clinician may speak; the session app supports the first four today.
+// Languages a clinician may speak; the session app supports the first four today. Only languages shown here can be saved.
 const LANGS: { code: string; name: string; english: string }[] = [
   { code: "en", name: "English", english: "English" },
   { code: "es", name: "Español", english: "Spanish" },
   { code: "ar", name: "العربية", english: "Arabic" },
   { code: "zh-Hans", name: "中文", english: "Mandarin" },
   { code: "fr", name: "Français", english: "French" },
-  { code: "pt", name: "Português", english: "Portuguese" },
-  { code: "tl", name: "Tagalog", english: "Tagalog" },
-  { code: "vi", name: "Tiếng Việt", english: "Vietnamese" },
 ];
 
 export function ProfilePage() {
@@ -47,14 +44,14 @@ export function ProfilePage() {
 
 function ProfileForm({ me }: { me: ClinicianProfile }) {
   const router = useRouter();
-  const [form, setForm] = useState({ name: me.name, clinic: me.clinic, role: me.role as ClinicianRole, languages: me.languages });
+  const [form, setForm] = useState({ name: me.name, clinic: me.clinic, role: me.role as ClinicianRole, languages: me.languages.filter((code) => LANGS.some((l) => l.code === code)) });
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const welcome = useSearchParams().has("welcome");
   const dirty =
-    form.name !== me.name || form.clinic !== me.clinic || form.role !== me.role || form.languages.join() !== me.languages.join();
+    form.name !== me.name || form.clinic !== me.clinic || form.role !== me.role || form.languages.join() !== me.languages.filter((code) => LANGS.some((l) => l.code === code)).join();
 
   async function onSave(e: FormEvent) {
     e.preventDefault();

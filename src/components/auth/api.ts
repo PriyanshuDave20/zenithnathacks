@@ -56,5 +56,12 @@ export function useClinician(): ClinicianProfile | null | "loading" {
 
 /** Only allow same-site relative paths as post-sign-in destinations. */
 export function safeNext(raw: string | null | undefined, fallback = "/dashboard") {
-  return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : fallback;
+  // Browsers treat "\\" and tabs/newlines like "/", so "/\\evil.com" would leave the site.
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || /[\\\u0000-\u001f\u007f]/.test(raw)) return fallback;
+  try {
+    const base = "http://synapse.invalid";
+    return new URL(raw, base).origin === base ? raw : fallback;
+  } catch {
+    return fallback;
+  }
 }

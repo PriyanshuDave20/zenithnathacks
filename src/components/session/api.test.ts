@@ -23,6 +23,7 @@ function connectRoutes(t: TestContext) {
     requests.push(request.clone());
     if (path === "/api/translate") return translateRoute(request);
     if (path === "/api/respond") return respondRoute(request);
+    if (path === "/api/metrics") return new Response(null, { status: 204 });
     throw new Error("Unexpected API path.");
   });
   return requests;
@@ -95,7 +96,7 @@ test("adapter rejects HTTP errors, invalid JSON, malformed schemas and network f
   await assert.rejects(translate(STORIES[0].translateRequest));
 });
 
-test("invalid selections are rejected by the route; undeclared request fields and metrics never fetch", async (t) => {
+test("invalid selections are rejected by the route; undeclared request fields never fetch", async (t) => {
   const requests = connectRoutes(t);
   for (const input of [
     { questionId: "where", kind: "option" as const, value: "unknown-part" },
@@ -105,8 +106,17 @@ test("invalid selections are rejected by the route; undeclared request fields an
     await assert.rejects(translate({ context: STORIES[0].translateRequest.context, inputs: [input] }));
   }
   assert.throws(() => respond({ ...STORIES[0].respondRequest, name: "extra" } as Parameters<typeof respond>[0]));
-  track({ event: "session_started", mode: "standard" });
   assert.equal(requests.length, 3);
+});
+
+test("track sends only valid anonymous events to the metrics route and never throws", async (t) => {
+  const requests = connectRoutes(t);
+  track({ event: "session_started", mode: "standard" });
+  track({ event: "first_message", mode: "standard", msSinceStart: 1200 });
+  track({ event: "session_started", mode: "standard", name: "extra" } as Parameters<typeof track>[0]);
+  track({ event: "bogus", mode: "standard" } as unknown as Parameters<typeof track>[0]);
+  assert.deepEqual(requests.map((r) => new URL(r.url).pathname), ["/api/metrics", "/api/metrics"]);
+  assert.deepEqual(await requests[1].json(), { event: "first_message", mode: "standard", msSinceStart: 1200 });
 });
 
 // Frontend recovery must show human-readable selections, never transport IDs.

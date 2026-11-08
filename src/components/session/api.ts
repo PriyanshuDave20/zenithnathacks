@@ -1,6 +1,7 @@
 // Browser adapter for the stateless API routes. The server still uses its offline mock provider.
 import { z } from "zod";
 import {
+  MetricsEventSchema,
   RespondRequestSchema,
   RespondResponseSchema,
   TranslateRequestSchema,
@@ -53,7 +54,34 @@ export function isReplyUnavailable(response: RespondResponse): boolean {
     || response.patientText === "Mock provider: no translated reply available.";
 }
 
-/** Metrics remain disabled until their route and anonymous sink are implemented. */
+/** Timestamp for the start of a visit, used only for the rough first-message timing bucket. */
+export function startClock(): number {
+  return Date.now();
+}
+
+/** Milliseconds since a start timestamp, or undefined when the visit has not started. */
+export function elapsedSince(start: number | null): number | undefined {
+  return start === null ? undefined : Date.now() - start;
+}
+
+/**
+ * Anonymous product metrics: only the event name, mode and a rough timing, never any session content or identifier.
+ * Fire-and-forget: a failure is silent and must never affect the visit.
+ */
 export function track(event: MetricsEvent): void {
-  void event;
+  try {
+    const parsed = MetricsEventSchema.safeParse(event);
+    if (!parsed.success) return;
+    void fetch("/api/metrics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(parsed.data),
+      cache: "no-store",
+      credentials: "omit",
+      keepalive: true,
+      signal: AbortSignal.timeout(5_000),
+    }).catch(() => {});
+  } catch {
+    /* metrics are optional */
+  }
 }

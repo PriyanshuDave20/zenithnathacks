@@ -34,7 +34,7 @@ import {
   type TranslateResponse,
   type RespondResponse,
 } from "@/lib/mocks";
-import { translate, respond, isReplyUnavailable } from "@/components/session/api";
+import { translate, respond, isReplyUnavailable, track, elapsedSince, startClock } from "@/components/session/api";
 import { getGuidedQuestions } from "@/lib/questions/localization";
 import { displayInputs } from "@/components/session/input-display";
 import { STRINGS } from "@/components/session/strings";
@@ -47,6 +47,7 @@ import { EkgLoader, VoiceBars } from "./motion";
 import { SessionSetup, type SetupMode } from "./session-setup";
 import { ScaleSlider as ScaleControl } from "@/components/session/scale-slider";
 import { getSummaryPrefs } from "@/lib/summary-prefs";
+import { addQuickReply, useQuickReplies } from "@/lib/quick-replies";
 import {
   IntakeFree,
   IntakeGuided,
@@ -220,6 +221,7 @@ export function CommunicationWorkspace() {
   const [help, setHelp] = useState(false);
   const [sound, setSound] = useState(false);
   const [draft, setDraft] = useState("");
+  const savedReplies = useQuickReplies();
   const [channel, setChannel] = useState<"voice" | "pictures" | "type">(
     "voice",
   );
@@ -229,6 +231,9 @@ export function CommunicationWorkspace() {
   const [copied, setCopied] = useState("");
   const version = useRef(0);
   const lock = useRef(false);
+  // Anonymous metrics bookkeeping for this visit: when it started and whether the first message was counted.
+  const metricsStart = useRef<number | null>(null);
+  const firstMessageCounted = useRef(false);
   const nextId = useRef(1);
   const main = useRef<HTMLElement>(null);
   const stream = useRef<HTMLDivElement>(null);
@@ -259,6 +264,8 @@ export function CommunicationWorkspace() {
   };
 
   function clear(end = false) {
+    metricsStart.current = null;
+    firstMessageCounted.current = false;
     version.current++;
     lock.current = false;
     stopVoice();
@@ -405,6 +412,10 @@ export function CommunicationWorkspace() {
     lock.current = true;
     setBusy(true);
     setError("");
+    if (!firstMessageCounted.current) {
+      firstMessageCounted.current = true;
+      track({ event: "first_message", mode, msSinceStart: elapsedSince(metricsStart.current) });
+    }
     const token = version.current;
     const context = {
       language,
@@ -821,6 +832,10 @@ export function CommunicationWorkspace() {
               </div>
             }
             onStart={() => {
+              if (metricsStart.current === null) {
+                metricsStart.current = startClock();
+                track({ event: "session_started", mode });
+              }
               setReadyForReply(false);
               setStage("patient-ready");
             }}
@@ -1431,6 +1446,7 @@ export function CommunicationWorkspace() {
                             style={{ marginBottom: 20 }}
                           >
                             {[
+                              ...savedReplies.map((reply) => ({ en: reply })),
                               { en: "Please point to where it hurts." },
                               ...CLINICIAN_REPLIES,
                             ].map((r) => (
@@ -1464,6 +1480,17 @@ export function CommunicationWorkspace() {
                             speech.setFinalText("");
                           }}
                         />
+                        {role === "clinician" && message.trim() && !savedReplies.includes(message.trim())
+                          && !CLINICIAN_REPLIES.some((r) => r.en === message.trim())
+                          && message.trim() !== "Please point to where it hurts." ? (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => addQuickReply(message)}
+                          >
+                            Save as quick reply
+                          </button>
+                        ) : null}
                         {selected.length + bodyParts.length ? (
                           <p role="status">
                             {selected.length + bodyParts.length}{" "}
@@ -1729,6 +1756,7 @@ export function CommunicationWorkspace() {
                       type="button"
                       key={answer}
                       onClick={() => {
+                        if (answer === "yes") track({ event: "teachback_confirmed", mode });
                         setTurns((t) =>
                           t.map((turn) =>
                             turn.id === lastReply.id

@@ -78,7 +78,7 @@ const INTERACTIVE = [
  * Nine fixed targets, centre first, then the corners and edge midpoints. No moving pursuit:
  * each target stays put for ~3.3 seconds, with the first second ignored for eye travel.
  */
-function buildCalibrationWaypoints(): { x: number; y: number }[] {
+function buildCalibrationWaypoints(cancelButton?: HTMLElement | null): { x: number; y: number }[] {
   const w = window.innerWidth;
   const h = window.innerHeight;
   // The dot must never go under a bright screen edge (a system light such as Mac Edge Light draws over
@@ -86,15 +86,20 @@ function buildCalibrationWaypoints(): { x: number; y: number }[] {
   const safe = edgeSafePx(w, h, getGazeEdgeWide()) + 28;
   const insetX = Math.max(0.12, safe / w);
   const insetY = Math.max(0.12, safe / h);
+  // The Cancel button sits along the bottom edge. Keep the bottom row of dots (and the seconds label under each dot)
+  // above it, so the dot never passes through or hides the button.
+  const rect = cancelButton?.getBoundingClientRect();
+  const cancelTop = rect && rect.height > 0 ? rect.top : h - 88;
+  const bottomY = Math.min((1 - insetY) * h, cancelTop - 48);
   const pts = [
     { x: 0.5 * w, y: 0.5 * h },
     { x: insetX * w, y: insetY * h },
     { x: 0.5 * w, y: insetY * h },
     { x: (1 - insetX) * w, y: insetY * h },
     { x: (1 - insetX) * w, y: 0.5 * h },
-    { x: (1 - insetX) * w, y: (1 - insetY) * h },
-    { x: 0.5 * w, y: (1 - insetY) * h },
-    { x: insetX * w, y: (1 - insetY) * h },
+    { x: (1 - insetX) * w, y: bottomY },
+    { x: 0.5 * w, y: bottomY },
+    { x: insetX * w, y: bottomY },
     { x: insetX * w, y: 0.5 * h },
   ];
   return pts;
@@ -229,6 +234,7 @@ export function GazeLayer() {
   const generationRef = useRef(0);
 
   const calibrationDialog = useRef<HTMLDialogElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const active = phase === "calibrating" || phase === "on";
 
   const enable = useCallback(async () => {
@@ -387,7 +393,7 @@ export function GazeLayer() {
     const smoother = smootherRef.current;
     smoother.reset();
     featureSmoother.reset();
-    const waypoints = phase === "calibrating" ? buildCalibrationWaypoints() : null;
+    const waypoints = phase === "calibrating" ? buildCalibrationWaypoints(cancelButtonRef.current) : null;
     let raf = 0;
     let last = performance.now();
     let lastFeatureAt = last;
@@ -708,6 +714,7 @@ export function GazeLayer() {
             <span ref={calibDotTimerRef} className="absolute left-0 top-6 -translate-x-1/2 whitespace-nowrap text-sm font-semibold tabular-nums text-on-navy-soft">4s</span>
           </div>
           <button
+            ref={cancelButtonRef}
             type="button"
             onClick={cancelCalibration}
             style={{ bottom: "max(40px, var(--eye-edge, 40px))" }}

@@ -37,6 +37,14 @@ import { EyeWorkspace } from "@/components/eye/eye-workspace";
 import { describeAnswers } from "@/lib/eye/flow";
 import { eye, useEyeState } from "@/lib/eye/session";
 
+const DESKTOP_QUERY = "(hover: hover) and (pointer: fine)";
+function subscribeDesktop(cb: () => void) {
+  const query = window.matchMedia(DESKTOP_QUERY);
+  query.addEventListener("change", cb);
+  return () => query.removeEventListener("change", cb);
+}
+const getDesktop = () => window.matchMedia(DESKTOP_QUERY).matches;
+
 /** Uses the shared gaze layer; its marked activation preserves the existing SelectEvent contract. */
 export function IcuBoard({
   onSelect,
@@ -65,6 +73,11 @@ export function IcuBoard({
   const gazeError = useSyncExternalStore(subscribeGaze, getGazeError, () => null);
   const gazeSkipped = useSyncExternalStore(subscribeGaze, getGazeSkipped, () => false);
   const edgeWide = useSyncExternalStore(subscribeGaze, getGazeEdgeWide, () => false);
+  // Mac Edge Light only exists on Mac desktops and laptops, so the option is for mouse-and-hover devices, never phones or tablets.
+  const desktop = useSyncExternalStore(subscribeDesktop, getDesktop, () => false);
+  useEffect(() => {
+    if (!desktop && edgeWide) setGazeEdgeWide(false);
+  }, [desktop, edgeWide]);
   // Keep controls clear of the screen edge. In the dark a system effect (macOS Edge Light) can light or cover the
   // border of the whole display, over the page, and the page cannot see it. The margin is published as --eye-edge
   // so the tracking layer's own buttons use the same one.
@@ -239,15 +252,48 @@ export function IcuBoard({
               ) : (
                 <>
                   <h2 id="icu-gate-title" className="sf-icu-gate-label">Eye control setup</h2>
-                  <p className="sf-icu-gate-note">Clinician: tap when the patient is in position and you are both looking at the screen. A 3-2-1 countdown, then calibration, then eye control turns on.</p>
+                  <p className="sf-icu-gate-note">Clinician: choose the mode, then tap Ready when the patient is in position. A 3-2-1 countdown, then calibration, then eye control turns on.</p>
+                  <div role="group" aria-label="Eye mode, chosen by the clinician" className="sf-icu-gate-row">
+                    {([
+                      { id: "intake", label: "Intake", hint: "First meeting: guided questions" },
+                      { id: "conversation", label: "Conversation", hint: "Ongoing: yes, no, and what I need" },
+                    ] as const).map((m, index) => {
+                      const chosen = eyeState.mode === m.id;
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          className="sf-icu-gate-quiet"
+                          aria-pressed={chosen}
+                          autoFocus={!eyeState.mode && index === 0}
+                          onClick={() => { if (!chosen) eye.start(m.id); }}
+                          style={{ flexDirection: "column", minHeight: 64, ...(chosen ? { background: "#fff", color: "#101e34", fontWeight: 800 } : { boxShadow: "inset 0 0 0 2px rgb(255 255 255 / 0.5)" }) }}
+                        >
+                          <span>{m.label}</span>
+                          <small style={{ fontWeight: 500, opacity: 0.85 }}>{m.hint}</small>
+                        </button>
+                      );
+                    })}
+                  </div>
                   {gazeError ? <p className="sf-icu-gate-error" role="alert">{gazeError}</p> : null}
-                  <button type="button" className="sf-icu-gate-btn" autoFocus onClick={() => setCount(3)}>
+                  <button
+                    type="button"
+                    className="sf-icu-gate-btn"
+                    autoFocus={!!eyeState.mode}
+                    disabled={!eyeState.mode}
+                    aria-describedby={eyeState.mode ? undefined : "icu-gate-mode-needed"}
+                    style={eyeState.mode ? undefined : { opacity: 0.45, cursor: "not-allowed" }}
+                    onClick={() => setCount(3)}
+                  >
                     {gazeError ? "Try again" : "Ready"}
                   </button>
-                  <label className="sf-icu-gate-edge">
-                    <input type="checkbox" checked={edgeWide} onChange={(event) => setGazeEdgeWide(event.target.checked)} />
-                    <span>My screen lights up around the edges in the dark (Mac Edge Light). Keep buttons further in.</span>
-                  </label>
+                  {eyeState.mode ? null : <p id="icu-gate-mode-needed" className="sf-icu-gate-note">Choose Intake or Conversation to continue.</p>}
+                  {desktop ? (
+                    <label className="sf-icu-gate-edge">
+                      <input type="checkbox" checked={edgeWide} onChange={(event) => setGazeEdgeWide(event.target.checked)} />
+                      <span>My screen lights up around the edges in the dark (Mac Edge Light). Keep buttons further in.</span>
+                    </label>
+                  ) : null}
                   <div className="sf-icu-gate-row">
                     <button type="button" className="sf-icu-gate-quiet" onClick={skipGaze}>Use touch or keyboard instead</button>
                     <Link href="/start" className="sf-icu-gate-quiet">Back to setup</Link>

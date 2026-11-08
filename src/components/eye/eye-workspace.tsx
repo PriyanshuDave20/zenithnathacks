@@ -58,7 +58,7 @@ const HELP_SAY = "I need help. Please come now.";
 const HELP_REPEAT_MS = 9000;
 
 const TITLES: Record<EyeScreen, [string, string]> = {
-  mode: ["How will you use Eye mode?", "Clinician: choose one. You can switch at any time."],
+  mode: ["How will you use Eye mode?", "Clinician: tap one. You can switch at any time."],
   home: ["Answer, or tell us something", "Look at a choice for two seconds to say it. Tap and keyboard also work."],
   needs: ["What do you need?", "Look at a choice for two seconds to say it."],
   rest: ["Resting", "Nothing is being said. Look at the button when you are ready."],
@@ -266,7 +266,8 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
           </div>
         </div>
       ) : (
-        <div key={screen} className={i.board} style={grid}>
+        // The clinician, not the patient, picks the mode: on this screen choices are tap-only and gaze ignores them.
+        <div key={screen} className={i.board} style={grid} data-gaze-ignore={screen === "mode" ? "" : undefined}>
           {body}
         </div>
       )}
