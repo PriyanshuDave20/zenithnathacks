@@ -9,12 +9,15 @@ reviewed/draft language packs; they never need a live translation or LLM call.
 ## Local resources
 
 1. Sign in to [Azure portal](https://portal.azure.com/) with an Azure subscription.
-2. Create a **Translator** resource. Select **F0 (Free)**. Open **Keys and Endpoint**
+2. Create a dedicated **Translator** resource (a Foundry project is not needed).
+   For this demo choose **Global** and **F0 (Free)**. Open **Keys and Endpoint**
    and copy a key and the resource region into the gitignored `.env`.
-3. Create a **Speech** resource with **F0 (Free)**. Copy its key and region from
+3. Create a **Speech** resource with **Canada Central** and **F0 (Free)**. Copy its key and region from
    **Keys and Endpoint** into `.env`. Use prebuilt neural voices; no voice cloning,
    custom voice training, batch synthesis or storage resource is needed.
-4. Keep the existing server-only NVIDIA key/model settings, then configure:
+4. You can use resource group `synapse-dev`, Translator name
+   `synapse-translator-prem`, and Speech name `synapse-speech-prem`. Append a unique
+   suffix if a name is unavailable. Keep existing NVIDIA settings, then configure:
 
 ```dotenv
 LLM_PROVIDER=nvidia
@@ -24,7 +27,7 @@ AZURE_TRANSLATOR_KEY=your_translator_key
 AZURE_TRANSLATOR_REGION=global
 SPEECH_PROVIDER=azure
 AZURE_SPEECH_KEY=your_speech_key
-AZURE_SPEECH_REGION=your_speech_region
+AZURE_SPEECH_REGION=canadacentral
 ```
 
 `global` is for a global Translator resource. Otherwise use its actual region.
