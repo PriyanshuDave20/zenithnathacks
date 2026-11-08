@@ -400,12 +400,11 @@ export function GazeLayer() {
           const secs = Math.max(Math.ceil((CALIBRATION_MS - Math.max(t, 0)) / 1000), 0);
           if (timer.textContent !== `${secs}s`) timer.textContent = `${secs}s`; // avoid a DOM write every frame
         }
-        if (
-          fixationState.collect &&
-          pred &&
-          now - pred.at < 300 &&
-          now - lastRecordAt >= CALIBRATION_RECORD_GAP_MS
-        ) {
+        // Label the regression while the eyes have had time to settle on the dot. No prediction
+        // gate here: WebGazer emits no predictions until it has training data, and
+        // recordScreenPosition itself ignores labels when it cannot see the eyes - so recording
+        // unconditionally during the settle window is safe and cannot deadlock the calibration.
+        if (fixationState.collect && now - lastRecordAt >= CALIBRATION_RECORD_GAP_MS) {
           lastRecordAt = now;
           trackerRef.current?.recordCalibration(dx, dy);
         }

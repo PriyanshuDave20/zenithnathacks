@@ -82,6 +82,17 @@ export class GazeTracker {
     // One-time configuration: everything off except raw predictions - our own UI draws the cursor.
     wg.saveDataAcrossSessions(false); // privacy: nothing persists between sessions or page loads
     wg.params.faceMeshSolutionPath = SOLUTION_PATH;
+    // A bigger, sharper face means finer iris landmarks, which is what the eye patches are built
+    // from: ask for 720p and zoom in when the camera supports it (gracefully ignored otherwise).
+    wg.params.camConstraints = {
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        facingMode: "user",
+        advanced: [{ zoom: { ideal: 2 } }],
+      },
+      audio: false,
+    };
     wg.showVideo(false);
     wg.showPredictionPoints(false);
     wg.showFaceOverlay(false);
