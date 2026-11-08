@@ -41,6 +41,13 @@ import { useIdle } from "@/components/session/use-idle";
 import "./workspace.css";
 import { workspaceStyles as s } from "./styles";
 import { EkgLoader, VoiceBars } from "./motion";
+import { SessionSetup, type SetupMode } from "./session-setup";
+import {
+  IntakeFree,
+  IntakeGuided,
+  ConfirmReadBack,
+} from "@/components/session/patient-screens";
+import "./flow.css";
 
 const PICTOS = {
   head: PictoHead,
@@ -51,7 +58,16 @@ const PICTOS = {
   leg: PictoLeg,
 } as Record<string, typeof PictoHead>;
 
-type Stage = "conversation" | "handoff" | "summary" | "teachback" | "end";
+type Stage =
+  | "setup"
+  | "patient-ready"
+  | "patient"
+  | "patient-confirm"
+  | "conversation"
+  | "handoff"
+  | "summary"
+  | "teachback"
+  | "end";
 type Turn = {
   id: number;
   role: "patient" | "clinician";
@@ -127,6 +143,10 @@ const COPY = {
   },
 };
 
+function isClinicianRole(value: string): boolean {
+  return value === "clinician";
+}
+
 function Action({
   label,
   onClick,
@@ -151,10 +171,14 @@ function Action({
 }
 
 export function CommunicationWorkspace() {
-  const [stage, setStage] = useState<Stage>("conversation");
+  const [stage, setStage] = useState<Stage>("setup");
   const [language, setLanguage] = useState<PatientLanguage>("es");
   const [mode, setMode] = useState<Mode>("standard");
-  const [role, setRole] = useState<"patient" | "clinician">("patient");
+  const [role, setRole] = useState<"patient" | "clinician">("clinician");
+  const [setupMode, setSetupMode] = useState<SetupMode>("standard");
+  const [patientPath, setPatientPath] = useState<"free" | "guided">("free");
+  const [patientInputs, setPatientInputs] = useState<TranslateInput[]>([]);
+  const [readyForReply, setReadyForReply] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [pending, setPending] = useState<Turn | null>(null);
   const [busy, setBusy] = useState(false);
@@ -191,14 +215,20 @@ export function CommunicationWorkspace() {
   const canAudio = mode !== "deaf_hoh";
   const message = [draft, speech.finalText].filter(Boolean).join(" ").trim();
   const lastReply = [...turns].reverse().find((t) => t.role === "clinician");
-  const holder =
-    stage === "summary"
-      ? "Clinician"
-      : stage === "teachback"
-        ? "Patient"
-        : role === "patient"
-          ? "Patient"
-          : "Clinician";
+  const patientScreen = [
+    "patient",
+    "patient-confirm",
+    "handoff",
+    "teachback",
+  ].includes(stage);
+  const holder = patientScreen ? "Patient" : "Clinician";
+  const lang = {
+    code: meta.code,
+    dir: meta.dir,
+    speech: meta.speech,
+    english: meta.english,
+    name: meta.name,
+  };
 
   function clear(end = false) {
     version.current++;
@@ -220,8 +250,9 @@ export function CommunicationWorkspace() {
     setSound(false);
     setCopied("");
     setFlipped(false);
-    setRole("patient");
-    setStage(end ? "end" : "conversation");
+    setRole("clinician");
+    setPatientInputs([]);
+    setStage(end ? "end" : "setup");
   }
   // Invalidate in-flight work on navigation, React Activity hiding, and bfcache restoration.
   useEffect(() => {
@@ -237,7 +268,8 @@ export function CommunicationWorkspace() {
       setError("");
       setSeverity(null);
       setFinalText("");
-      setStage("conversation");
+      setPatientInputs([]);
+      setStage("setup");
       window.speechSynthesis?.cancel();
     };
     window.addEventListener("pagehide", wipe);
@@ -259,7 +291,12 @@ export function CommunicationWorkspace() {
     stream.current?.scrollTo({ top: stream.current.scrollHeight });
   }, [turns.length, pending]);
   const idle = useIdle({
-    enabled: stage !== "end",
+    enabled:
+      stage !== "end" &&
+      (stage !== "setup" ||
+        turns.length > 0 ||
+        patientInputs.length > 0 ||
+        !!draft),
     idleMs: 270000,
     graceMs: 30000,
     onExpire: () => clear(true),
@@ -377,6 +414,8 @@ export function CommunicationWorkspace() {
           );
         setDraft("");
         speech.setFinalText("");
+        setReadyForReply(true);
+        setStage("patient-ready");
       }
     } catch {
       if (version.current === token)
@@ -393,6 +432,7 @@ export function CommunicationWorkspace() {
   function confirm() {
     if (!pending) return;
     setTurns((current) => [...current, pending]);
+    setStage("handoff");
     setPending(null);
     setDraft("");
     speech.setFinalText("");
@@ -401,6 +441,59 @@ export function CommunicationWorkspace() {
     setSeverity(null);
     if (audio && canAudio)
       voice.speak(pending.translation!.backTranslation, meta.speech);
+  }
+  async function submitPatient(inputs: TranslateInput[]) {
+    if (lock.current) return;
+    const token = version.current;
+    lock.current = true;
+    setPatientInputs(inputs);
+    setPending(null);
+    setError("");
+    setBusy(true);
+    setStage("patient-confirm");
+    try {
+      const translation = await translate({
+        context: {
+          language,
+          mode,
+          readingLevel: mode === "low_literacy" ? 2 : 3,
+        },
+        inputs,
+      });
+      if (version.current !== token) return;
+      setPending({
+        id: nextId.current++,
+        role: "patient",
+        language,
+        original: translation.original,
+        translation,
+      });
+    } catch {
+      if (version.current === token) setError("unavailable");
+    } finally {
+      if (version.current === token) {
+        lock.current = false;
+        setBusy(false);
+      }
+    }
+  }
+  function confirmPatient() {
+    if (pending) {
+      confirm();
+      return;
+    }
+    // A failed service must still let the clinician see the patient's own words.
+    setTurns((current) => [
+      ...current,
+      {
+        id: nextId.current++,
+        role: "patient",
+        language,
+        original: patientInputs.map((i) => i.value).join(" · "),
+        unavailable: true,
+      },
+    ]);
+    setStage("handoff");
   }
   const shortcut = useRef({
     start: speech.start,
@@ -451,7 +544,9 @@ export function CommunicationWorkspace() {
       .map((t) =>
         t.translation
           ? `Patient report (demo): ${t.translation.translated}\nOriginal: ${t.original}\nBack-translation: ${t.translation.backTranslation}`
-          : `Clinician: ${t.original}\nTeach-back: ${t.understood ?? "Not checked"}`,
+          : t.role === "patient"
+            ? `Patient report (untranslated): ${t.original}`
+            : `Clinician: ${t.original}\nTeach-back: ${t.understood ?? "Not checked"}`,
       )
       .join("\n\n");
     try {
@@ -506,81 +601,234 @@ export function CommunicationWorkspace() {
             )}
           </div>
         </div>
-        <section className={s.toolbar} aria-label="Accessibility controls">
-          <button
-            type="button"
-            className={s.accessToggle}
-            aria-expanded={accessOpen}
-            aria-controls="communication-accessibility"
-            onClick={() => setAccessOpen(!accessOpen)}
-          >
-            Accessibility · {MODES.find((m) => m.id === mode)?.label} ·{" "}
-            {scale * 100}% <span>{accessOpen ? "Close" : "Change"}</span>
-          </button>
-          <div
-            id="communication-accessibility"
-            className={s.toolbarInner}
-            data-open={accessOpen}
-          >
-            <div
-              className={s.group}
-              role="group"
-              aria-label="Communication mode"
+        {(stage === "conversation" || stage === "summary") &&
+        isClinicianRole(role) ? (
+          <section className={s.toolbar} aria-label="Accessibility controls">
+            <button
+              type="button"
+              className={s.accessToggle}
+              aria-expanded={accessOpen}
+              aria-controls="communication-accessibility"
+              onClick={() => setAccessOpen(!accessOpen)}
             >
-              {MODES.map((m) => (
-                <button
-                  type="button"
-                  key={m.id}
-                  aria-pressed={mode === m.id}
-                  onClick={() => selectMode(m.id)}
-                  disabled={busy || !!pending}
-                >
-                  {mode === m.id ? "✓ " : ""}
-                  {m.label}
-                </button>
-              ))}
-            </div>
-            <div className={`${s.group} ${s.tools}`}>
-              <div className={s.group} role="group" aria-label="Text size">
-                {[1, 1.25, 1.5].map((n) => (
+              Accessibility · {MODES.find((m) => m.id === mode)?.label} ·{" "}
+              {scale * 100}% <span>{accessOpen ? "Close" : "Change"}</span>
+            </button>
+            <div
+              id="communication-accessibility"
+              className={s.toolbarInner}
+              data-open={accessOpen}
+            >
+              <div
+                className={s.group}
+                role="group"
+                aria-label="Communication mode"
+              >
+                {MODES.map((m) => (
                   <button
                     type="button"
-                    key={n}
-                    aria-pressed={scale === n}
-                    onClick={() => setScale(n)}
+                    key={m.id}
+                    aria-pressed={mode === m.id}
+                    onClick={() => selectMode(m.id)}
+                    disabled={busy || !!pending}
                   >
-                    {n * 100}%
+                    {mode === m.id ? "✓ " : ""}
+                    {m.label}
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                aria-pressed={highContrast}
-                onClick={() => setHighContrast(!highContrast)}
-              >
-                High contrast
-              </button>
-              {canAudio ? (
+              <div className={`${s.group} ${s.tools}`}>
+                <div className={s.group} role="group" aria-label="Text size">
+                  {[1, 1.25, 1.5].map((n) => (
+                    <button
+                      type="button"
+                      key={n}
+                      aria-pressed={scale === n}
+                      onClick={() => setScale(n)}
+                    >
+                      {n * 100}%
+                    </button>
+                  ))}
+                </div>
                 <button
                   type="button"
-                  aria-pressed={audio}
-                  onClick={() => {
-                    setAudio(!audio);
-                    window.speechSynthesis?.cancel();
-                  }}
+                  aria-pressed={highContrast}
+                  onClick={() => setHighContrast(!highContrast)}
                 >
-                  Read aloud {audio ? "on" : "off"}
+                  High contrast
                 </button>
-              ) : null}
+                {canAudio ? (
+                  <button
+                    type="button"
+                    aria-pressed={audio}
+                    onClick={() => {
+                      setAudio(!audio);
+                      window.speechSynthesis?.cancel();
+                    }}
+                  >
+                    Read replies aloud {audio ? "on" : "off"}
+                  </button>
+                ) : null}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : null}
       </header>
       <main
         ref={main}
         tabIndex={-1}
-        className={stage === "handoff" || stage === "end" ? s.handoff : s.main}
+        className={
+          stage === "handoff" || stage === "end" || stage === "patient-ready"
+            ? s.handoff
+            : stage === "setup"
+              ? undefined
+              : s.main
+        }
       >
+        {stage === "setup" ? (
+          <SessionSetup
+            language={language}
+            mode={setupMode}
+            path={patientPath}
+            onLanguage={setLanguage}
+            onMode={(next) => {
+              setSetupMode(next);
+              if (next !== "icu") {
+                setMode(next);
+                setPatientPath(next === "standard" ? "free" : "guided");
+              }
+            }}
+            onPath={setPatientPath}
+            displayControls={
+              <div className="sf-display-controls">
+                <div role="group" aria-label="Patient text size">
+                  {[1, 1.25, 1.5].map((n) => (
+                    <button
+                      type="button"
+                      key={n}
+                      aria-pressed={scale === n}
+                      onClick={() => setScale(n)}
+                    >
+                      {n * 100}% text
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  aria-pressed={highContrast}
+                  onClick={() => setHighContrast(!highContrast)}
+                >
+                  High contrast
+                </button>
+                {mode !== "deaf_hoh" && setupMode !== "icu" ? (
+                  <button
+                    type="button"
+                    aria-pressed={audio}
+                    onClick={() => setAudio(!audio)}
+                  >
+                    Read replies aloud {audio ? "on" : "off"}
+                  </button>
+                ) : null}
+              </div>
+            }
+            onStart={() => {
+              setReadyForReply(false);
+              setStage("patient-ready");
+            }}
+          />
+        ) : null}
+        {stage === "patient-ready" ? (
+          <>
+            <Image
+              src="/communication/synapse-gemini.png"
+              alt="Synapse"
+              width={640}
+              height={400}
+            />
+            <Handoff size={48} />
+            <h1>Pass the device to the patient</h1>
+            <p>
+              {setupMode === "icu"
+                ? "The eye-selection interface is ready to preview. Eye tracking is not connected."
+                : readyForReply
+                  ? `Your reply is ready in ${meta.english}.`
+                  : `${meta.english} · ${MODES.find((m) => m.id === mode)?.label}. The patient will see one clear task at a time.`}
+            </p>
+            {setupMode === "icu" ? (
+              <Link className="sf-handoff-choice" href="/icu">
+                Open patient’s ICU board
+              </Link>
+            ) : (
+              <button
+                type="button"
+                className="sf-handoff-choice"
+                lang={language}
+                dir={meta.dir}
+                onClick={() => {
+                  setRole("patient");
+                  setStage(readyForReply ? "teachback" : "patient");
+                }}
+              >
+                {
+                  {
+                    en: "I’m ready",
+                    es: "Estoy listo",
+                    ar: "أنا مستعد",
+                    "zh-Hans": "我准备好了",
+                  }[language]
+                }
+              </button>
+            )}
+            <Action
+              label="Back to clinician"
+              onClick={() => {
+                setRole("clinician");
+                setStage(readyForReply ? "conversation" : "setup");
+              }}
+            />
+          </>
+        ) : null}
+        {stage === "patient" ? (
+          <div className="sf-patient">
+            {patientPath === "guided" ? (
+              <p className="sf-note" lang={language} dir={meta.dir}>
+                {text.noNames}
+              </p>
+            ) : null}
+            {patientPath === "guided" ? (
+              <IntakeGuided lang={lang} mode={mode} onSubmit={submitPatient} />
+            ) : (
+              <IntakeFree
+                lang={lang}
+                mode={mode}
+                initialText={patientInputs
+                  .filter(
+                    (i) => i.kind === "text" || i.kind === "speech_transcript",
+                  )
+                  .map((i) => i.value)
+                  .join(" ")}
+                onSubmit={submitPatient}
+              />
+            )}
+          </div>
+        ) : null}
+        {stage === "patient-confirm" ? (
+          <div className="sf-patient">
+            <ConfirmReadBack
+              lang={lang}
+              mode={mode}
+              translation={pending?.translation}
+              failed={!!error && !busy}
+              fallbackText={patientInputs.map((i) => i.value).join(" · ")}
+              onYes={confirmPatient}
+              onRetry={() => submitPatient(patientInputs)}
+              onTryAgain={() => {
+                setError("");
+                setStage("patient");
+              }}
+            />
+          </div>
+        ) : null}
         {stage === "end" ? (
           <>
             <Image
@@ -631,25 +879,26 @@ export function CommunicationWorkspace() {
             }
             {
               <Action
-                label={"Back to conversation"}
-                onClick={() => setStage("conversation")}
+                label={text.back}
+                onClick={() =>
+                  setStage(readyForReply ? "teachback" : "patient")
+                }
               />
             }
           </>
         ) : null}
-        {stage === "conversation" ? (
+        {stage === "conversation" && isClinicianRole(role) ? (
           <>
             <div className={s.intro}>
               <div>
-                <h1>A conversation without barriers.</h1>
-                <p>Speak, point, or type. Take turns on the same device.</p>
+                <h1>Continue the conversation.</h1>
+                <p>
+                  Review what was shared, then prepare a reply for the patient.
+                </p>
               </div>
               <span className={s.badge}>
                 <Shield size={17} /> Synthetic demo · Nothing saved
               </span>
-              <Link href="/icu" className={s.quiet}>
-                ICU · Eye-selection preview
-              </Link>
             </div>
             <div className={s.split}>
               <section className={s.panel} aria-label="Conversation">
@@ -1183,6 +1432,17 @@ export function CommunicationWorkspace() {
                         {t.translation!.backTranslation}
                       </p>
                     ))}
+                  {turns
+                    .filter((t) => t.role === "patient" && !t.translation)
+                    .map((t) => (
+                      <p
+                        key={t.id}
+                        lang={t.language}
+                        dir={t.language === "ar" ? "rtl" : "ltr"}
+                      >
+                        {t.original}
+                      </p>
+                    ))}
                   <h3>{text.clinicianSays}</h3>
                   {turns.filter((t) => t.response).length ? (
                     turns
@@ -1266,6 +1526,19 @@ export function CommunicationWorkspace() {
                       ))}
                     </div>
                   ))}
+                {turns
+                  .filter((t) => t.role === "patient" && !t.translation)
+                  .map((t) => (
+                    <div key={t.id}>
+                      <h3>Translation unavailable · patient’s words</h3>
+                      <p
+                        lang={t.language}
+                        dir={t.language === "ar" ? "rtl" : "ltr"}
+                      >
+                        {t.original}
+                      </p>
+                    </div>
+                  ))}
                 <h3>Clinical decisions</h3>
                 <p>
                   No vitals, assessment, diagnosis, medication, or orders are
@@ -1289,6 +1562,20 @@ export function CommunicationWorkspace() {
                   }}
                 />
               }
+            </div>
+            <div className="sf-clinician-actions" style={{ marginTop: 20 }}>
+              <Action
+                label="Ask the patient for more details"
+                onClick={() => {
+                  setPatientInputs([]);
+                  setReadyForReply(false);
+                  setStage("patient-ready");
+                }}
+              />
+              <Action
+                label="Change language or mode"
+                onClick={() => setStage("setup")}
+              />
             </div>
             <p role="status">{copied}</p>
           </>
@@ -1332,7 +1619,7 @@ export function CommunicationWorkspace() {
                       ),
                     );
                     setRole("patient");
-                    setStage("conversation");
+                    setStage("handoff");
                   }}
                 >
                   {COPY[lastReply.language][answer]}
@@ -1359,7 +1646,8 @@ export function CommunicationWorkspace() {
           {<Action label={text.keepSession} onClick={idle.keepAlive} />}
         </aside>
       ) : null}
-      {stage !== "end" && stage !== "handoff" ? (
+      {(stage === "conversation" || stage === "summary") &&
+      isClinicianRole(role) ? (
         <footer className={s.footer}>
           <div className={s.footerInner}>
             <p>
@@ -1372,15 +1660,17 @@ export function CommunicationWorkspace() {
                   {<Action label={copy.help} onClick={() => setHelp(!help)} />}
                   {
                     <Action
-                      label={copy.review}
+                      label={"Review summary"}
                       onClick={() => {
                         speech.stop();
                         window.speechSynthesis?.cancel();
-                        setStage("handoff");
+                        setStage("summary");
                       }}
                       primary={true}
                       disabled={
-                        !turns.some((t) => t.translation) || busy || !!pending
+                        !turns.some((t) => t.role === "patient") ||
+                        busy ||
+                        !!pending
                       }
                     />
                   }
@@ -1393,11 +1683,22 @@ export function CommunicationWorkspace() {
                       onClick={() => setStage("conversation")}
                     />
                   }
-                  {stage === "summary" ? (
+                  {stage === "summary" && !lastReply ? (
+                    <Action
+                      label="Reply to patient"
+                      primary
+                      onClick={() => {
+                        setStage("conversation");
+                        changeContext(language, "clinician");
+                      }}
+                    />
+                  ) : null}
+                  {stage === "summary" && lastReply ? (
                     <Action
                       label={"Pass to patient · teach-back"}
                       onClick={() => {
-                        setStage("teachback");
+                        setReadyForReply(true);
+                        setStage("patient-ready");
                         window.speechSynthesis?.cancel();
                       }}
                       primary={true}
