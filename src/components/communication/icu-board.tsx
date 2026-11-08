@@ -4,14 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { SynapseWordmark } from "@/components/brand/synapse-logo";
 import {
-  Check,
-  PictoHelp,
-  PictoNo,
-  PictoPain,
-  PictoYes,
   Speaker,
   Handoff,
-  Shield,
 } from "@/components/home/icons";
 import {
   cancelGazeRequest,
@@ -38,25 +32,10 @@ import "./icu.css";
 import "./flow.css";
 import { idleMsFor, optionFor, SESSION_WARNING_MS, useSessionTimeout } from "@/lib/session-timeout";
 import { icuStyles as i } from "./styles";
-
-const OPTIONS = [
-  { id: "yes", label: "Yes", hint: "That is right", Icon: PictoYes },
-  { id: "no", label: "No", hint: "That is not right", Icon: PictoNo },
-  { id: "pain", label: "Pain", hint: "Something hurts", Icon: PictoPain },
-  { id: "help", label: "Help", hint: "I need attention", Icon: PictoHelp },
-  {
-    id: "reposition",
-    label: "Move me",
-    hint: "Help me get comfortable",
-    Icon: Handoff,
-  },
-  {
-    id: "pause",
-    label: "Take a break",
-    hint: "Pause this conversation",
-    Icon: Shield,
-  },
-];
+import { ClinicianBar } from "@/components/eye/clinician-bar";
+import { EyeWorkspace } from "@/components/eye/eye-workspace";
+import { describeAnswers } from "@/lib/eye/flow";
+import { eye, useEyeState } from "@/lib/eye/session";
 
 /** Uses the shared gaze layer; its marked activation preserves the existing SelectEvent contract. */
 export function IcuBoard({
@@ -66,13 +45,13 @@ export function IcuBoard({
 }) {
   const main = useRef<HTMLElement>(null);
   const [expired, setExpired] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
+  // The conversation lives in memory (src/lib/eye/session.ts) so going back and forth keeps it; Clear wipes it.
+  const eyeState = useEyeState();
   const [contrast, setContrast] = useState(false);
   const [handoff, setHandoff] = useState(false);
   const [reviewed, setReviewed] = useState(false);
   useEffect(
     () => () => {
-      setSelected(null);
       setHandoff(false);
       setReviewed(false);
     },
@@ -134,7 +113,7 @@ export function IcuBoard({
     idleMs: idleMsFor(sessionTimeout),
     graceMs: SESSION_WARNING_MS,
     onExpire: () => {
-      setSelected(null);
+      eye.clear();
       setHandoff(false);
       setReviewed(false);
       setExpired(true);
@@ -158,6 +137,16 @@ export function IcuBoard({
             {gazeRequested && !handoff && !reviewed && !expired ? (
               <button type="button" onClick={stopGaze}>
                 Stop eye control
+              </button>
+            ) : null}
+            {eyeState.mode ? (
+              <button type="button" data-gaze-ignore onClick={() => eye.start(eyeState.mode === "intake" ? "conversation" : "intake")}>
+                {eyeState.mode === "intake" ? "Switch to conversation" : "Switch to intake"}
+              </button>
+            ) : null}
+            {eyeState.mode ? (
+              <button type="button" data-gaze-ignore onClick={eye.clear}>
+                Clear
               </button>
             ) : null}
             <button
@@ -203,14 +192,14 @@ export function IcuBoard({
       ) : reviewed ? (
         <main ref={main} tabIndex={-1} className={s.main} style={{ paddingInline: "max(24px, var(--eye-edge, 24px))" }}>
           <section className={s.sheet}>
-            <h1>What the patient chose</h1>
+            <h1>What the patient said</h1>
             <p className="sf-icu-review-choice" role="status">
-              {selected
-                ? OPTIONS.find((o) => o.id === selected)?.label
-                : "No choice was made"}
+              {eyeState.lastSaid ?? "Nothing has been said yet"}
             </p>
+            {describeAnswers(eyeState.answers).length ? <p>In progress: {describeAnswers(eyeState.answers).join(" · ")}</p> : null}
+            {eyeState.lastIntake ? <p>Intake summary: {eyeState.lastIntake}</p> : null}
             <p>
-              This is the patient’s selected phrase. No request has been sent to staff.
+              Each choice is said aloud by this device. No request has been sent to staff.
             </p>
             <div className="sf-clinician-actions">
               <button
@@ -264,10 +253,16 @@ export function IcuBoard({
             </div>
           ) : null}
           <div className={s.intro}>
-            <div>
-              <h1>Let your eyes do the talking.</h1>
-              <p>One clear choice at a time, with room to rest.</p>
-            </div>
+            {/* Once a mode is chosen, the page title makes room so the choices fit without scrolling. */}
+            {eyeState.screen === "mode" ? (
+              <div>
+                <h1>Let your eyes do the talking.</h1>
+                <p>One clear choice at a time, with room to rest.</p>
+              </div>
+            ) : (
+              <h1 className="sr-only">Eye mode questions</h1>
+            )}
+            <ClinicianBar />
             <span className={s.badge}>
               {gazePhase === "on" ? "Eye control on" : "Eye control off"}
             </span>
@@ -278,55 +273,7 @@ export function IcuBoard({
             ) : null}
           </div>
           <div className={i.layout} style={{ maxWidth: "min(1050px, calc(100vw - 2 * var(--eye-gutter, 0px)))" }}>
-            <section className={s.panel} aria-labelledby="icu-prompt">
-              <div className={s.panelHead}>
-                <div>
-                  <h2 id="icu-prompt">What would you like to say?</h2>
-                  <p>After calibration, look at a choice for two seconds to select it. Tap and keyboard also work.</p>
-                </div>
-              </div>
-              <div className="sf-icu-status" role="status" aria-live="polite">
-                {selected ? (
-                  <>
-                    You chose:{" "}
-                    <strong>
-                      {OPTIONS.find((o) => o.id === selected)?.label}
-                    </strong>
-                  </>
-                ) : (
-                  "Choose what you want to say."
-                )}
-              </div>
-              <div className={i.board}>
-                {OPTIONS.map(({ id, label, hint, Icon }) => (
-                  <button
-                    type="button"
-                    key={id}
-                    className={i.target}
-                    data-gaze-target={id}
-                    aria-pressed={selected === id}
-                    onClick={(event) => {
-                      setSelected(id);
-                      const channel = (event.nativeEvent as MouseEvent & { synapseInputChannel?: string }).synapseInputChannel === "gaze" ? "gaze" : "tap";
-                      onSelect?.({ channel, optionId: id });
-                    }}
-                  >
-                    <Icon size={36} />
-                    <strong>{label}</strong>
-                    <span>{hint}</span>
-                    {selected === id ? (
-                      <span className={i.chosen}>
-                        <Check size={18} /> Selected
-                      </span>
-                    ) : (
-                      <span className={i.track} aria-hidden="true">
-                        <span />
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </section>
+            <EyeWorkspace onSelect={onSelect} />
             <details className={`${s.sheet} sf-icu-guide`}>
               <summary>Clinician guidance & preview controls</summary>
               <p>
@@ -346,10 +293,10 @@ export function IcuBoard({
               <button
                 type="button"
                 className={s.quiet}
-                disabled={!selected}
-                onClick={() => setSelected(null)}
+                disabled={!eyeState.mode}
+                onClick={eye.clear}
               >
-                Clear choice
+                Clear everything
               </button>
               <p>
                 <Speaker size={18} /> Keep spoken reassurance and a human
@@ -403,6 +350,7 @@ export function IcuBoard({
               ) : null}
               <button
                 type="button"
+                data-gaze-ignore
                 className={s.primary}
                 onClick={() => setHandoff(true)}
               >

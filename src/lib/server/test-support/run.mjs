@@ -28,6 +28,7 @@ const tests = [
   "src/components/session/api.test.ts",
   "src/components/session/speech-playback.test.ts",
   "src/components/session/cloud-speech.test.ts",
+  "src/lib/eye/flow.test.ts",
 ];
 
 try {
