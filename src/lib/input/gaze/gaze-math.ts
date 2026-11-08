@@ -6,12 +6,13 @@ export type GazePoint = { x: number; y: number };
 
 /**
  * What the face model tells us per frame, roughly -1..1 each:
- * - x: where the irises sit horizontally (blended with head turn), the main horizontal cue.
+ * - x: where the irises sit horizontally relative to the eye corners, the main horizontal cue.
  * - y: iris height above/below the eye-corner line; the corners do not move with gaze, the
  *   lids do, so this carries the vertical signal lid-based ratios lose.
  * - a: eye aperture (lid opening / eye width); looking down pulls the upper lid over the iris.
  * - p: head pitch proxy; lets the calibration tell "head nodded" from "eyes moved".
- * The vertical axis is fitted from y, a and p together, because none alone is strong enough.
+ * Only iris x/y position drives the fitted pointer. Aperture is for blink rejection; pitch is
+ * retained for compatibility, never learned as gaze from a still-head calibration.
  */
 export type GazeFeatures = { x: number; y: number; a: number; p: number };
 
@@ -75,13 +76,11 @@ export function gazeFeatures(landmarks: { x: number; y: number }[] | null | unde
   // Closed eyes and blinks do not provide a trustworthy gaze sample.
   if (l.a < 0.08 || r.a < 0.08) return null;
 
-  const faceW = Math.max(dist(lm[CHEEK_L], lm[CHEEK_R]), 1e-6);
   const faceH = Math.max(dist(lm[BROW], lm[CHIN]), 1e-6);
-  const yaw = (lm[NOSE].x - mid(lm[CHEEK_L], lm[CHEEK_R]).x) / faceW;
   const pitch = (lm[NOSE].y - mid(lm[BROW], lm[CHIN]).y) / faceH;
 
   return {
-    x: clamp((l.x + r.x) / 2 + yaw * 0.5, -1, 1),
+    x: clamp((l.x + r.x) / 2, -1, 1),
     y: clamp((l.y + r.y) / 2, -1, 1),
     a: (l.a + r.a) / 2,
     p: clamp(pitch, -1, 1),
@@ -91,7 +90,7 @@ export function gazeFeatures(landmarks: { x: number; y: number }[] | null | unde
 /** One calibration sample: the features seen while the user looked at a known screen point. */
 export type CalibrationSample = { features: GazeFeatures; screen: ScreenPoint };
 
-/** Horizontal: [x, 1]. Vertical: [y, a, p, 1] — the three vertical cues, weighted by calibration. */
+/** Horizontal: [x, 1]. Vertical: [y, a, p, 1]; new fits keep aperture/pitch weights zero. */
 export type GazeMapping = { x: [number, number]; y: [number, number, number, number] };
 
 /** Why a calibration was refused: each one maps to a different instruction for the person. */
@@ -158,10 +157,10 @@ type FitModel = { mapping: GazeMapping; z: number[] };
 function fitRobust(samples: CalibrationSample[]): FitModel | null {
   const build = (set: CalibrationSample[]): FitModel | null => {
     const fx = fitStandardised(set.map((s) => [s.features.x]), set.map((s) => s.screen.x));
-    const fy = fitStandardised(set.map((s) => [s.features.y, s.features.a, s.features.p]), set.map((s) => s.screen.y));
+    const fy = fitStandardised(set.map((s) => [s.features.y]), set.map((s) => s.screen.y));
     if (!fx || !fy) return null;
     return {
-      mapping: { x: [fx.coef[0], fx.intercept], y: [fy.coef[0], fy.coef[1], fy.coef[2], fy.intercept] },
+      mapping: { x: [fx.coef[0], fx.intercept], y: [fy.coef[0], 0, 0, fy.intercept] },
       z: [...fx.z, ...fy.z],
     };
   };
@@ -200,9 +199,9 @@ export function fitGazeCalibration(samples: CalibrationSample[]): GazeFit {
     const v = samples.map(pick);
     return Math.max(...v) - Math.min(...v);
   };
-  // A horizontal feature that never moved, or no vertical cue that moved, means the eyes were not followed.
+  // Eyelids and head motion cannot substitute for a missing iris signal.
   if (spread((s) => s.features.x) < 1e-6) return { mapping: null, reason: "no-spread" };
-  if (spread((s) => s.features.y) + spread((s) => s.features.a) + spread((s) => s.features.p) < 1e-6) return { mapping: null, reason: "no-spread" };
+  if (spread((s) => s.features.y) < 1e-6) return { mapping: null, reason: "no-spread" };
 
   const model = fitRobust(samples);
   if (!model) return { mapping: null, reason: "degenerate" };
@@ -541,6 +540,27 @@ export class BlinkGuard {
 }
 
 /**
+ * Hold readings briefly so a detected blink can discard its not-yet-recognised closing frames.
+ * Timestamp travels with the features: calibration must pair these with the dot at capture time.
+ * Never releases a sample from before a dropped frame or a long camera gap.
+ */
+export class BlinkSafeBuffer {
+  private pending: { features: GazeFeatures; at: number }[] = [];
+  constructor(private delayMs = 100) {}
+
+  next(features: GazeFeatures | null, at: number): { features: GazeFeatures; at: number } | null {
+    if (!features || (this.pending.length && at - this.pending[this.pending.length - 1].at > 250)) this.reset();
+    if (!features) return null;
+    this.pending.push({ features, at });
+    let ready: { features: GazeFeatures; at: number } | null = null;
+    while (this.pending.length && this.pending[0].at <= at - this.delayMs) ready = this.pending.shift()!;
+    return ready;
+  }
+
+  reset() { this.pending = []; }
+}
+
+/**
  * Fixation filter. A steady look is not one point: webcam tracking jitters around it, and deciding
  * from the last few frames means that jitter decides which button is chosen. During a steady look
  * this reports the middle (median) of the points since the eyes last jumped, so the noise averages
@@ -653,12 +673,7 @@ export class PostureMonitor {
   next(p: Posture, nowMs: number): PostureVerdict {
     const b = this.base;
     if (!b) return "ok";
-    const shift = Math.hypot(p.cx - b.cx, p.cy - b.cy) / b.scale;
-    const lean = Math.abs(p.scale / b.scale - 1);
-    const turn = Math.max(Math.abs(p.yaw - b.yaw), Math.abs(p.pitch - b.pitch));
-    const slack = this.flagged === "ok" ? 1 : 0.75; // once flagged, it has to come well back to clear
-    const now: PostureVerdict =
-      lean > this.scaleLimit * slack ? "distance" : shift > this.shiftLimit * slack ? "moved" : turn > this.turnLimit * slack ? "turned" : "ok";
+    const now = this.outside(p, this.flagged === "ok" ? 1 : 0.75);
     if (now === "ok") {
       this.badSince = -1;
       this.flagged = "ok";
@@ -667,6 +682,16 @@ export class PostureMonitor {
       if (nowMs - this.badSince >= this.sustainMs) this.flagged = now;
     }
     return this.flagged;
+  }
+
+  /** Immediate selection guard, independent of the delayed informational hint. */
+  outside(p: Posture, slack = 1): PostureVerdict {
+    const b = this.base;
+    if (!b) return "ok";
+    const shift = Math.hypot(p.cx - b.cx, p.cy - b.cy) / b.scale;
+    const lean = Math.abs(p.scale / b.scale - 1);
+    const turn = Math.max(Math.abs(p.yaw - b.yaw), Math.abs(p.pitch - b.pitch));
+    return lean > this.scaleLimit * slack ? "distance" : shift > this.shiftLimit * slack ? "moved" : turn > this.turnLimit * slack ? "turned" : "ok";
   }
 
   reset() {

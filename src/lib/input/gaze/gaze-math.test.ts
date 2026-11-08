@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   applyGazeMapping,
   BlinkGuard,
+  BlinkSafeBuffer,
   defaultMapping,
   FeatureSmoother,
   fitGazeCalibration,
@@ -95,8 +96,8 @@ test("gazeFeatures: looking up raises the iris above the corner line and the cur
   assert.ok(point.y < 0.35, `expected screen up, got ${point.y}`);
 });
 
-test("fitGazeMapping recovers a mixed-cue vertical map; degenerate samples are rejected", () => {
-  // True model (all screen points inside the viewport): x = fx + 0.5; y = 0.9*fy + 0.5*a + 0.2*p + 0.5.
+test("fitGazeMapping recovers an iris map; degenerate samples are rejected", () => {
+  // Iris motion determines the target; eyelid and pitch correlations must not become gaze gains.
   const features = [
     { x: 0, y: 0.05, a: 0.33, p: 0 },
     { x: -0.35, y: -0.15, a: 0.45, p: -0.2 },
@@ -110,7 +111,7 @@ test("fitGazeMapping recovers a mixed-cue vertical map; degenerate samples are r
   ];
   const samples = features.map((f) => ({
     features: f,
-    screen: { x: f.x + 0.5, y: 0.9 * f.y + 0.5 * f.a + 0.2 * f.p + 0.5 },
+    screen: { x: f.x + 0.5, y: 0.9 * f.y + 0.5 },
   }));
   const fitted = fitGazeMapping(samples);
   assert.ok(fitted, "expected a fit");
@@ -230,7 +231,10 @@ test("calibration accepts a realistic webcam sweep and the map is accurate on fr
     for (let seed = 1; seed <= 5; seed++) {
       const fit = fitGazeCalibration(sweep(seed, o));
       assert.ok(fit.mapping, `refused a usable sweep (seed ${seed}): ${JSON.stringify(fit)}`);
-      assert.ok(medianError(fit.mapping, sweep(seed + 100, o)) < 0.16, "map should track the dot on a fresh sweep");
+      // With very weak iris travel, removing the eyelid shortcut costs some stationary
+      // accuracy (measured worst seed: 16.9%). Do not disguise that as a good <15% fit.
+      const error = medianError(fit.mapping, sweep(seed + 100, o));
+      assert.ok(error < (o.ky < 0.06 ? 0.18 : 0.16), `fresh-sweep error ${error}`);
     }
   }
 });
@@ -517,4 +521,96 @@ test("edgeSafePx keeps a margin that scales with the screen and widens on reques
   assert.equal(edgeSafePx(5000, 3000), 112, "never above 112 px");
   assert.ok(edgeSafePx(1280, 800, true) > edgeSafePx(1280, 800) * 1.5, "the wide setting is clearly further in");
   assert.equal(edgeSafePx(1280, 800, true), 112);
+});
+
+
+test("calibration cannot learn a blink/head-motion shortcut, even with near-perfect correlation", () => {
+  const samples = sweep(40, { kx: 0.25, ky: 0.09, ka: 0.12, noise: 0.003, outliers: 0 });
+  for (const s of samples) s.features.p = (s.screen.y - 0.5) * 0.001;
+  const fit = fitGazeCalibration(samples);
+  assert.ok(fit.mapping);
+  assert.equal(fit.mapping.y[1], 0);
+  assert.equal(fit.mapping.y[2], 0);
+  const f = { x: 0, y: 0, a: 0.26, p: 0 };
+  const centre = applyGazeMapping(fit.mapping, f);
+  assert.deepEqual(applyGazeMapping(fit.mapping, { ...f, a: 0.09, p: 0.04 }), centre);
+  assert.equal(outcome(fitGazeCalibration(samples.map(s => ({ ...s, features: { ...s.features, y: 0 } })))), "no-spread");
+});
+
+test("head yaw cannot inject an arbitrary horizontal offset into unchanged irises", () => {
+  const base = gazeFeatures(face({}))!;
+  const turned = gazeFeatures(face({ 1: { x: 0.55, y: 0.5 } }))!;
+  assert.equal(turned.x, base.x);
+});
+
+test("blink lookbehind removes onset frames before they can pollute a fixation and resumes", () => {
+  const guard = new BlinkGuard();
+  const buffer = new BlinkSafeBuffer();
+  const passed: { y: number; at: number }[] = [];
+  for (const { f, t } of blinkFrames()) {
+    const read = buffer.next(guard.next(f, t), t);
+    if (read) passed.push({ y: read.features.y, at: read.at });
+  }
+  assert.ok(passed.length > 8, "must recover, not freeze indefinitely");
+  assert.ok(passed.every(p => p.y === 0), "even closing frames before blink detection must be discarded");
+  const open = { x: 0, y: 0, a: 0.26, p: 0 };
+  buffer.next(open, 2000);
+  assert.equal(buffer.next(open, 3000), null, "a camera gap cannot release stale data");
+  buffer.reset();
+  assert.equal(buffer.next(open, 4000), null);
+});
+
+test("head movement invalidates selection immediately, and returning or recentering restores it", () => {
+  const ref = { cx: 0.5, cy: 0.45, scale: 0.2, yaw: 0, pitch: 0 };
+  const monitor = new PostureMonitor();
+  for (let i = 0; i < 20; i++) monitor.addReference(ref);
+  monitor.lockReference();
+  const moved = { ...ref, cx: 0.6 };
+  assert.equal(monitor.outside(moved), "moved");
+  assert.equal(monitor.next(moved, 0), "ok", "hint debounce must not delay selection guard");
+  assert.equal(monitor.outside(ref), "ok");
+  monitor.reset();
+  for (let i = 0; i < 20; i++) monitor.addReference(moved);
+  monitor.lockReference();
+  assert.equal(monitor.outside(moved), "ok");
+});
+
+
+test("iris coordinates survive whole-face translation and distance changes", () => {
+  const original = face({ 468: { x: 0.444, y: 0.464 }, 473: { x: 0.544, y: 0.464 } });
+  const baseline = gazeFeatures(original)!;
+  for (const scale of [0.8, 1, 1.2]) {
+    for (const offset of [-0.04, 0.04]) {
+      const moved = original.map(p => ({ ...p, x: 0.5 + (p.x - 0.5) * scale + offset, y: 0.5 + (p.y - 0.5) * scale - offset }));
+      const f = gazeFeatures(moved)!;
+      assert.ok(Math.abs(f.x - baseline.x) < 1e-10);
+      assert.ok(Math.abs(f.y - baseline.y) < 1e-10);
+    }
+  }
+});
+
+test("a minute of repeated blinks does not accumulate offset or stop the filtered pointer", () => {
+  for (const fps of [15, 30, 60]) {
+    const guard = new BlinkGuard();
+    const buffer = new BlinkSafeBuffer();
+    const smoother = new FeatureSmoother();
+    const map = { x: [-4, 0.9] as [number, number], y: [10, 0, 0, 0.5] as [number, number, number, number] };
+    let updates = 0;
+    let finalAt = 0;
+    for (let t = 0; t < 60000; t += 1000 / fps) {
+      const phase = t % 3000;
+      const depth = phase >= 1000 && phase < 1200 ? Math.sin((phase - 1000) / 200 * Math.PI) : 0;
+      const observed = guard.next({ x: 0.1, y: 0.04 * depth, a: 0.26 - 0.18 * depth, p: 0 }, t);
+      if (!observed) smoother.reset();
+      const read = buffer.next(observed, t);
+      if (!read) continue;
+      assert.ok(t - read.at >= 100 && t - read.at < 100 + 1000 / fps + 0.01);
+      const p = applyGazeMapping(map, smoother.next(read.features, 1000 / fps));
+      assert.ok(Math.abs(p.y - 0.5) < 0.07, `blink shift at ${fps} fps: ${p.y}`);
+      updates++;
+      finalAt = t;
+    }
+    assert.ok(updates > fps * 40, "most open-eye frames must remain usable");
+    assert.ok(finalAt > 59800, "tracking must still be updating at the end");
+  }
 });

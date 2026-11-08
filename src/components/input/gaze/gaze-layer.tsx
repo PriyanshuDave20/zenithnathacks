@@ -13,6 +13,7 @@ import { DwellController } from "@/lib/input/gaze/dwell";
 import {
   applyGazeMapping,
   BlinkGuard,
+  BlinkSafeBuffer,
   edgeSafePx,
   FeatureSmoother,
   FixationFilter,
@@ -163,9 +164,9 @@ function gazeCandidates(): { el: Element; box: GazeBox }[] {
 }
 
 const POSTURE_HINT: Record<Exclude<PostureVerdict, "ok">, string> = {
-  moved: "Your head has moved since you calibrated. Sit back where you were, or tap Recenter.",
-  distance: "You are nearer or further from the screen than when you calibrated. Sit back where you were, or tap Recenter.",
-  turned: "Your head has turned since you calibrated. Face the screen, or tap Recenter.",
+  moved: "Selection paused: your head or device moved. Return to your calibrated position, or tap Recenter.",
+  distance: "Selection paused: your distance from the screen changed. Return to your calibrated position, or tap Recenter.",
+  turned: "Selection paused: your head has turned. Face the screen as before, or tap Recenter.",
 };
 const LIGHT_HINT: Record<Exclude<LightVerdict, "ok">, string> = {
   changed: "The lighting has changed since you calibrated. Tap Recalibrate for the best accuracy.",
@@ -222,6 +223,7 @@ export function GazeLayer() {
   const smootherRef = useRef(new OneEuroFilter(0.3, 0.002, 0.5));
   // Drops the frames of a blink, so closing eyelids cannot drag the pointer.
   const blinkGuardRef = useRef(new BlinkGuard());
+  const blinkBufferRef = useRef(new BlinkSafeBuffer());
   // A steady look is averaged over a longer window, so tracking jitter does not decide which button is chosen.
   const fixationRef = useRef(new FixationFilter());
   const stickyTargetRef = useRef<Element | null>(null);
@@ -262,6 +264,7 @@ export function GazeLayer() {
     mappingRef.current = null;
     dwellRef.current = new DwellController();
     blinkGuardRef.current.reset();
+    blinkBufferRef.current.reset();
     fixationRef.current.reset();
     stickyTargetRef.current = null;
     recenterRef.current = null;
@@ -297,6 +300,7 @@ export function GazeLayer() {
     trackerRef.current?.stop();
     dwellRef.current = new DwellController();
     blinkGuardRef.current.reset();
+    blinkBufferRef.current.reset();
     fixationRef.current.reset();
     stickyTargetRef.current = null;
     recenterRef.current = null;
@@ -363,6 +367,7 @@ export function GazeLayer() {
     mappingRef.current = null;
     dwellRef.current = new DwellController();
     blinkGuardRef.current.reset();
+    blinkBufferRef.current.reset();
     fixationRef.current.reset();
     stickyTargetRef.current = null;
     recenterRef.current = null;
@@ -412,6 +417,7 @@ export function GazeLayer() {
     let last = performance.now();
     let lastFeatureAt = last;
     let lastSmoothed: GazeFeatures | null = null;
+    blinkBufferRef.current.reset();
 
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
@@ -434,7 +440,17 @@ export function GazeLayer() {
         }
         return;
       }
-      const features = blinkGuardRef.current.next(gazeFeatures(landmarks), now);
+      const observed = blinkGuardRef.current.next(gazeFeatures(landmarks), now);
+      const reading = blinkBufferRef.current.next(observed, now);
+      const features = reading?.features ?? null;
+      // A blink or tracking loss invalidates filter history too: otherwise the old fixation and
+      // pre-blink offset keep pulling the recovered pointer back for up to 700 ms.
+      if (!observed) {
+        featureSmoother.reset();
+        smoother.reset();
+        fixationRef.current.reset();
+        stickyTargetRef.current = null;
+      }
       if (features) {
         lastFeatureAt = now;
         if (noFaceRef.current) {
@@ -456,7 +472,8 @@ export function GazeLayer() {
 
       // Posture and light. During calibration collect the reference; afterwards notice when the head has
       // moved or the room has changed, which is what makes the pointer drift to one side.
-      const posture = features && landmarks ? postureOf(landmarks) : null;
+      const posture = observed && landmarks ? postureOf(landmarks) : null;
+      let postureOutside = false;
       if (features && landmarks) {
         const sampleLight = () => {
           if (now - lastLumaRef.current <= 400) return null;
@@ -468,11 +485,15 @@ export function GazeLayer() {
           const level = sampleLight();
           if (level !== null) lightRef.current.addReference(level);
         } else if (posture && !recenterRef.current) {
+          const immediate = postureRef.current.outside(posture);
+          postureOutside = immediate !== "ok";
           const pv = postureRef.current.next(posture, now);
+          // Explain immediately why selection pauses, rather than waiting 1.5 seconds.
+          const warning = postureOutside ? immediate : pv;
           const level = sampleLight();
           if (level !== null) lightVerdictRef.current = lightRef.current.next(level, now);
           const lv = lightVerdictRef.current;
-          const next = pv !== "ok" ? POSTURE_HINT[pv] : lv !== "ok" ? LIGHT_HINT[lv] : null;
+          const next = warning !== "ok" ? POSTURE_HINT[warning] : lv !== "ok" ? LIGHT_HINT[lv] : null;
           if (next !== hintRef.current) {
             hintRef.current = next;
             setHint(next);
@@ -527,8 +548,15 @@ export function GazeLayer() {
           if (timer.textContent !== `${secs}s`) timer.textContent = `${secs}s`; // avoid a DOM write every frame
         }
         const sm = features ? featureSmoother.next(features, featureDt) : null;
-        if (sm && samplesRef.current.length < CALIBRATION_MAX_SAMPLES && t >= 0 && Math.sin(Math.PI * u) <= CALIBRATION_GATE) {
-          samplesRef.current.push({ features: sm, screen: { x: dx / window.innerWidth, y: dy / window.innerHeight } });
+        const sampleT = (reading?.at ?? now) - calibStartRef.current - CALIBRATION_LEAD_MS;
+        const si = Math.min(Math.floor(Math.max(sampleT, 0) / segMs), segCount - 1);
+        const su = sampleT < 0 ? 0 : Math.min((sampleT - si * segMs) / segMs, 1);
+        const se = (1 - Math.cos(Math.PI * su)) / 2;
+        if (sm && samplesRef.current.length < CALIBRATION_MAX_SAMPLES && sampleT >= 0 && Math.sin(Math.PI * su) <= CALIBRATION_GATE) {
+          samplesRef.current.push({ features: sm, screen: {
+            x: (waypoints[si].x + (waypoints[si + 1].x - waypoints[si].x) * se) / window.innerWidth,
+            y: (waypoints[si].y + (waypoints[si + 1].y - waypoints[si].y) * se) / window.innerHeight,
+          } });
         }
         return;
       }
@@ -537,20 +565,20 @@ export function GazeLayer() {
       // Blink grace: a dropped prediction for a moment (a blink) holds the last known gaze
       // instead of snapping the cursor; dwell still resets, so a blink cannot confirm a choice.
       const held = !features && lastSmoothed && now - lastFeatureAt <= BLINK_GRACE_MS;
-      if (!features && !held) {
-        lastSmoothed = null;
+      if (!features) {
+        if (!held) lastSmoothed = null;
         dwell.update(now, null);
-        cursor.style.opacity = "0.25";
+        cursor.style.opacity = held ? "1" : "0.25";
         ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
-        return;
+        return; // held points must not be added repeatedly to the fixation history
       }
 
-      const smoothed = features ? featureSmoother.next(features, featureDt) : lastSmoothed!;
-      if (features) lastSmoothed = smoothed;
+      const smoothed = featureSmoother.next(features, featureDt);
+      lastSmoothed = smoothed;
       const point = applyGazeMapping(mappingRef.current, smoothed);
       const x = point.x * window.innerWidth;
       const y = point.y * window.innerHeight;
-      const p0 = smoother.next({ x, y }, dt);
+      const p0 = smoother.next({ x, y }, featureDt);
       const jump = clampNum(Math.min(window.innerWidth, window.innerHeight) * 0.12, 60, 140);
       const p = fixationRef.current.next(p0, now, jump);
       cursor.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
@@ -587,6 +615,17 @@ export function GazeLayer() {
         }
         dwell.update(now, null);
         ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
+        return;
+      }
+
+      // A still-head calibration cannot predict the correction for an unseen head/device pose.
+      // Keep Recenter available by touch, but never dwell-select with an invalid mapping.
+      if (postureOutside) {
+        dwell.update(now, null);
+        ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
+        stickyTargetRef.current = null;
+        fixationRef.current.reset();
+        cursor.style.opacity = "0.25";
         return;
       }
 
