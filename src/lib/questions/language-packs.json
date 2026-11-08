@@ -32,7 +32,7 @@
         }
       },
       "where": {
-        "text": "Where do you feel it? Please point with one finger.",
+        "text": "Where do you feel it? Please click where it hurts.",
         "clinical": "Where is the symptom located?",
         "topic": "Location",
         "options": {
@@ -453,7 +453,7 @@
         }
       },
       "where": {
-        "text": "Where do you feel it? Please point with one finger.",
+        "text": "Where do you feel it? Please click where it hurts.",
         "clinical": "Where is the symptom located?",
         "topic": "Location",
         "options": {
@@ -874,7 +874,7 @@
         }
       },
       "where": {
-        "text": "Where do you feel it? Please point with one finger.",
+        "text": "Where do you feel it? Please click where it hurts.",
         "clinical": "Where is the symptom located?",
         "topic": "Location",
         "options": {
