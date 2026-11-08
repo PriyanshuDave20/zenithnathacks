@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { HomeLink } from "@/components/auth/home-link";
+
 import { useId, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { SynapseMark, SynapseWordmark } from "@/components/brand/synapse-logo";
 import { SynapseMark3D } from "@/components/brand/synapse-mark-3d";
@@ -15,16 +16,16 @@ export function AuthShell({ title, lede, children, footer }: { title: string; le
     <div className="flex min-h-dvh flex-col bg-ground lg:grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
       {/* Phones: compact navy bar. Desktop: a full-height navy brand panel. */}
       <header className="on-navy flex items-center justify-between bg-navy px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] text-white sm:px-8 lg:hidden">
-        <Link href="/" aria-label="Synapse home" className="flex items-center gap-2.5 rounded-lg">
+        <HomeLink aria-label="Synapse home" className="flex items-center gap-2.5 rounded-lg">
           <SynapseMark className="h-9 w-auto" />
           <SynapseWordmark className="h-[0.9rem] w-auto" />
-        </Link>
+        </HomeLink>
       </header>
       <aside className="on-navy relative hidden flex-col justify-between overflow-hidden bg-navy p-12 text-white lg:sticky lg:top-0 lg:flex lg:h-dvh">
-        <Link href="/" aria-label="Synapse home" className="flex w-fit items-center gap-2.5 rounded-lg">
+        <HomeLink aria-label="Synapse home" className="flex w-fit items-center gap-2.5 rounded-lg">
           <SynapseMark className="h-10 w-auto" />
           <SynapseWordmark className="h-4 w-auto" />
-        </Link>
+        </HomeLink>
         <div>
           <SynapseMark3D className="h-48 w-[10.3rem]" />
           <p className="mt-10 max-w-[22ch] font-display text-[2.25rem] font-bold leading-[1.08] tracking-[-0.025em] [text-wrap:balance]">

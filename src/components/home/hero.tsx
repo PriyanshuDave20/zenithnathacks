@@ -37,7 +37,7 @@ export function Hero() {
           </p>
           <div className="rise mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 sm:mt-9" style={{ ["--i" as string]: 2 }}>
             <Link
-              href="/start"
+              href="/dashboard"
               className="press inline-flex min-h-14 items-center gap-3 rounded-full bg-blue py-2 pl-8 pr-2.5 text-lg font-semibold text-navy shadow-lift hover:bg-white"
             >
               Start a session
