@@ -48,7 +48,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 | Phone-viewport testing, accessibility pass, bug fixes | Both | TBD | | Todo |
 | Pitch slides; verify every statistic against its source before use | Both | TBD | | Todo |
 | **Stretch (in order)** | | | | |
-| ICU mode: webcam eye-gaze dwell-to-select (calibration, large targets), wired to body diagram and narrowed questions | Backend 2 | TBD | | Todo |
+| ICU mode: webcam eye-gaze dwell-to-select (calibration, large targets), wired to body diagram and narrowed questions | Backend 2 | zenith / Claude | zenith/gaze-tracking | First pass done: opt-in site-wide gaze (cursor follows gaze, 2 s dwell-to-select, 5-point calibration, edge scrolling); real-webcam browser pass, body-diagram/question narrowing and offline assets still todo |
 | Full back-and-forth conversation (turn-taking, speaker control) | Both | TBD | | Todo |
 | Sign proof of concept: small vocabulary via on-device hand tracking (not full sign translation) | Backend 2 | TBD | | Todo |
 | Patient joins from own phone via QR | Both | TBD | | Todo |
