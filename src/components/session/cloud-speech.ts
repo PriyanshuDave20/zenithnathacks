@@ -156,7 +156,7 @@ export function createCloudSpeech(
       emit("loading-audio");
       void dependencies.fetch("/api/speech", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, language }), cache: "no-store", credentials: "omit",
+        body: JSON.stringify({ text, language }), cache: "no-store", credentials: "same-origin",
         signal: AbortSignal.any([request.signal, AbortSignal.timeout(10000)]),
       }).then(async response => {
         if (!response.ok || !response.headers.get("Content-Type")?.startsWith("audio/mpeg")) throw new Error();

@@ -23,6 +23,7 @@ import {
   subscribeGaze,
 } from "@/components/input/gaze/gaze-availability";
 import { useIdle } from "@/components/session/use-idle";
+import { SessionMetrics } from "@/components/session/metrics-lifecycle";
 import { edgeSafePx } from "@/lib/input/gaze/gaze-math";
 import { GATE_CSS } from "./eye-gate-styles";
 import type { SelectEvent } from "@/lib/contracts/input";
@@ -35,7 +36,7 @@ import { icuStyles as i } from "./styles";
 import { ClinicianBar } from "@/components/eye/clinician-bar";
 import { EyeWorkspace } from "@/components/eye/eye-workspace";
 import { describeAnswers } from "@/lib/eye/flow";
-import { eye, useEyeState } from "@/lib/eye/session";
+import { eye, getEyeState, subscribeEye, useEyeState } from "@/lib/eye/session";
 
 /** Uses the shared gaze layer; its marked activation preserves the existing SelectEvent contract. */
 export function IcuBoard({
@@ -44,9 +45,34 @@ export function IcuBoard({
   onSelect?: (event: SelectEvent) => void;
 }) {
   const main = useRef<HTMLElement>(null);
+  const metrics = useRef(new SessionMetrics());
   const [expired, setExpired] = useState(false);
   // The conversation lives in memory (src/lib/eye/session.ts) so going back and forth keeps it; Clear wipes it.
   const eyeState = useEyeState();
+  // Observe committed choices, including muted ones, without sending their text or input channel.
+  // Speech-status updates, renders, and an already-present choice on navigation do not count.
+  useEffect(() => {
+    let previousLog = getEyeState().log;
+    const unsubscribe = subscribeEye(() => {
+      const state = getEyeState();
+      if (!state.mode) metrics.current.reset();
+      else if (state.log !== previousLog && state.log.length) metrics.current.firstMessage();
+      previousLog = state.log;
+    });
+    const reset = () => {
+      metrics.current.reset();
+      previousLog = getEyeState().log;
+    };
+    const restore = (event: PageTransitionEvent) => { if (event.persisted) reset(); };
+    window.addEventListener("pagehide", reset);
+    window.addEventListener("pageshow", restore);
+    return () => {
+      unsubscribe();
+      window.removeEventListener("pagehide", reset);
+      window.removeEventListener("pageshow", restore);
+      reset();
+    };
+  }, []);
   const [contrast, setContrast] = useState(false);
   const [colourBlind, setColourBlind] = useState(false); // this visit only
   const [handoff, setHandoff] = useState(false);
@@ -276,7 +302,15 @@ export function IcuBoard({
               </button>
             ) : null}
           </div>
-          <div className={i.layout} style={{ maxWidth: "min(1050px, calc(100vw - 2 * var(--eye-gutter, 0px)))" }}>
+          <div className={i.layout} style={{ maxWidth: "min(1050px, calc(100vw - 2 * var(--eye-gutter, 0px)))" }}
+            onClickCapture={(event) => {
+              // A deliberate mode/board choice starts this local flow, including a resumed board.
+              // Camera setup and clinician controls are outside this surface.
+              if (event.target instanceof Element && event.target.closest("[data-gaze-target]")) {
+                metrics.current.start("icu");
+              }
+            }}
+          >
             <EyeWorkspace onSelect={onSelect} />
             <details className={`${s.sheet} sf-icu-guide`} data-gaze-ignore>
               <summary>Clinician guidance & preview controls</summary>

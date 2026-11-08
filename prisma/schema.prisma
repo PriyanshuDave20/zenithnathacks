@@ -17,3 +17,65 @@ model Example {
   name      String
   createdAt DateTime @default(now())
 }
+
+// Clinician accounts only. Patient conversations never enter this database.
+model Clinician {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  role          String   @default("other")
+  clinic        String   @default("")
+  languages     String[] @default(["en"])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  sessions      ClinicianSession[]
+  accounts      ClinicianAccount[]
+}
+
+model ClinicianSession {
+  id        String   @id
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // Kept nullable for library compatibility; hooks always clear both fields.
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      Clinician @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ClinicianAccount {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  Clinician @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model ClinicianVerification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}

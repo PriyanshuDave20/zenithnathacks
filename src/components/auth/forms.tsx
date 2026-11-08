@@ -2,12 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Check } from "@/components/home/icons";
-import { requestPasswordReset, USING_MOCK_AUTH, safeNext, signIn, signInWithGoogle, signUp, useClinician, type AuthError, type ClinicianRole } from "./api";
+import { requestPasswordReset, resetPassword, safeNext, signIn, signInWithGoogle, signUp, useClinician, type AuthError, type ClinicianRole } from "./api";
 import { AuthShell, FormError, GoogleButton, OrDivider, PasswordField, SubmitButton, TextField } from "./auth-ui";
 
 const nextFromUrl = () => (typeof window === "undefined" ? "/dashboard" : safeNext(new URLSearchParams(window.location.search).get("next")));
+function enterClinicianHome(next: string) {
+  // A fresh document discards cached patient UI and server components from the previous account.
+  window.location.replace(safeNext(next));
+}
 const message = (e: unknown) => (e as AuthError)?.message ?? "Something went wrong. Check your connection and try again.";
 
 /** Validation renders before focus moves; field errors remain associated with their inputs. */
@@ -30,7 +34,6 @@ function useRedirectIfSignedIn() {
 }
 
 export function SignInForm() {
-  const router = useRouter();
   useRedirectIfSignedIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,7 +52,7 @@ export function SignInForm() {
     setBusy("email");
     try {
       await signIn({ email, password });
-      router.replace(nextFromUrl());
+      enterClinicianHome(nextFromUrl());
     } catch (err) {
       setError(message(err));
       setBusy(null);
@@ -61,7 +64,7 @@ export function SignInForm() {
     setBusy("google");
     try {
       await signInWithGoogle();
-      router.replace(nextFromUrl());
+      enterClinicianHome(nextFromUrl());
     } catch (err) {
       setError(message(err));
       setBusy(null);
@@ -130,7 +133,6 @@ export function RolePicker({ value, onChange }: { value: ClinicianRole; onChange
 }
 
 export function SignUpForm() {
-  const router = useRouter();
   useRedirectIfSignedIn();
   const [form, setForm] = useState({ name: "", email: "", password: "", clinic: "", role: "doctor" as ClinicianRole });
   const [busy, setBusy] = useState<"email" | "google" | null>(null);
@@ -150,7 +152,7 @@ export function SignUpForm() {
     setBusy("email");
     try {
       await signUp(form);
-      router.replace("/dashboard");
+      enterClinicianHome("/dashboard");
     } catch (err) {
       setError(message(err));
       setBusy(null);
@@ -162,7 +164,7 @@ export function SignUpForm() {
     setBusy("google");
     try {
       await signInWithGoogle();
-      router.replace("/dashboard");
+      enterClinicianHome("/dashboard");
     } catch (err) {
       setError(message(err));
       setBusy(null);
@@ -227,7 +229,7 @@ export function ForgotPasswordForm() {
   return (
     <AuthShell
       title="Reset your password"
-      lede={USING_MOCK_AUTH ? "Try the password-reset screen. Email delivery is not connected in this demo." : "Enter your work email and we’ll send you a link to choose a new password."}
+      lede="Enter your work email to request a password reset. Email delivery must be configured for this service."
       footer={
         <Link href="/signin" className="inline-block py-3 font-semibold text-blue-deeper underline">
           Back to sign in
@@ -237,9 +239,7 @@ export function ForgotPasswordForm() {
       {sent ? (
         <div role="status" className="flex items-start gap-3 rounded-[1.5rem] bg-blue-soft p-5 text-lg leading-relaxed text-ink">
           <Check size={22} className="mt-1 shrink-0 text-blue-deep" />
-          {USING_MOCK_AUTH
-            ? "This is a demo. No reset email was sent. Return to sign in to continue with a demo account."
-            : `If an account exists for ${email.trim()}, a reset link is on its way. Check your inbox.`}
+          If your account is eligible, a reset link has been requested. Check your inbox.
         </div>
       ) : (
         <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
@@ -248,6 +248,45 @@ export function ForgotPasswordForm() {
           <SubmitButton busy={busy} busyLabel="Sending…">
             Send reset link
           </SubmitButton>
+        </form>
+      )}
+    </AuthShell>
+  );
+}
+
+
+export function ResetPasswordForm() {
+  const resetToken = useRef<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const token = resetToken.current ?? new URLSearchParams(window.location.hash.slice(1)).get("token");
+    resetToken.current = token;
+    window.history.replaceState(null, "", "/reset-password");
+    if (!token) { setError("This reset link is invalid. Request a new one."); return; }
+    if (password.length < 8 || password.length > 128) { setError("Use between 8 and 128 characters."); return; }
+    setBusy(true);
+    setError(null);
+    try {
+      await resetPassword(token, password);
+      setPassword("");
+      setSaved(true);
+      resetToken.current = null;
+    } catch (cause) { setError(message(cause)); }
+    finally { setBusy(false); }
+  }
+  return (
+    <AuthShell title="Choose a new password" lede="Use at least 8 characters for your clinician account."
+      footer={<Link href="/signin" className="font-semibold text-blue-deeper underline">Back to sign in</Link>}>
+      {saved ? <p role="status">Your password has been reset. Sign in with your new password.</p> : (
+        <form onSubmit={submit} className="flex flex-col gap-5">
+          {error ? <FormError>{error}</FormError> : null}
+          <PasswordField label="New password" name="password" autoComplete="new-password" required maxLength={128}
+            value={password} onChange={event => setPassword(event.target.value)} />
+          <SubmitButton busy={busy} busyLabel="Saving…">Save new password</SubmitButton>
         </form>
       )}
     </AuthShell>

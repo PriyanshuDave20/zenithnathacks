@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { ApiErrorSchema, RespondResponseSchema } from "../../../lib/contracts";
 import { STORIES } from "../../../lib/server/fixtures/stories";
 import * as llm from "../../../lib/server/llm";
-import { POST } from "./route";
+import { POST } from "./handler";
 
 function request(body: unknown): Request {
   return new Request("http://localhost/api/respond", {
