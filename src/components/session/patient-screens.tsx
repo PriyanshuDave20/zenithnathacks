@@ -95,18 +95,19 @@ export function IntakeFree({
   const fieldId = useId();
 
   const micAvailable = rec.supported && !rec.error;
+  const effectiveTyping = typing || !micAvailable;
   const showMic = mode !== "mute" && !typing && micAvailable;
   const spoken = [rec.finalText, rec.interim].filter(Boolean).join(" ");
   const composed = phrases.map((id) => PHRASES.find((p) => p.id === id)!.text[lang.code]).join(" ");
 
-  const value = (typing ? typed : rec.finalText).trim();
+  const value = (effectiveTyping ? typed : rec.finalText).trim();
   const full = [composed, value].filter(Boolean).join(". ");
 
   function submit() {
     rec.stop();
     const inputs: TranslateInput[] = [];
     if (composed) inputs.push({ kind: "text", value: composed });
-    if (value) inputs.push({ kind: typing ? "text" : "speech_transcript", value });
+    if (value) inputs.push({ kind: effectiveTyping ? "text" : "speech_transcript", value });
     onSubmit(inputs);
   }
 
