@@ -127,7 +127,7 @@ export function IcuBoard({
   }, [handoff, reviewed, expired]);
   return (
     <div className={`${s.root} ${contrast ? s.high : ""}`}>
-      <header className={s.header}>
+      <header className={s.header} data-gaze-ignore>
         <div className={s.headerInner} style={{ paddingInline: "max(24px, var(--eye-edge, 24px))", paddingTop: "max(8px, var(--eye-edge-v, 8px))" }}>
           <Link href="/start" aria-label="Back to communication workspace">
             <SynapseWordmark accent="#77a0c4" />
@@ -199,7 +199,7 @@ export function IcuBoard({
             {describeAnswers(eyeState.answers).length ? <p>In progress: {describeAnswers(eyeState.answers).join(" · ")}</p> : null}
             {eyeState.lastIntake ? <p>Intake summary: {eyeState.lastIntake}</p> : null}
             <p>
-              Each choice is said aloud by this device. No request has been sent to staff.
+              Choices are spoken when sound is on and speech is available. No request has been sent to staff.
             </p>
             <div className="sf-clinician-actions">
               <button
@@ -274,7 +274,7 @@ export function IcuBoard({
           </div>
           <div className={i.layout} style={{ maxWidth: "min(1050px, calc(100vw - 2 * var(--eye-gutter, 0px)))" }}>
             <EyeWorkspace onSelect={onSelect} />
-            <details className={`${s.sheet} sf-icu-guide`}>
+            <details className={`${s.sheet} sf-icu-guide`} data-gaze-ignore>
               <summary>Clinician guidance & preview controls</summary>
               <p>
                 Position the screen directly in front of the patient, at a
