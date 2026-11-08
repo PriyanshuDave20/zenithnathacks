@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { SynapseWordmark } from "@/components/brand/synapse-logo";
 import {
   Mic,
@@ -20,7 +20,8 @@ import {
   PictoArm,
   PictoLeg,
 } from "@/components/home/icons";
-import { BodyDiagram } from "@/components/input/body-diagram";
+import { BodyDiagram, BodyMap } from "@/components/input/body-diagram";
+import { spotLabels, spotParts, spotsToInputs, type BodySpot } from "@/lib/input/body-parts";
 import {
   PATIENT_LANGUAGES,
   QUESTIONS,
@@ -69,6 +70,10 @@ type Stage =
   | "summary"
   | "teachback"
   | "end";
+const NO_REPORT: { inputs: TranslateInput[]; spots: BodySpot[] } = {
+  inputs: [],
+  spots: [],
+};
 type Turn = {
   id: number;
   role: "patient" | "clinician";
@@ -78,6 +83,8 @@ type Turn = {
   response?: RespondResponse;
   understood?: string;
   unavailable?: boolean;
+  /** Exact places the patient touched on the body diagram (patient turns only). */
+  spots?: BodySpot[];
 };
 const MODES: { id: Mode; label: string }[] = [
   { id: "standard", label: "Standard" },
@@ -178,7 +185,12 @@ export function CommunicationWorkspace() {
   const [role, setRole] = useState<"patient" | "clinician">("clinician");
   const [setupMode, setSetupMode] = useState<SetupMode>("standard");
   const [patientPath, setPatientPath] = useState<"free" | "guided">("free");
-  const [patientInputs, setPatientInputs] = useState<TranslateInput[]>([]);
+  // The patient's last submitted report, kept so a failed translation can be retried or shown as-is.
+  const [patientReport, setPatientReport] = useState<{
+    inputs: TranslateInput[];
+    spots: BodySpot[];
+  }>(NO_REPORT);
+  const patientInputs = patientReport.inputs;
   const [readyForReply, setReadyForReply] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [pending, setPending] = useState<Turn | null>(null);
@@ -199,7 +211,7 @@ export function CommunicationWorkspace() {
     "voice",
   );
   const [selected, setSelected] = useState<TranslateInput[]>([]);
-  const [bodyParts, setBodyParts] = useState<string[]>([]);
+  const [bodySpots, setBodySpots] = useState<BodySpot[]>([]);
   const [body, setBody] = useState(false);
   const [copied, setCopied] = useState("");
   const version = useRef(0);
@@ -242,7 +254,7 @@ export function CommunicationWorkspace() {
     setPending(null);
     setDraft("");
     setSelected([]);
-    setBodyParts([]);
+    setBodySpots([]);
     setBusy(false);
     setError("");
     setClearConfirm(false);
@@ -252,7 +264,7 @@ export function CommunicationWorkspace() {
     setCopied("");
     setFlipped(false);
     setRole("clinician");
-    setPatientInputs([]);
+    setPatientReport(NO_REPORT);
     setStage(end ? "end" : "setup");
   }
   // Invalidate in-flight work on navigation, React Activity hiding, and bfcache restoration.
@@ -264,12 +276,12 @@ export function CommunicationWorkspace() {
       setPending(null);
       setDraft("");
       setSelected([]);
-      setBodyParts([]);
+      setBodySpots([]);
       setBusy(false);
       setError("");
       setSeverity(null);
       setFinalText("");
-      setPatientInputs([]);
+      setPatientReport(NO_REPORT);
       setStage("setup");
       window.speechSynthesis?.cancel();
     };
@@ -310,7 +322,7 @@ export function CommunicationWorkspace() {
     window.speechSynthesis?.cancel();
     setDraft("");
     setSelected([]);
-    setBodyParts([]);
+    setBodySpots([]);
     setSeverity(null);
     setError("");
     setLanguage(nextLanguage);
@@ -352,7 +364,7 @@ export function CommunicationWorkspace() {
       lock.current ||
       pending ||
       speech.listening ||
-      (!message && !selected.length && !bodyParts.length && severity === null)
+      (!message && !selected.length && !bodySpots.length && severity === null)
     )
       return;
     lock.current = true;
@@ -378,11 +390,7 @@ export function CommunicationWorkspace() {
             ? [{ kind: "text" as const, value: `${painLabel}: ${severity}/10` }]
             : []),
           ...selected,
-          ...bodyParts.map((value) => ({
-            questionId: "where",
-            kind: "option" as const,
-            value,
-          })),
+          ...spotsToInputs(bodySpots),
           ...(message ? [{ kind: "text" as const, value: message }] : []),
         ];
         const translation = await translate({ context, inputs });
@@ -393,6 +401,7 @@ export function CommunicationWorkspace() {
           language,
           original: translation.original,
           translation,
+          spots: bodySpots,
         });
       } else {
         const response = await respond({ context, message });
@@ -438,16 +447,16 @@ export function CommunicationWorkspace() {
     setDraft("");
     speech.setFinalText("");
     setSelected([]);
-    setBodyParts([]);
+    setBodySpots([]);
     setSeverity(null);
     if (audio && canAudio)
       voice.speak(pending.translation!.backTranslation, meta.speech);
   }
-  async function submitPatient(inputs: TranslateInput[]) {
+  async function submitPatient(inputs: TranslateInput[], spots: BodySpot[] = []) {
     if (lock.current) return;
     const token = version.current;
     lock.current = true;
-    setPatientInputs(inputs);
+    setPatientReport({ inputs, spots });
     setPending(null);
     setError("");
     setBusy(true);
@@ -468,6 +477,7 @@ export function CommunicationWorkspace() {
         language,
         original: translation.original,
         translation,
+        spots,
       });
     } catch {
       if (version.current === token) setError("unavailable");
@@ -492,6 +502,7 @@ export function CommunicationWorkspace() {
         language,
         original: patientInputs.map((i) => i.value).join(" · "),
         unavailable: true,
+        spots: patientReport.spots,
       },
     ]);
     setStage("handoff");
@@ -540,6 +551,9 @@ export function CommunicationWorkspace() {
   const flags = [
     ...new Set(turns.flatMap((t) => t.translation?.summary.redFlags ?? [])),
   ];
+  // Every spot from every patient report, so overlapping reports read as one heat map.
+  const allSpots = useMemo(() => turns.flatMap((t) => t.spots ?? []), [turns]);
+  const bodyParts = spotParts(bodySpots);
   async function copySummary() {
     const content = turns
       .map((t) =>
@@ -822,7 +836,9 @@ export function CommunicationWorkspace() {
               failed={!!error && !busy}
               fallbackText={patientInputs.map((i) => i.value).join(" · ")}
               onYes={confirmPatient}
-              onRetry={() => submitPatient(patientInputs)}
+              onRetry={() =>
+                submitPatient(patientReport.inputs, patientReport.spots)
+              }
               onTryAgain={() => {
                 setError("");
                 setStage("patient");
@@ -982,6 +998,12 @@ export function CommunicationWorkspace() {
                               ? "keyword summary, not a full translation."
                               : "translation unavailable; shown in English."}
                           </p>
+                        ) : null}
+                        {t.spots?.length ? (
+                          <BodyMap
+                            spots={t.spots}
+                            className="mt-2 w-full max-w-64"
+                          />
                         ) : null}
                         {t.understood ? (
                           <p className={s.translation}>
@@ -1218,7 +1240,7 @@ export function CommunicationWorkspace() {
                             {body ? (
                               <BodyDiagram
                                 lang={language}
-                                selected={bodyParts}
+                                spots={bodySpots}
                                 regions={[
                                   "head",
                                   "neck",
@@ -1231,11 +1253,7 @@ export function CommunicationWorkspace() {
                                   "right_leg",
                                 ]}
                                 onSelect={() => {}}
-                                onToggle={(id, on) =>
-                                  setBodyParts((p) =>
-                                    on ? [...p, id] : p.filter((x) => x !== id),
-                                  )
-                                }
+                                onSpotsChange={setBodySpots}
                               />
                             ) : null}
                             <div>
@@ -1371,7 +1389,7 @@ export function CommunicationWorkspace() {
                             speech.listening ||
                             (!message &&
                               !selected.length &&
-                              !bodyParts.length &&
+                              !bodySpots.length &&
                               severity === null)
                           }
                           onClick={send}
@@ -1493,6 +1511,18 @@ export function CommunicationWorkspace() {
                       "Not stated"}
                   </dd>
                 </dl>
+                {allSpots.length ? (
+                  <div>
+                    <h3>Where it hurts · every spot the patient marked</h3>
+                    <BodyMap
+                      spots={allSpots}
+                      className="mt-2 w-full max-w-sm"
+                    />
+                    <p>
+                      {spotLabels(allSpots)}
+                    </p>
+                  </div>
+                ) : null}
                 {flags.length ? (
                   <div className={s.flags}>
                     <h3>
@@ -1563,7 +1593,7 @@ export function CommunicationWorkspace() {
               <Action
                 label="Ask the patient for more details"
                 onClick={() => {
-                  setPatientInputs([]);
+                  setPatientReport(NO_REPORT);
                   setReadyForReply(false);
                   setStage("patient-ready");
                 }}

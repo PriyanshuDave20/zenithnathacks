@@ -32,7 +32,7 @@ import {
 } from "@/components/home/icons";
 import { BodyDiagram } from "@/components/input/body-diagram";
 import { RegionIdSchema } from "@/lib/contracts";
-import { getBodyPart } from "@/lib/input/body-parts";
+import { getBodyPart, spotParts, spotsToInputs, type BodySpot } from "@/lib/input/body-parts";
 import { STRINGS } from "./strings";
 import { ActionBar, PrimaryButton, QuietButton, Screen, SpeechBubble, Spinner, Tile, Title } from "./ui";
 import { useRecognition, useSpeak } from "./use-speech";
@@ -226,15 +226,17 @@ export function IntakeGuided({
 }: {
   lang: LangMeta;
   mode: Mode;
-  onSubmit: (inputs: TranslateInput[]) => void;
+  /** `spots` are the exact places touched on the body diagram, for the clinician's map. */
+  onSubmit: (inputs: TranslateInput[], spots?: BodySpot[]) => void;
 }) {
   const t = STRINGS[lang.code];
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   // "Where" can be answered on the body diagram (default for modes that rely on pictures and taps)
-  // or with the picture tiles. The diagram allows several parts at once.
+  // or with the picture tiles. The diagram takes any number of spots anywhere on the body.
   const [useBody, setUseBody] = useState(mode !== "standard");
-  const [parts, setParts] = useState<string[]>([]);
+  const [spots, setSpots] = useState<BodySpot[]>([]);
+  const parts = spotParts(spots);
   const { speak } = useSpeak();
   const q = QUESTIONS[index];
   const last = index === QUESTIONS.length - 1;
@@ -244,11 +246,11 @@ export function IntakeGuided({
   const isScale = q.id === "how_strong";
   const flip = lang.dir === "rtl" ? "rotate-180" : "";
 
-  function togglePart(id: string, on: boolean) {
-    setParts((prev) => (on ? [...prev.filter((p) => p !== id), id] : prev.filter((p) => p !== id)));
+  function changeSpots(next: BodySpot[], added?: BodySpot) {
+    setSpots(next);
     // Low-literacy and can't-speak patients hear the part named back (the clinician hears it too).
-    const part = getBodyPart(id);
-    if (on && part && (mode === "low_literacy" || mode === "mute")) speak(part.text[lang.code], lang.speech);
+    const part = added && getBodyPart(added.partId);
+    if (part && (mode === "low_literacy" || mode === "mute")) speak(part.text[lang.code], lang.speech);
   }
 
   function next() {
@@ -256,11 +258,12 @@ export function IntakeGuided({
     onSubmit(
       QUESTIONS.flatMap((x) =>
         x.id === "where" && useBody
-          ? parts.map((value) => ({ questionId: x.id, kind: "option" as const, value }))
+          ? spotsToInputs(spots)
           : answers[x.id]
             ? [{ questionId: x.id, kind: "option" as const, value: answers[x.id] }]
             : [],
       ),
+      useBody ? spots : undefined,
     );
   }
 
@@ -281,7 +284,7 @@ export function IntakeGuided({
 
           {bodyOn ? (
             <div className="mt-2">
-              <BodyDiagram regions={RegionIdSchema.options} onSelect={() => {}} lang={lang.code} selected={parts} onToggle={togglePart} />
+              <BodyDiagram regions={RegionIdSchema.options} onSelect={() => {}} lang={lang.code} spots={spots} onSpotsChange={changeSpots} />
             </div>
           ) : isScale ? (
             <div className="mt-4 grid grid-cols-5 gap-2 sm:gap-3">

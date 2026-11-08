@@ -85,6 +85,31 @@ export function regionOf(id: string): RegionId | undefined {
   return BY_ID.get(id)?.region;
 }
 
+/**
+ * One place the patient touched. x and y are in the diagram's 240 x 480 viewBox for that view, so a
+ * spot lands back on exactly the same place wherever the body is drawn (patient screen or clinician
+ * panel). `partId` is the part underneath it, which keeps labels, regions and the question bank working.
+ */
+export type BodySpot = { id: string; view: BodyView; x: number; y: number; partId: string };
+
+/** The distinct parts under a set of spots, in the order first touched. */
+export function spotParts(spots: BodySpot[]): string[] {
+  return [...new Set(spots.map((s) => s.partId))];
+}
+
+/** The parts under the spots in English, for the clinician ("Chest, Right knee"). */
+export function spotLabels(spots: BodySpot[]): string {
+  return spotParts(spots)
+    .map((id) => BY_ID.get(id)?.label)
+    .filter(Boolean)
+    .join(", ");
+}
+
+/** The spots as answers to the "where" question, one per part, for the translate request. */
+export function spotsToInputs(spots: BodySpot[]) {
+  return spotParts(spots).map((value) => ({ questionId: "where", kind: "option" as const, value }));
+}
+
 /** Words on the diagram itself, in the patient's language. */
 export const DIAGRAM_TEXT: Record<Lang, { front: string; back: string; right: string; left: string; hint: string; chosen: string; none: string; remove: (part: string) => string }> = {
   en: { front: "Front", back: "Back", right: "Right", left: "Left", hint: "Tap where it hurts. You can choose more than one.", chosen: "Where it hurts", none: "Nothing chosen yet", remove: (p) => `Remove ${p}` },
