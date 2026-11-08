@@ -28,7 +28,7 @@ export function useModesState() {
     lang: s.lang,
     eyeChoice: s.eyeChoice,
     setEyeChoice: (eyeChoice: string) => set({ eyeChoice }),
-    setMode: (mode: number) => set({ mode }),
+    setMode: (mode: number) => set({ mode, eyeChoice: mode === s.mode ? s.eyeChoice : null }),
     setLang: (lang: number) => set({ lang }),
   };
 }

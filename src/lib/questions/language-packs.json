@@ -1,0 +1,1268 @@
+[
+  {
+    "schemaVersion": 1,
+    "language": "es",
+    "generatedBy": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "generatedAt": "2026-11-08T02:49:44.706Z",
+    "reviewStatus": "draft",
+    "source": {
+      "chief_complaint": {
+        "text": "What is the main problem that brought you here today?",
+        "clinical": "What brings you in today?",
+        "topic": "Chief complaint",
+        "options": {
+          "pain": "Pain",
+          "breathing": "Trouble breathing",
+          "fever": "Fever",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "onset": {
+        "text": "When did it begin? Was it sudden or slow?",
+        "clinical": "When did this start?",
+        "topic": "Onset",
+        "options": {
+          "sudden": "Suddenly",
+          "gradual": "Slowly",
+          "today": "Today",
+          "days": "A few days ago",
+          "longer": "Longer ago",
+          "unsure": "Not sure"
+        }
+      },
+      "where": {
+        "text": "Where do you feel it? Please point with one finger.",
+        "clinical": "Where is the symptom located?",
+        "topic": "Location",
+        "options": {
+          "head": "Head",
+          "neck": "Neck",
+          "chest": "Chest",
+          "abdomen": "Stomach",
+          "back": "Back",
+          "left_arm": "Left arm",
+          "right_arm": "Right arm",
+          "left_leg": "Left leg",
+          "right_leg": "Right leg",
+          "elsewhere": "Somewhere else",
+          "unsure": "Not sure"
+        }
+      },
+      "how_long": {
+        "text": "How long does it last? Is it there all the time, or does it come and go?",
+        "clinical": "How long does it last? Is it constant or intermittent?",
+        "topic": "Duration",
+        "options": {
+          "minutes": "Minutes",
+          "hours": "Hours",
+          "days": "Days",
+          "constant": "All the time",
+          "intermittent": "Comes and goes",
+          "unsure": "Not sure"
+        }
+      },
+      "how_strong": {
+        "text": "From 0 (no pain) to 10 (worst pain you can imagine), how bad is it?",
+        "clinical": "Rate the severity from 0 to 10.",
+        "topic": "Severity",
+        "options": {
+          "s0": "0 out of 10",
+          "s1": "1 out of 10",
+          "s2": "2 out of 10",
+          "s3": "3 out of 10",
+          "s4": "4 out of 10",
+          "s5": "5 out of 10",
+          "s6": "6 out of 10",
+          "s7": "7 out of 10",
+          "s8": "8 out of 10",
+          "s9": "9 out of 10",
+          "s10": "10 out of 10",
+          "unsure": "Not sure"
+        }
+      },
+      "character": {
+        "text": "What does it feel like? Sharp, dull, burning, squeezing, or something else?",
+        "clinical": "Describe the quality of the pain.",
+        "topic": "Character",
+        "options": {
+          "sharp": "Sharp",
+          "dull": "Dull",
+          "burning": "Burning",
+          "squeezing": "Squeezing",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "aggravating_factors": {
+        "text": "What makes it worse?",
+        "clinical": "What makes it worse?",
+        "topic": "Aggravating factors",
+        "options": {
+          "moving": "Moving",
+          "breathing": "Breathing",
+          "eating": "Eating",
+          "nothing": "Nothing in particular",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "relieving_factors": {
+        "text": "What makes it better?",
+        "clinical": "What makes it better?",
+        "topic": "Relieving factors",
+        "options": {
+          "rest": "Resting",
+          "medicine": "Medicine",
+          "position": "Changing position",
+          "nothing": "Nothing",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "radiation": {
+        "text": "Does the pain move anywhere else in your body?",
+        "clinical": "Does the pain radiate?",
+        "topic": "Radiation",
+        "options": {
+          "stays": "Stays in one place",
+          "moves": "Moves somewhere else",
+          "unsure": "Not sure"
+        }
+      },
+      "associated_symptoms": {
+        "text": "Do you have anything else with it, such as fever, throwing up, or trouble breathing?",
+        "clinical": "Any associated symptoms?",
+        "topic": "Associated symptoms",
+        "options": {
+          "fever": "Fever",
+          "vomiting": "Throwing up",
+          "short_breath": "Trouble breathing",
+          "none": "Nothing else",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "red_flags": {
+        "text": "Have you had chest pain, trouble breathing, fainting, or weakness on one side of your body?",
+        "clinical": "Any chest pain, dyspnea, syncope, or unilateral weakness?",
+        "topic": "Red flags",
+        "options": {
+          "chest_pain": "Chest pain",
+          "short_breath": "Trouble breathing",
+          "fainting": "Fainting",
+          "one_sided_weakness": "Weakness on one side",
+          "none": "None of these",
+          "unsure": "Not sure"
+        }
+      },
+      "allergies": {
+        "text": "Are you allergic to any medicine, food, or anything else? What happens when you react?",
+        "clinical": "Do you have any drug allergies? What is the reaction?",
+        "topic": "Allergies",
+        "options": {
+          "medicine": "Medicine allergy",
+          "food": "Food allergy",
+          "other": "Another allergy",
+          "none": "No known allergies",
+          "unsure": "Not sure"
+        }
+      },
+      "current_medications": {
+        "text": "What medicines do you take? Please include vitamins, herbal products, and anything you buy without a prescription.",
+        "clinical": "List current medications including OTC and supplements.",
+        "topic": "Current medications",
+        "options": {
+          "prescription": "Prescription medicine",
+          "nonprescription": "Medicine bought without a prescription",
+          "supplements": "Vitamins or herbal products",
+          "none": "No medicines",
+          "unsure": "Not sure"
+        }
+      },
+      "past_medical_history": {
+        "text": "Have you had any serious illness, surgery, or hospital stays?",
+        "clinical": "Past medical and surgical history?",
+        "topic": "Past medical history",
+        "options": {
+          "illness": "Serious illness",
+          "surgery": "Surgery",
+          "hospital": "Hospital stay",
+          "none": "None of these",
+          "unsure": "Not sure"
+        }
+      },
+      "family_history": {
+        "text": "Has anyone in your family had heart disease, diabetes, cancer, or stroke?",
+        "clinical": "Relevant family history?",
+        "topic": "Family history",
+        "options": {
+          "heart_disease": "Heart disease",
+          "diabetes": "Diabetes",
+          "cancer": "Cancer",
+          "stroke": "Stroke",
+          "none": "None of these",
+          "unsure": "Not sure"
+        }
+      },
+      "pregnancy": {
+        "text": "Could you be pregnant?",
+        "clinical": "Is there a possibility of pregnancy?",
+        "topic": "Pregnancy",
+        "options": {
+          "yes": "Yes",
+          "no": "No",
+          "unsure": "Not sure",
+          "prefer_not_to_say": "Prefer not to say"
+        }
+      },
+      "substance_use": {
+        "text": "Do you smoke, drink alcohol, or use any drugs?",
+        "clinical": "Tobacco, alcohol, and recreational drug use?",
+        "topic": "Substance use",
+        "options": {
+          "smoking": "Smoking",
+          "alcohol": "Alcohol",
+          "drugs": "Other drugs",
+          "none": "None of these",
+          "prefer_not_to_say": "Prefer not to say"
+        }
+      }
+    },
+    "questions": {
+      "chief_complaint": {
+        "text": "¿Cuál es el problema principal que lo trajo aquí hoy?",
+        "options": {
+          "pain": "Dolor",
+          "breathing": "Dificultad para respirar",
+          "fever": "Fiebre",
+          "other": "Algo más",
+          "unsure": "No seguro"
+        }
+      },
+      "onset": {
+        "text": "¿Cuándo comenzó? ¿De repente o poco a poco?",
+        "options": {
+          "sudden": "De repente",
+          "gradual": "Poco a poco",
+          "today": "Hoy",
+          "days": "Hace unos días",
+          "longer": "Hace más tiempo",
+          "unsure": "No seguro"
+        }
+      },
+      "where": {
+        "text": "¿Dónde lo siente? Por favor, señale con un dedo.",
+        "options": {
+          "head": "Cabeza",
+          "neck": "Cuello",
+          "chest": "Pecho",
+          "abdomen": "Estómago",
+          "back": "Espalda",
+          "left_arm": "Brazo izquierdo",
+          "right_arm": "Brazo derecho",
+          "left_leg": "Pierna izquierda",
+          "right_leg": "Pierna derecha",
+          "elsewhere": "Algún otro lugar",
+          "unsure": "No seguro"
+        }
+      },
+      "how_long": {
+        "text": "¿Cuánto tiempo dura? ¿Está siempre ahí o viene y va?",
+        "options": {
+          "minutes": "Minutos",
+          "hours": "Horas",
+          "days": "Días",
+          "constant": "Siempre",
+          "intermittent": "Viene y va",
+          "unsure": "No seguro"
+        }
+      },
+      "how_strong": {
+        "text": "De 0 (ningún dolor) a 10 (el dolor más fuerte que puedas imaginar), ¿qué tan fuerte es?",
+        "options": {
+          "s0": "0/10",
+          "s1": "1/10",
+          "s2": "2/10",
+          "s3": "3/10",
+          "s4": "4/10",
+          "s5": "5/10",
+          "s6": "6/10",
+          "s7": "7/10",
+          "s8": "8/10",
+          "s9": "9/10",
+          "s10": "10/10",
+          "unsure": "No seguro"
+        }
+      },
+      "character": {
+        "text": "¿Cómo se siente? Agudo, sordo, quemazón, presión, o algo más?",
+        "options": {
+          "sharp": "Agudo",
+          "dull": "Sordo",
+          "burning": "Quemazón",
+          "squeezing": "Presión",
+          "other": "Algo más",
+          "unsure": "No seguro"
+        }
+      },
+      "aggravating_factors": {
+        "text": "¿Qué lo empeora?",
+        "options": {
+          "moving": "Moviéndose",
+          "breathing": "Al respirar",
+          "eating": "Al comer",
+          "nothing": "Nada en particular",
+          "other": "Algo más",
+          "unsure": "No estoy seguro"
+        }
+      },
+      "relieving_factors": {
+        "text": "¿Qué lo mejora?",
+        "options": {
+          "rest": "Descansando",
+          "medicine": "Medicamento",
+          "position": "Cambiar de posición",
+          "nothing": "Nada",
+          "other": "Algo más",
+          "unsure": "No estoy seguro"
+        }
+      },
+      "radiation": {
+        "text": "¿Se mueve el dolor a otra parte de su cuerpo?",
+        "options": {
+          "stays": "Se queda en un solo lugar",
+          "moves": "Se mueve a otro lugar",
+          "unsure": "No estoy seguro"
+        }
+      },
+      "associated_symptoms": {
+        "text": "¿Tiene algo más con ello, como fiebre, vómitos o dificultad para respirar?",
+        "options": {
+          "fever": "Fiebre",
+          "vomiting": "Vómitos",
+          "short_breath": "Dificultad para respirar",
+          "none": "Nada más",
+          "other": "Algo más",
+          "unsure": "No seguro"
+        }
+      },
+      "red_flags": {
+        "text": "¿Ha tenido dolor en el pecho, dificultad para respirar, desmayos o debilidad en un lado del cuerpo?",
+        "options": {
+          "chest_pain": "Dolor en el pecho",
+          "short_breath": "Dificultad para respirar",
+          "fainting": "Desmayos",
+          "one_sided_weakness": "Debilidad en un lado",
+          "none": "Ninguno de estos",
+          "unsure": "No seguro"
+        }
+      },
+      "allergies": {
+        "text": "¿Es alérgico a algún medicamento, alimento o algo más? ¿Qué sucede cuando reacciona?",
+        "options": {
+          "medicine": "Alergia a medicamentos",
+          "food": "Alergia a alimentos",
+          "other": "Otra alergia",
+          "none": "No hay alergias conocidas",
+          "unsure": "No seguro"
+        }
+      },
+      "current_medications": {
+        "text": "¿Qué medicamentos toma? Incluya vitaminas, productos herbales y cualquier cosa que compre sin receta.",
+        "options": {
+          "prescription": "Medicina con receta",
+          "nonprescription": "Medicina comprada sin receta",
+          "supplements": "Vitaminas o productos herbales",
+          "none": "No toma medicamentos",
+          "unsure": "No seguro"
+        }
+      },
+      "past_medical_history": {
+        "text": "¿Ha tenido alguna enfermedad grave, cirugía o estancia hospitalaria?",
+        "options": {
+          "illness": "Enfermedad grave",
+          "surgery": "Cirugía",
+          "hospital": "Estancia hospitalaria",
+          "none": "Ninguna de estas",
+          "unsure": "No seguro"
+        }
+      },
+      "family_history": {
+        "text": "¿Alguna persona de su familia ha tenido enfermedad cardíaca, diabetes, cáncer o accidente cerebrovascular?",
+        "options": {
+          "heart_disease": "Enfermedad cardíaca",
+          "diabetes": "Diabetes",
+          "cancer": "Cáncer",
+          "stroke": "Accidente cerebrovascular",
+          "none": "Ninguna de estas",
+          "unsure": "No seguro"
+        }
+      },
+      "pregnancy": {
+        "text": "¿Podría estar embarazada?",
+        "options": {
+          "yes": "Sí",
+          "no": "No",
+          "unsure": "No sure",
+          "prefer_not_to_say": "Prefiere no decir"
+        }
+      },
+      "substance_use": {
+        "text": "Fuma, toma alcohol o consume alguna droga?",
+        "options": {
+          "smoking": "Fumar",
+          "alcohol": "Alcohol",
+          "drugs": "Otras drogas",
+          "none": "Ninguna de estas",
+          "prefer_not_to_say": "Prefiere no decir"
+        }
+      }
+    },
+    "reviewNotes": "Machine-generated draft. Numeric severity answers are formatted from numeric IDs as value/10; clinical and fluent-speaker review remains pending."
+  },
+  {
+    "schemaVersion": 1,
+    "language": "ar",
+    "generatedBy": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "generatedAt": "2026-11-08T02:49:58.261Z",
+    "reviewStatus": "draft",
+    "source": {
+      "chief_complaint": {
+        "text": "What is the main problem that brought you here today?",
+        "clinical": "What brings you in today?",
+        "topic": "Chief complaint",
+        "options": {
+          "pain": "Pain",
+          "breathing": "Trouble breathing",
+          "fever": "Fever",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "onset": {
+        "text": "When did it begin? Was it sudden or slow?",
+        "clinical": "When did this start?",
+        "topic": "Onset",
+        "options": {
+          "sudden": "Suddenly",
+          "gradual": "Slowly",
+          "today": "Today",
+          "days": "A few days ago",
+          "longer": "Longer ago",
+          "unsure": "Not sure"
+        }
+      },
+      "where": {
+        "text": "Where do you feel it? Please point with one finger.",
+        "clinical": "Where is the symptom located?",
+        "topic": "Location",
+        "options": {
+          "head": "Head",
+          "neck": "Neck",
+          "chest": "Chest",
+          "abdomen": "Stomach",
+          "back": "Back",
+          "left_arm": "Left arm",
+          "right_arm": "Right arm",
+          "left_leg": "Left leg",
+          "right_leg": "Right leg",
+          "elsewhere": "Somewhere else",
+          "unsure": "Not sure"
+        }
+      },
+      "how_long": {
+        "text": "How long does it last? Is it there all the time, or does it come and go?",
+        "clinical": "How long does it last? Is it constant or intermittent?",
+        "topic": "Duration",
+        "options": {
+          "minutes": "Minutes",
+          "hours": "Hours",
+          "days": "Days",
+          "constant": "All the time",
+          "intermittent": "Comes and goes",
+          "unsure": "Not sure"
+        }
+      },
+      "how_strong": {
+        "text": "From 0 (no pain) to 10 (worst pain you can imagine), how bad is it?",
+        "clinical": "Rate the severity from 0 to 10.",
+        "topic": "Severity",
+        "options": {
+          "s0": "0 out of 10",
+          "s1": "1 out of 10",
+          "s2": "2 out of 10",
+          "s3": "3 out of 10",
+          "s4": "4 out of 10",
+          "s5": "5 out of 10",
+          "s6": "6 out of 10",
+          "s7": "7 out of 10",
+          "s8": "8 out of 10",
+          "s9": "9 out of 10",
+          "s10": "10 out of 10",
+          "unsure": "Not sure"
+        }
+      },
+      "character": {
+        "text": "What does it feel like? Sharp, dull, burning, squeezing, or something else?",
+        "clinical": "Describe the quality of the pain.",
+        "topic": "Character",
+        "options": {
+          "sharp": "Sharp",
+          "dull": "Dull",
+          "burning": "Burning",
+          "squeezing": "Squeezing",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "aggravating_factors": {
+        "text": "What makes it worse?",
+        "clinical": "What makes it worse?",
+        "topic": "Aggravating factors",
+        "options": {
+          "moving": "Moving",
+          "breathing": "Breathing",
+          "eating": "Eating",
+          "nothing": "Nothing in particular",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "relieving_factors": {
+        "text": "What makes it better?",
+        "clinical": "What makes it better?",
+        "topic": "Relieving factors",
+        "options": {
+          "rest": "Resting",
+          "medicine": "Medicine",
+          "position": "Changing position",
+          "nothing": "Nothing",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "radiation": {
+        "text": "Does the pain move anywhere else in your body?",
+        "clinical": "Does the pain radiate?",
+        "topic": "Radiation",
+        "options": {
+          "stays": "Stays in one place",
+          "moves": "Moves somewhere else",
+          "unsure": "Not sure"
+        }
+      },
+      "associated_symptoms": {
+        "text": "Do you have anything else with it, such as fever, throwing up, or trouble breathing?",
+        "clinical": "Any associated symptoms?",
+        "topic": "Associated symptoms",
+        "options": {
+          "fever": "Fever",
+          "vomiting": "Throwing up",
+          "short_breath": "Trouble breathing",
+          "none": "Nothing else",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "red_flags": {
+        "text": "Have you had chest pain, trouble breathing, fainting, or weakness on one side of your body?",
+        "clinical": "Any chest pain, dyspnea, syncope, or unilateral weakness?",
+        "topic": "Red flags",
+        "options": {
+          "chest_pain": "Chest pain",
+          "short_breath": "Trouble breathing",
+          "fainting": "Fainting",
+          "one_sided_weakness": "Weakness on one side",
+          "none": "None of these",
+          "unsure": "Not sure"
+        }
+      },
+      "allergies": {
+        "text": "Are you allergic to any medicine, food, or anything else? What happens when you react?",
+        "clinical": "Do you have any drug allergies? What is the reaction?",
+        "topic": "Allergies",
+        "options": {
+          "medicine": "Medicine allergy",
+          "food": "Food allergy",
+          "other": "Another allergy",
+          "none": "No known allergies",
+          "unsure": "Not sure"
+        }
+      },
+      "current_medications": {
+        "text": "What medicines do you take? Please include vitamins, herbal products, and anything you buy without a prescription.",
+        "clinical": "List current medications including OTC and supplements.",
+        "topic": "Current medications",
+        "options": {
+          "prescription": "Prescription medicine",
+          "nonprescription": "Medicine bought without a prescription",
+          "supplements": "Vitamins or herbal products",
+          "none": "No medicines",
+          "unsure": "Not sure"
+        }
+      },
+      "past_medical_history": {
+        "text": "Have you had any serious illness, surgery, or hospital stays?",
+        "clinical": "Past medical and surgical history?",
+        "topic": "Past medical history",
+        "options": {
+          "illness": "Serious illness",
+          "surgery": "Surgery",
+          "hospital": "Hospital stay",
+          "none": "None of these",
+          "unsure": "Not sure"
+        }
+      },
+      "family_history": {
+        "text": "Has anyone in your family had heart disease, diabetes, cancer, or stroke?",
+        "clinical": "Relevant family history?",
+        "topic": "Family history",
+        "options": {
+          "heart_disease": "Heart disease",
+          "diabetes": "Diabetes",
+          "cancer": "Cancer",
+          "stroke": "Stroke",
+          "none": "None of these",
+          "unsure": "Not sure"
+        }
+      },
+      "pregnancy": {
+        "text": "Could you be pregnant?",
+        "clinical": "Is there a possibility of pregnancy?",
+        "topic": "Pregnancy",
+        "options": {
+          "yes": "Yes",
+          "no": "No",
+          "unsure": "Not sure",
+          "prefer_not_to_say": "Prefer not to say"
+        }
+      },
+      "substance_use": {
+        "text": "Do you smoke, drink alcohol, or use any drugs?",
+        "clinical": "Tobacco, alcohol, and recreational drug use?",
+        "topic": "Substance use",
+        "options": {
+          "smoking": "Smoking",
+          "alcohol": "Alcohol",
+          "drugs": "Other drugs",
+          "none": "None of these",
+          "prefer_not_to_say": "Prefer not to say"
+        }
+      }
+    },
+    "questions": {
+      "chief_complaint": {
+        "text": "ما المشكلة الرئيسية التي جاءت بك إلى هنا اليوم؟",
+        "options": {
+          "pain": "ألم",
+          "breathing": "صعوبة في التنفس",
+          "fever": "حمى",
+          "other": "شيء آخر",
+          "unsure": "لا أعرف"
+        }
+      },
+      "onset": {
+        "text": "متى بدأ؟ هل كان مفاجئاً أم تدريجياً؟",
+        "options": {
+          "sudden": "مفاجئ",
+          "gradual": "بطيء",
+          "today": "اليوم",
+          "days": "منذ بضعة أيام",
+          "longer": "منذ وقت أطول",
+          "unsure": "لا أعرف"
+        }
+      },
+      "where": {
+        "text": "أين تشعر به؟ يرجى الإشارة بإصبع واحد.",
+        "options": {
+          "head": "رأس",
+          "neck": "رقبة",
+          "chest": "صدر",
+          "abdomen": "بطن",
+          "back": "ظهر",
+          "left_arm": "الذراع اليسرى",
+          "right_arm": "الذراع اليمنى",
+          "left_leg": "الساق اليسرى",
+          "right_leg": "الساق اليمنى",
+          "elsewhere": "مكان آخر",
+          "unsure": "لا أعرف"
+        }
+      },
+      "how_long": {
+        "text": "كم من الوقت يستمر؟ هل هو موجود طوال الوقت، أم يأتي ويذهب؟",
+        "options": {
+          "minutes": "دقائق",
+          "hours": "ساعات",
+          "days": "أيام",
+          "constant": "طوال الوقت",
+          "intermittent": "يأتي ويذهب",
+          "unsure": "لا أعرف"
+        }
+      },
+      "how_strong": {
+        "text": "من 0 (لا ألم) إلى 10 (أشد ألم يمكنك تخيله)، كم شدته؟",
+        "options": {
+          "s0": "0/10",
+          "s1": "1/10",
+          "s2": "2/10",
+          "s3": "3/10",
+          "s4": "4/10",
+          "s5": "5/10",
+          "s6": "6/10",
+          "s7": "7/10",
+          "s8": "8/10",
+          "s9": "9/10",
+          "s10": "10/10",
+          "unsure": "لا أعرف"
+        }
+      },
+      "character": {
+        "text": "ما هو شعوره؟ حاد، خفيف، حارق، ضاغط، أم شيء آخر؟",
+        "options": {
+          "sharp": "حاد",
+          "dull": "خفيف",
+          "burning": "حارق",
+          "squeezing": "ضاغط",
+          "other": "شيء آخر",
+          "unsure": "لا أعرف"
+        }
+      },
+      "aggravating_factors": {
+        "text": "ماذا يجعله أسوأ؟",
+        "options": {
+          "moving": "حركة",
+          "breathing": "التنفس",
+          "eating": "الأكل",
+          "nothing": "لا شيء على وجه الخصوص",
+          "other": "شيء آخر",
+          "unsure": "لا أعرف"
+        }
+      },
+      "relieving_factors": {
+        "text": "ماذا يجعله أفضل؟",
+        "options": {
+          "rest": "الراحة",
+          "medicine": "الدواء",
+          "position": "تغيير الوضعية",
+          "nothing": "لا شيء",
+          "other": "شيء آخر",
+          "unsure": "لا أعرف"
+        }
+      },
+      "radiation": {
+        "text": "ينتشر الألم إلى أي مكان آخر في جسمك؟",
+        "options": {
+          "stays": "يبقى في مكان واحد",
+          "moves": "يتحرك إلى مكان آخر",
+          "unsure": "لا أعرف"
+        }
+      },
+      "associated_symptoms": {
+        "text": "هل لديك أي أعراض أخرى معه، مثل الحمى، القيء، أو صعوبة التنفس؟",
+        "options": {
+          "fever": "حمى",
+          "vomiting": "قيء",
+          "short_breath": "صعوبة في التنفس",
+          "none": "لا شيء آخر",
+          "other": "شيء آخر",
+          "unsure": "لا أعرف"
+        }
+      },
+      "red_flags": {
+        "text": "هل عانيت من ألم في الصدر، صعوبة في التنفس، إغماء، أو ضعف في جانب واحد من الجسم؟",
+        "options": {
+          "chest_pain": "ألم في الصدر",
+          "short_breath": "صعوبة في التنفس",
+          "fainting": "إغماء",
+          "one_sided_weakness": "ضعف في جانب واحد",
+          "none": "لا شيء من هذه الأعراض",
+          "unsure": "لا أعرف"
+        }
+      },
+      "allergies": {
+        "text": "هل أنت حساس لأي دواء، طعام، أو شيء آخر؟ ماذا يحدث عند حدوث رد فعل؟",
+        "options": {
+          "medicine": "حساسية من دواء",
+          "food": "حساسية من طعام",
+          "other": "حساسية أخرى",
+          "none": "لا توجد حساسية معروفة",
+          "unsure": "لا أعرف"
+        }
+      },
+      "current_medications": {
+        "text": "ما الأدوية التي تتناولها؟ بما في ذلك الفيتامينات والمنتجات العشبية وأي شيء تشتريه دون وصفة طبية.",
+        "options": {
+          "prescription": "أدوية بوصفة طبية",
+          "nonprescription": "أدوية تشتريها دون وصفة طبية",
+          "supplements": "فيتامينات أو منتجات عشبية",
+          "none": "لا توجد أدوية",
+          "unsure": "لا أعرف"
+        }
+      },
+      "past_medical_history": {
+        "text": "هل عانيت من أي مرض خطير، أو عملية جراحية، أو إقامة في المستشفى؟",
+        "options": {
+          "illness": "مرض خطير",
+          "surgery": "عملية جراحية",
+          "hospital": "إقامة في المستشفى",
+          "none": "لا شيء من هذه",
+          "unsure": "لا أعرف"
+        }
+      },
+      "family_history": {
+        "text": "هل عانى أي من أفراد عائلتك من أمراض القلب، أو السكري، أو السرطان، أو السكتة الدماغية؟",
+        "options": {
+          "heart_disease": "أمراض القلب",
+          "diabetes": "سكري",
+          "cancer": "سرطان",
+          "stroke": "سكتة دماغية",
+          "none": "لا شيء من هذه",
+          "unsure": "لا أعرف"
+        }
+      },
+      "pregnancy": {
+        "text": "هل يمكن أن تكوني حاملاً؟",
+        "options": {
+          "yes": "نعم",
+          "no": "لا",
+          "unsure": "لا أعرف",
+          "prefer_not_to_say": "لا أريد أن أقول"
+        }
+      },
+      "substance_use": {
+        "text": "هل تدخن الكحول أو المخدرات؟",
+        "options": {
+          "smoking": "التدخين",
+          "alcohol": "الكحول",
+          "drugs": "المخدرات",
+          "none": "لا شيء من هذه",
+          "prefer_not_to_say": "لا أريد أن أقول"
+        }
+      }
+    },
+    "reviewNotes": "Machine-generated draft. Numeric severity answers are formatted from numeric IDs as value/10; clinical and fluent-speaker review remains pending. Five mixed-script Arabic strings were corrected: the chief-complaint question and four left/right limb labels. These source-vocabulary corrections are still drafts, not a clinical or fluent-speaker sign-off."
+  },
+  {
+    "schemaVersion": 1,
+    "language": "zh-Hans",
+    "generatedBy": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "generatedAt": "2026-11-08T02:52:49.337Z",
+    "reviewStatus": "draft",
+    "source": {
+      "chief_complaint": {
+        "text": "What is the main problem that brought you here today?",
+        "clinical": "What brings you in today?",
+        "topic": "Chief complaint",
+        "options": {
+          "pain": "Pain",
+          "breathing": "Trouble breathing",
+          "fever": "Fever",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "onset": {
+        "text": "When did it begin? Was it sudden or slow?",
+        "clinical": "When did this start?",
+        "topic": "Onset",
+        "options": {
+          "sudden": "Suddenly",
+          "gradual": "Slowly",
+          "today": "Today",
+          "days": "A few days ago",
+          "longer": "Longer ago",
+          "unsure": "Not sure"
+        }
+      },
+      "where": {
+        "text": "Where do you feel it? Please point with one finger.",
+        "clinical": "Where is the symptom located?",
+        "topic": "Location",
+        "options": {
+          "head": "Head",
+          "neck": "Neck",
+          "chest": "Chest",
+          "abdomen": "Stomach",
+          "back": "Back",
+          "left_arm": "Left arm",
+          "right_arm": "Right arm",
+          "left_leg": "Left leg",
+          "right_leg": "Right leg",
+          "elsewhere": "Somewhere else",
+          "unsure": "Not sure"
+        }
+      },
+      "how_long": {
+        "text": "How long does it last? Is it there all the time, or does it come and go?",
+        "clinical": "How long does it last? Is it constant or intermittent?",
+        "topic": "Duration",
+        "options": {
+          "minutes": "Minutes",
+          "hours": "Hours",
+          "days": "Days",
+          "constant": "All the time",
+          "intermittent": "Comes and goes",
+          "unsure": "Not sure"
+        }
+      },
+      "how_strong": {
+        "text": "From 0 (no pain) to 10 (worst pain you can imagine), how bad is it?",
+        "clinical": "Rate the severity from 0 to 10.",
+        "topic": "Severity",
+        "options": {
+          "s0": "0 out of 10",
+          "s1": "1 out of 10",
+          "s2": "2 out of 10",
+          "s3": "3 out of 10",
+          "s4": "4 out of 10",
+          "s5": "5 out of 10",
+          "s6": "6 out of 10",
+          "s7": "7 out of 10",
+          "s8": "8 out of 10",
+          "s9": "9 out of 10",
+          "s10": "10 out of 10",
+          "unsure": "Not sure"
+        }
+      },
+      "character": {
+        "text": "What does it feel like? Sharp, dull, burning, squeezing, or something else?",
+        "clinical": "Describe the quality of the pain.",
+        "topic": "Character",
+        "options": {
+          "sharp": "Sharp",
+          "dull": "Dull",
+          "burning": "Burning",
+          "squeezing": "Squeezing",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "aggravating_factors": {
+        "text": "What makes it worse?",
+        "clinical": "What makes it worse?",
+        "topic": "Aggravating factors",
+        "options": {
+          "moving": "Moving",
+          "breathing": "Breathing",
+          "eating": "Eating",
+          "nothing": "Nothing in particular",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "relieving_factors": {
+        "text": "What makes it better?",
+        "clinical": "What makes it better?",
+        "topic": "Relieving factors",
+        "options": {
+          "rest": "Resting",
+          "medicine": "Medicine",
+          "position": "Changing position",
+          "nothing": "Nothing",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "radiation": {
+        "text": "Does the pain move anywhere else in your body?",
+        "clinical": "Does the pain radiate?",
+        "topic": "Radiation",
+        "options": {
+          "stays": "Stays in one place",
+          "moves": "Moves somewhere else",
+          "unsure": "Not sure"
+        }
+      },
+      "associated_symptoms": {
+        "text": "Do you have anything else with it, such as fever, throwing up, or trouble breathing?",
+        "clinical": "Any associated symptoms?",
+        "topic": "Associated symptoms",
+        "options": {
+          "fever": "Fever",
+          "vomiting": "Throwing up",
+          "short_breath": "Trouble breathing",
+          "none": "Nothing else",
+          "other": "Something else",
+          "unsure": "Not sure"
+        }
+      },
+      "red_flags": {
+        "text": "Have you had chest pain, trouble breathing, fainting, or weakness on one side of your body?",
+        "clinical": "Any chest pain, dyspnea, syncope, or unilateral weakness?",
+        "topic": "Red flags",
+        "options": {
+          "chest_pain": "Chest pain",
+          "short_breath": "Trouble breathing",
+          "fainting": "Fainting",
+          "one_sided_weakness": "Weakness on one side",
+          "none": "None of these",
+          "unsure": "Not sure"
+        }
+      },
+      "allergies": {
+        "text": "Are you allergic to any medicine, food, or anything else? What happens when you react?",
+        "clinical": "Do you have any drug allergies? What is the reaction?",
+        "topic": "Allergies",
+        "options": {
+          "medicine": "Medicine allergy",
+          "food": "Food allergy",
+          "other": "Another allergy",
+          "none": "No known allergies",
+          "unsure": "Not sure"
+        }
+      },
+      "current_medications": {
+        "text": "What medicines do you take? Please include vitamins, herbal products, and anything you buy without a prescription.",
+        "clinical": "List current medications including OTC and supplements.",
+        "topic": "Current medications",
+        "options": {
+          "prescription": "Prescription medicine",
+          "nonprescription": "Medicine bought without a prescription",
+          "supplements": "Vitamins or herbal products",
+          "none": "No medicines",
+          "unsure": "Not sure"
+        }
+      },
+      "past_medical_history": {
+        "text": "Have you had any serious illness, surgery, or hospital stays?",
+        "clinical": "Past medical and surgical history?",
+        "topic": "Past medical history",
+        "options": {
+          "illness": "Serious illness",
+          "surgery": "Surgery",
+          "hospital": "Hospital stay",
+          "none": "None of these",
+          "unsure": "Not sure"
+        }
+      },
+      "family_history": {
+        "text": "Has anyone in your family had heart disease, diabetes, cancer, or stroke?",
+        "clinical": "Relevant family history?",
+        "topic": "Family history",
+        "options": {
+          "heart_disease": "Heart disease",
+          "diabetes": "Diabetes",
+          "cancer": "Cancer",
+          "stroke": "Stroke",
+          "none": "None of these",
+          "unsure": "Not sure"
+        }
+      },
+      "pregnancy": {
+        "text": "Could you be pregnant?",
+        "clinical": "Is there a possibility of pregnancy?",
+        "topic": "Pregnancy",
+        "options": {
+          "yes": "Yes",
+          "no": "No",
+          "unsure": "Not sure",
+          "prefer_not_to_say": "Prefer not to say"
+        }
+      },
+      "substance_use": {
+        "text": "Do you smoke, drink alcohol, or use any drugs?",
+        "clinical": "Tobacco, alcohol, and recreational drug use?",
+        "topic": "Substance use",
+        "options": {
+          "smoking": "Smoking",
+          "alcohol": "Alcohol",
+          "drugs": "Other drugs",
+          "none": "None of these",
+          "prefer_not_to_say": "Prefer not to say"
+        }
+      }
+    },
+    "questions": {
+      "chief_complaint": {
+        "text": "今天您主要是因为什么来的？",
+        "options": {
+          "pain": "疼痛",
+          "breathing": "呼吸困难",
+          "fever": "发热",
+          "other": "其他",
+          "unsure": "不确定"
+        }
+      },
+      "onset": {
+        "text": "它是什么时候开始的？是突然开始还是慢慢开始？",
+        "options": {
+          "sudden": "突然",
+          "gradual": "慢慢",
+          "today": "今天",
+          "days": "几天前",
+          "longer": "更久以前",
+          "unsure": "不确定"
+        }
+      },
+      "where": {
+        "text": "您在哪里感到疼痛？请用一根手指指向部位。",
+        "options": {
+          "head": "头",
+          "neck": "颈部",
+          "chest": "胸部",
+          "abdomen": "腹部",
+          "back": "背部",
+          "left_arm": "左臂",
+          "right_arm": "右臂",
+          "left_leg": "左腿",
+          "right_leg": "右腿",
+          "elsewhere": "其他部位",
+          "unsure": "不确定"
+        }
+      },
+      "how_long": {
+        "text": "多久会持续？是时刻存在，还是来去不定？",
+        "options": {
+          "minutes": "分钟",
+          "hours": "小时",
+          "days": "天",
+          "constant": "时刻存在",
+          "intermittent": "来去不定",
+          "unsure": "不确定"
+        }
+      },
+      "how_strong": {
+        "text": "从0（无痛）到10（你能想象到的最严重的疼痛），疼有多严重？",
+        "options": {
+          "s0": "0/10",
+          "s1": "1/10",
+          "s2": "2/10",
+          "s3": "3/10",
+          "s4": "4/10",
+          "s5": "5/10",
+          "s6": "6/10",
+          "s7": "7/10",
+          "s8": "8/10",
+          "s9": "9/10",
+          "s10": "10/10",
+          "unsure": "不确定"
+        }
+      },
+      "character": {
+        "text": "感觉如何？锐利、钝痛、灼热、绞痛，还是其他？",
+        "options": {
+          "sharp": "锐利",
+          "dull": "钝痛",
+          "burning": "灼热",
+          "squeezing": "绞痛",
+          "other": "其他",
+          "unsure": "不确定"
+        }
+      },
+      "aggravating_factors": {
+        "text": "什么让它更严重？",
+        "options": {
+          "moving": "移动",
+          "breathing": "呼吸",
+          "eating": "进食",
+          "nothing": "无特别原因",
+          "other": "其他",
+          "unsure": "不确定"
+        }
+      },
+      "relieving_factors": {
+        "text": "什么让它好转？",
+        "options": {
+          "rest": "休息",
+          "medicine": "药物",
+          "position": "改变体位",
+          "nothing": "无",
+          "other": "其他",
+          "unsure": "不确定"
+        }
+      },
+      "radiation": {
+        "text": "疼痛是否扩散到身体其他部位？",
+        "options": {
+          "stays": "局限于一处",
+          "moves": "向其他部位移动",
+          "unsure": "不确定"
+        }
+      },
+      "associated_symptoms": {
+        "text": "你是否有发烧、呕吐或呼吸困难等其他症状？",
+        "options": {
+          "fever": "发烧",
+          "vomiting": "呕吐",
+          "short_breath": "呼吸困难",
+          "none": "无其他症状",
+          "other": "其他",
+          "unsure": "不确定"
+        }
+      },
+      "red_flags": {
+        "text": "你是否有胸痛、呼吸困难、晕厥或身体一侧无力？",
+        "options": {
+          "chest_pain": "胸痛",
+          "short_breath": "呼吸困难",
+          "fainting": "晕厥",
+          "one_sided_weakness": "身体一侧无力",
+          "none": "无上述症状",
+          "unsure": "不确定"
+        }
+      },
+      "allergies": {
+        "text": "你是否对任何药物、食物或其他东西过敏？过敏时会发生什么？",
+        "options": {
+          "medicine": "药物过敏",
+          "food": "食物过敏",
+          "other": "其他过敏",
+          "none": "无已知过敏",
+          "unsure": "不确定"
+        }
+      },
+      "current_medications": {
+        "text": "您服用哪些药物？请包括维生素、草本产品和任何非处方药。",
+        "options": {
+          "prescription": "处方药",
+          "nonprescription": "非处方药",
+          "supplements": "维生素或草本产品",
+          "none": "不服用药物",
+          "unsure": "不确定"
+        }
+      },
+      "past_medical_history": {
+        "text": "您是否患有严重疾病、接受过手术或住院？",
+        "options": {
+          "illness": "严重疾病",
+          "surgery": "手术",
+          "hospital": "住院",
+          "none": "以上都不是",
+          "unsure": "不确定"
+        }
+      },
+      "family_history": {
+        "text": "您的家族中是否有心脏病、糖尿病、癌症或中风病史？",
+        "options": {
+          "heart_disease": "心脏病",
+          "diabetes": "糖尿病",
+          "cancer": "癌症",
+          "stroke": "中风",
+          "none": "以上都不是",
+          "unsure": "不确定"
+        }
+      },
+      "pregnancy": {
+        "text": "你是否可能怀孕？",
+        "options": {
+          "yes": "是",
+          "no": "否",
+          "unsure": "不确定",
+          "prefer_not_to_say": "不想回答"
+        }
+      },
+      "substance_use": {
+        "text": "你吸烟、饮酒或使用药物吗？",
+        "options": {
+          "smoking": "吸烟",
+          "alcohol": "饮酒",
+          "drugs": "其他药物",
+          "none": "以上都不包括",
+          "prefer_not_to_say": "不想回答"
+        }
+      }
+    },
+    "reviewNotes": "Machine-generated draft. Numeric severity answers are formatted from numeric IDs as value/10; clinical and fluent-speaker review remains pending."
+  }
+]

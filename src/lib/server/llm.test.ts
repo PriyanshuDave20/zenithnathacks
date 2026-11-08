@@ -86,6 +86,6 @@ test("invalid tasks and unknown providers fail without exposing content", async 
     else process.env.LLM_PROVIDER = previousProvider;
   });
   await assert.rejects(callModel({ system, user: "secret" }), {
-    message: "LLM provider is not configured. Only the mock provider is available.",
+    message: "LLM provider is not configured.",
   });
 });

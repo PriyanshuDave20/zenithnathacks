@@ -10,11 +10,13 @@ const output = mkdtempSync(join(tmpdir(), "synapse-foundation-tests-"));
 const tests = [
   "src/lib/contracts/contracts.test.ts",
   "src/lib/questions/questions.test.ts",
+  "src/lib/questions/localization.test.ts",
   "src/lib/input/body-parts.test.ts",
   "src/lib/input/gaze/gaze-math.test.ts",
   "src/lib/input/gaze/dwell.test.ts",
   "src/lib/server/redact.test.ts",
   "src/lib/server/llm.test.ts",
+  "src/lib/server/providers/nvidia.test.ts",
   "src/lib/server/translate/translate.test.ts",
   "src/app/api/translate/route.test.ts",
   "src/lib/server/respond/respond.test.ts",

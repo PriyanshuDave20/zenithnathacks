@@ -4,7 +4,7 @@ import { POST as translateRoute } from "../../app/api/translate/route";
 import { POST as respondRoute } from "../../app/api/respond/route";
 import { STORIES } from "../../lib/server/fixtures/stories";
 import { BODY_PARTS } from "../../lib/input/body-parts";
-import { QUESTIONS } from "../../lib/mocks/data";
+import { getGuidedQuestions } from "../../lib/questions/localization";
 import { isReplyUnavailable, respond, track, translate } from "./api";
 
 function connectRoutes(t: TestContext) {
@@ -41,25 +41,26 @@ test("browser adapter reaches both real routes for all four synthetic fixtures",
 
 test("every frontend guided option and body part reaches the route without losing its label or scale", async (t) => {
   const requests = connectRoutes(t);
-  const inputs = QUESTIONS.flatMap((question) => question.options.map((option) => ({
+  const questions = getGuidedQuestions("en")!;
+  const inputs = questions.flatMap((question) => question.options.map((option) => ({
     questionId: question.id, kind: "option" as const, value: option.id,
   })));
   inputs.push(...BODY_PARTS.map((part) => ({ questionId: "where", kind: "option" as const, value: part.id })));
   const response = await translate({ context: STORIES[0].translateRequest.context, inputs });
   const expected = [
-    ...QUESTIONS.flatMap((question) => question.options.map((option) => option.label)),
+    ...questions.flatMap((question) => question.options.map((option) => option.label)),
     ...BODY_PARTS.map((part) => part.label),
   ];
   assert.equal(response.original, expected.join(" "));
-  assert.match(response.original, /Severity 5\/5/);
+  assert.match(response.original, /5 out of 10/);
   assert.match(response.original, /Right knee/);
   assert.match(response.original, /Left knee/);
   const sent = await requests[0].json();
-  assert.ok(sent.inputs.every((input: { kind: string }) => input.kind === "text"));
+  assert.ok(sent.inputs.every((input: { kind: string }) => input.kind === "option"));
   assert.ok(sent.inputs.some((input: { questionId: string }) => input.questionId === "associated_symptoms"));
   assert.ok(sent.inputs.some((input: { questionId: string }) => input.questionId === "aggravating_factors"));
   assert.doesNotMatch(JSON.stringify(sent), /partId|"spots"|"x"|"y"/);
-  assert.match(response.lowConfidence[0].reason, /no translation was performed/);
+  assert.match(response.lowConfidence[0].reason, /No model was called/);
 });
 
 test("unsupported reply availability comes from the API, including English and frontend quick replies", async (t) => {
@@ -71,6 +72,7 @@ test("unsupported reply availability comes from the API, including English and f
     });
     assert.equal(isReplyUnavailable(response), true);
   }
+  assert.equal(isReplyUnavailable({ patientText: "Translation unavailable.", readAloudText: "Translation unavailable.", teachBackPrompt: "Please ask a qualified interpreter for help." }), true);
 });
 
 test("adapter rejects HTTP errors, invalid JSON, malformed schemas and network failures without echoing bodies", async (t) => {
@@ -93,16 +95,16 @@ test("adapter rejects HTTP errors, invalid JSON, malformed schemas and network f
   await assert.rejects(translate(STORIES[0].translateRequest));
 });
 
-test("invalid selections and undeclared request fields never reach fetch; metrics remain disabled", (t) => {
-  const fetch = t.mock.method(globalThis, "fetch", async () => { throw new Error("Unexpected fetch"); });
+test("invalid selections are rejected by the route; undeclared request fields and metrics never fetch", async (t) => {
+  const requests = connectRoutes(t);
   for (const input of [
     { questionId: "where", kind: "option" as const, value: "unknown-part" },
-    { questionId: "how_long", kind: "pictogram" as const, value: "calendar" },
+    { questionId: "how_long", kind: "pictogram" as const, value: "clock" },
     { kind: "option" as const, value: "head" },
   ]) {
-    assert.throws(() => translate({ context: STORIES[0].translateRequest.context, inputs: [input] }));
+    await assert.rejects(translate({ context: STORIES[0].translateRequest.context, inputs: [input] }));
   }
   assert.throws(() => respond({ ...STORIES[0].respondRequest, name: "extra" } as Parameters<typeof respond>[0]));
   track({ event: "session_started", mode: "standard" });
-  assert.equal(fetch.mock.callCount(), 0);
+  assert.equal(requests.length, 3);
 });
