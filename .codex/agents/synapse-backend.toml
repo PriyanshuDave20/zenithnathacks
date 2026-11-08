@@ -18,7 +18,8 @@ Do not spawn further agents.
 Use only synthetic examples. Never read, copy or print .env files, keys, auth files or patient identifiers.
 Never persist patient inputs, visits, messages, responses or summaries; never log request/response bodies.
 Guided option/pictogram/fixed-phrase selections must remain deterministic and must not reach a model.
-Keep model calls behind callModel, validate contracts, preserve input/output redaction and generic no-store errors.
+Keep runtime model calls behind callModel, validate contracts, preserve input/output redaction and generic no-store errors.
+Public static language-pack generation remains a separate maintenance task handled by the coordinator when authorized.
 Do not introduce a diagnosis or claim certified interpretation or HIPAA compliance.
 Default to offline fixtures/mocked HTTP. The coordinator handles any already-authorized live checks.
 Camera frames and landmarks stay on the device. Do not add telemetry or content caches.

@@ -9,7 +9,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 
 | Task | Lane | Owner | Branch | Status |
 |------|------|-------|--------|--------|
-| Project-local Backend 1 implementer/reviewer team | Tooling / docs | Prem / Codex | prem/backend-agent-team | In progress: inherited model/provider, two workers maximum, isolated worktrees, independent review; no new logging/AWS integrations |
+| Project-local Backend 1 implementer/reviewer team | Tooling / docs | Prem / Codex | prem/backend-agent-team | Done on branch: two-worker cap, inherited model/provider, isolated-worktree workflow; independent review and fresh native role smoke passed; 81 tests/typecheck/lint pass |
 | Eye mode naming and current landing-page examples | Frontend | Zach / Codex | zach/eye-mode-showcase | Implemented: automatic gaze demo with cursor/dwell/confirmed clinician choice, camera-free playback and reduced motion; merged zenith/gaze-tracking; Eye selected in clinician setup; typecheck and 64 tests pass; webcam/visual recheck pending |
 | Session confirmation, voice clear and patient read-back polish | Frontend | Zach / Codex | zach/session-ui-fixes | Done: legible end/clear confirmation, voice transcript reset, message retained during read-back loading, compact inline intake actions; mobile/desktop browser checks and 64 tests pass |
 | Landing demo accuracy and responsive polish | Frontend | Zach / Codex | zach/session-ui-fixes | Done: all five modes, six workflow previews, hero and privacy reviewed; body overflow, summary accuracy and mode icons fixed; checks pass |

@@ -72,7 +72,7 @@ without changed code, new failures or a concrete unresolved concern.
 
 ## Verify and hand off
 
-Use offline synthetic fixtures by default. Only free text/transcripts and clinician
+Use offline synthetic fixtures by default. At runtime only free text/transcripts and clinician
 replies may reach the configured model; guided selections stay local/deterministic.
 The coordinator performs live checks only within the user's existing authorization,
 using synthetic data and without exposing keys or bodies. No patient data or model

@@ -48,7 +48,7 @@ session's sandbox; its no-edit instructions are not an independent OS sandbox.
 The setup inherits the parent's Codex model/provider/permissions and preserves the
 existing Playwright config and UI hooks. It adds no AWS plugins/MCP servers,
 approval bypasses or team logging hooks. The application's NVIDIA provider remains
-independent of this developer tooling. Start a new Codex thread to refresh native
+independent of this developer tooling. In the trusted project, start a new Codex thread to refresh native
 role/skill discovery; an existing thread can explicitly read the role/skill files
 and delegate through its available tools. If delegation is unavailable, report
 sequential execution and the missing independent review instead of claiming it ran.
