@@ -17,7 +17,7 @@ export function Closing() {
           Open it on the device in your hand. Pick a language and a mode, and pass it over.
         </p>
         <Link
-          href="/start"
+          href="/dashboard"
           className="press mt-10 inline-flex min-h-14 items-center gap-3 rounded-full bg-blue py-2 pl-8 pr-2.5 text-lg font-semibold text-navy hover:bg-white"
         >
           Start a session

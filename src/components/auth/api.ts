@@ -32,6 +32,6 @@ export function useClinician(): ClinicianProfile | null | "loading" {
 }
 
 /** Only allow same-site relative paths as post-sign-in destinations. */
-export function safeNext(raw: string | null | undefined, fallback = "/start") {
+export function safeNext(raw: string | null | undefined, fallback = "/dashboard") {
   return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : fallback;
 }

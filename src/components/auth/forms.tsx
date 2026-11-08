@@ -7,7 +7,7 @@ import { Check } from "@/components/home/icons";
 import { requestPasswordReset, USING_MOCK_AUTH, safeNext, signIn, signInWithGoogle, signUp, useClinician, type AuthError, type ClinicianRole } from "./api";
 import { AuthShell, FormError, GoogleButton, OrDivider, PasswordField, SubmitButton, TextField } from "./auth-ui";
 
-const nextFromUrl = () => (typeof window === "undefined" ? "/start" : safeNext(new URLSearchParams(window.location.search).get("next")));
+const nextFromUrl = () => (typeof window === "undefined" ? "/dashboard" : safeNext(new URLSearchParams(window.location.search).get("next")));
 const message = (e: unknown) => (e as AuthError)?.message ?? "Something went wrong. Check your connection and try again.";
 
 /** Validation renders before focus moves; field errors remain associated with their inputs. */
@@ -71,7 +71,7 @@ export function SignInForm() {
   return (
     <AuthShell
       title="Sign in"
-      lede="Welcome back. Sign in to start a session with your next patient."
+      lede="Welcome back. Sign in to your clinician home."
       footer={
         <>
           New to Synapse?{" "}
@@ -150,7 +150,7 @@ export function SignUpForm() {
     setBusy("email");
     try {
       await signUp(form);
-      router.replace("/profile?welcome=1");
+      router.replace("/dashboard");
     } catch (err) {
       setError(message(err));
       setBusy(null);
@@ -162,7 +162,7 @@ export function SignUpForm() {
     setBusy("google");
     try {
       await signInWithGoogle();
-      router.replace("/profile?welcome=1");
+      router.replace("/dashboard");
     } catch (err) {
       setError(message(err));
       setBusy(null);
