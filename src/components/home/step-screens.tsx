@@ -137,7 +137,7 @@ export function StepScreen({ step, index }: { step: Step; index: number }) {
                 {[
                   ["Dónde", "Pecho"],
                   ["Desde", "1–2 días"],
-                  ["Intensidad", "4 de 5"],
+                  ["Intensidad", "4 de 10"],
                   ["Empeora al", "Respirar"],
                 ].map(([k, v]) => (
                   <div key={k} className="flex gap-1.5">
@@ -170,7 +170,7 @@ export function StepScreen({ step, index }: { step: Step; index: number }) {
               <p className="text-sm font-medium text-on-navy-soft">Chief complaint</p>
               <p className="font-display text-lg font-semibold leading-snug">Chest pain, worse when breathing</p>
               <div className="mt-2 flex flex-wrap gap-1.5 text-sm">
-                <span className="rounded-full bg-navy-raised px-3 py-1">1–2 days · 4/5</span>
+                <span className="rounded-full bg-navy-raised px-3 py-1">1–2 days · 4/10</span>
                 <span className="flex items-center gap-1 rounded-full bg-navy-raised px-3 py-1 text-blue">
                   <Alert size={14} /> Chest pain
                 </span>

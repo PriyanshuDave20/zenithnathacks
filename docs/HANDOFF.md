@@ -1,5 +1,11 @@
 # Handoff Log
 
+### 2026-11-07 Zach / Codex · zach/combined-prs
+- Combined PR #15 at 2d51804d8670ca56b668705fca69ea49c371b099, #16 at 4b00450c8df733e04954dad987ec76c2366c2fb3, and #18 at 301c019f36dffb9479aae20c75f72ce0c91d1d3d on origin/main 8e857c9 using three non-fast-forward merges. No textual conflicts. All three exact heads are ancestors of integration HEAD. Backend/questions/session/communication/package/env files match #16 exactly; landing files matched #18 before the explicit /5 → /10 walkthrough alignment. No source branch rewritten or deleted.
+- Preserved provider opt-in, deterministic guided reports/static packs, free-text model path, frontend integration, original UI fixes and landing polish. Adjusted only the walkthrough severity denominator to match the newly integrated canonical scale.
+- Validation: typecheck, all 81 tests, lint (0 errors/188 existing skill warnings), whitespace pass. Chromium at 390x844: mock-provider guided Chest → Days → 4/10 → Breathing → Nothing else → read-back → handoff → clinician summary; correct English report and no horizontal overflow. NVIDIA tests use mocked HTTP; no live provider smoke rerun. No database changes or credentials copied.
+- Isolated worktree /private/tmp/synapse-combined-prs reuses local node_modules and generated Prisma through untracked symlinks (excluded from commits). Original checkout and its local .codex/config.toml/package-lock.json edits untouched. Dev verification on port 3001.
+
 ### 2026-11-07 Zach / Codex · zach/session-ui-fixes (landing demo review)
 - Reviewed all five modes, six workflow previews, hero and privacy. Fixed low-literacy diagram overflowing its panel with explicit diagram dimensions. Its clinician recap now shows only chest pain and marks duration unanswered, instead of inventing breathing/duration details.
 - Matched phone composer icons to speech, captions, body selection, typing and handoff. Clarified language/read-aloud copy; Deaf preview explicitly asks about chest pain; mute phrase choices match the app. Removed static privacy countdown, clarified inactivity. Clinician hero composer now shows a keyboard; changing modes clears stale Eye demo choice.
