@@ -118,10 +118,9 @@ type SelectEvent = { channel: InputChannel; optionId: string };
   follow-up questions (`followsRegion`).
 - Video from the camera stays on the device. Nothing is uploaded, stored, or logged.
 
-## Clinician accounts (draft, 2026-11-07)
-Clinician-only accounts (their own profile). Never patient data. The frontend uses `src/lib/mocks/auth.ts` through
-`src/components/auth/api.ts`; swap that file to these routes. Sessions should be an httpOnly, Secure, SameSite=Lax cookie;
-passwords hashed server-side (argon2/bcrypt) and never logged. Server-side checks must gate `/start` too (the client gate is UX only).
+## Clinician accounts
+Clinician-only accounts (their own profile). Never patient data. The frontend uses `src/components/auth/api.ts` to reach these routes; legacy mock accounts are never trusted or migrated. Sessions should be an httpOnly, Secure, SameSite=Lax cookie;
+passwords hashed server-side using Better Auth 1.7.18’s built-in scrypt and never logged. Server-side checks must gate `/start` too (the client gate is UX only).
 
 ```ts
 type ClinicianRole = "doctor" | "nurse" | "other";
@@ -139,13 +138,18 @@ type ClinicianProfile = {
 - `POST /api/auth/signup` `{ email, password, name, role, clinic }` -> `ClinicianProfile` (sets session). 409 `exists`, 400 `weak_password` (min 8).
 - `POST /api/auth/signin` `{ email, password }` -> `ClinicianProfile`. 401 `invalid` (same message for unknown email or wrong password).
 - `GET /api/auth/google` -> redirect to Google OAuth; callback sets the session and redirects to `next` (relative paths only).
-- `POST /api/auth/forgot-password` `{ email }` -> 204 always (no account enumeration); emails a reset link.
-- `POST /api/auth/signout` -> 204 (clears session).
+- `POST /api/auth/forgot-password` `{ email }` -> generic 204 for valid requests when delivery is configured (no account enumeration); requests a reset link. Missing delivery configuration returns generic 503.
+- `POST /api/auth/signout` -> 204 (revokes and clears session).
+- `POST /api/auth/reset-password` `{ token, newPassword }` -> 204; invalid/expired/used tokens fail generically. Password-reset completion is at `/reset-password`.
+- `GET /api/auth/capabilities` -> `{ google: boolean, passwordReset: boolean }` (configuration availability only).
 - `GET /api/me` -> `ClinicianProfile` or 401.
 - `PATCH /api/me` `{ name?, role?, clinic?, languages? }` -> `ClinicianProfile`.
 
-Errors use the shared `{ error: { code, message } }` shape. Prisma: one `Clinician` table (no patient tables), plus whatever
-the session/OAuth library needs.
+Errors use the shared `{ error: { code, message } }` shape. Prisma: `Clinician`, `ClinicianSession`, `ClinicianAccount` and `ClinicianVerification` only; no patient tables. Profile edits are allowlisted, ownership comes from the verified session, and plans are server-owned display metadata.
+
+Account responses/errors are no-store. State-changing browser requests require the exact configured Origin. Google uses the library-managed OAuth state/PKCE callback. Missing auth or provider configuration returns generic 503, never a mock success. See `docs/AUTH.md` for setup and verification limits.
+
+`POST /api/translate`, `/api/respond` and `/api/speech` require a verified clinician session and same-origin request (401 unsigned; 403 cross-origin; 503 account service unavailable). These checks run before reading patient input or contacting providers. Speech GET capabilities and anonymous `/api/metrics` remain public.
 
 ## Errors
 `{ error: { code: string; message: string } }` with a normal HTTP status. Model failures return 502;
