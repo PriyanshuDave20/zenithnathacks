@@ -22,7 +22,7 @@ async function post<T>(path: string, body: unknown, schema: z.ZodType<T>): Promi
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
     cache: "no-store",
-    credentials: "omit",
+    credentials: "same-origin",
     signal: AbortSignal.timeout(30_000),
   });
   // Keep server error bodies and validation details out of UI errors and logs.

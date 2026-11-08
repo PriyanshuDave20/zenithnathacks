@@ -50,3 +50,9 @@ export function createClinicianStore(load: () => Promise<unknown>, clearPatient:
     },
   };
 }
+
+/** Profile edits revalidate without crossing an account boundary or clearing patient memory. */
+export function receiveSessionChange(store: Pick<ReturnType<typeof createClinicianStore>, "invalidate" | "refresh">, reason: unknown) {
+  if (reason !== "profile") store.invalidate();
+  return store.refresh();
+}

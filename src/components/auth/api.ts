@@ -10,7 +10,7 @@ import {
   type SignInInput,
   type ProfilePatch,
 } from "@/lib/contracts/auth";
-import { createClinicianStore } from "./session-store";
+import { createClinicianStore, receiveSessionChange } from "./session-store";
 import { safeNext } from "./redirect";
 
 export type { AuthError, ClinicianProfile, ClinicianRole } from "@/lib/contracts/auth";
@@ -52,10 +52,7 @@ function watch() {
   watching = true;
   if (typeof BroadcastChannel !== "undefined") {
     channel = new BroadcastChannel("synapse:clinician-session");
-    channel.onmessage = () => {
-      store.invalidate();
-      void store.refresh();
-    };
+    channel.onmessage = event => { void receiveSessionChange(store, event.data); };
   }
   window.addEventListener("focus", () => { void store.refresh(); });
   window.addEventListener("pageshow", () => { void store.refresh(); });
@@ -66,7 +63,7 @@ function watch() {
     if (document.visibilityState === "visible") void store.refresh();
   }, 60_000);
 }
-function notify() { channel?.postMessage("changed"); }
+function notify(reason: "boundary" | "profile" = "boundary") { channel?.postMessage(reason); }
 
 async function authenticate(path: string, input: unknown): Promise<ClinicianProfile> {
   const profile = ClinicianProfileSchema.parse(await request(path, "POST", input));
@@ -99,7 +96,7 @@ export async function resetPassword(token: string, newPassword: string): Promise
 export async function updateProfile(patch: ProfilePatch): Promise<ClinicianProfile> {
   const profile = ClinicianProfileSchema.parse(await request("/api/me", "PATCH", patch));
   store.set(profile);
-  notify();
+  notify("profile");
   return profile;
 }
 export async function signOut(): Promise<void> {

@@ -17,7 +17,7 @@ function connectRoutes(t: TestContext) {
   const requests: Request[] = [];
   t.mock.method(globalThis, "fetch", async (path: string, init: RequestInit) => {
     assert.equal(init.cache, "no-store");
-    assert.equal(init.credentials, "omit");
+    assert.equal(init.credentials, "same-origin");
     assert.ok(init.signal);
     const request = new Request(`http://synapse.test${path}`, init);
     requests.push(request.clone());

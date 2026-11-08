@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createClinicianStore } from "./session-store";
+import { createClinicianStore, receiveSessionChange } from "./session-store";
 import { safeNext } from "./redirect";
 
 const profile = (id: string) => ({
@@ -60,4 +60,24 @@ test("post-auth redirects reject absolute, backslash and whitespace URL tricks",
     assert.equal(safeNext(raw), "/dashboard");
   }
   assert.equal(safeNext("/start?mode=guided#step"), "/start?mode=guided#step");
+});
+
+
+test("cross-tab profile updates preserve patient content while account notifications clear it immediately", async () => {
+  let clears = 0;
+  let loaded = profile("one");
+  const store = createClinicianStore(async () => loaded, () => { clears++; });
+  store.set(loaded);
+  clears = 0;
+  const snapshots: unknown[] = [];
+  store.subscribe(() => snapshots.push(store.getSnapshot()));
+  loaded = { ...loaded, clinic: "Updated synthetic clinic" };
+  await receiveSessionChange(store, "profile");
+  assert.equal(clears, 0);
+  assert.equal(snapshots.includes(null), false);
+  assert.deepEqual(store.getSnapshot(), loaded);
+  const pending = receiveSessionChange(store, "boundary");
+  assert.equal(store.getSnapshot(), null);
+  assert.ok(clears > 0);
+  await pending;
 });
