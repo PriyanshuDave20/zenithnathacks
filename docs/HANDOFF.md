@@ -1,5 +1,11 @@
 # Handoff Log
 
+### 2026-11-07 Zach / Codex · zach/session-ui-fixes (landing demo review)
+- Reviewed all five modes, six workflow previews, hero and privacy. Fixed low-literacy diagram overflowing its panel with explicit diagram dimensions. Its clinician recap now shows only chest pain and marks duration unanswered, instead of inventing breathing/duration details.
+- Matched phone composer icons to speech, captions, body selection, typing and handoff. Clarified language/read-aloud copy; Deaf preview explicitly asks about chest pain; mute phrase choices match the app. Removed static privacy countdown, clarified inactivity. Clinician hero composer now shows a keyboard; changing modes clears stale Eye demo choice.
+- Browser: 1440px phone-frame screenshots of all five modes and all six workflow steps, privacy; 390px all modes with no horizontal overflow, Arabic RTL, Chinese selection, all six mobile workflow selectors, keyboard End-to-Eye, Eye confirmation mirrors clinician recap, pause and reduced-motion static selection. No real camera/microphone verification.
+- Checks: typecheck, full lint (0 errors, existing bundled-skill warnings), 64 tests and whitespace pass. Preserved local .codex/config.toml/package-lock.json edits.
+
 ### 2026-11-07 Zach / Codex · zach/session-ui-fixes (Can’t speak demo copy)
 - Landing Can’t speak composer now says Choose a phrase, replacing ambiguous Tap to speak. Selected message explicitly labels device read-aloud with a speaker icon; removed microphone-like waveform. Intro distinguishes patient text/taps from device speech.
 - Typecheck and targeted eslint pass; browser checked Can’t speak tab. Files: home/modes.tsx and phone-rail.tsx.

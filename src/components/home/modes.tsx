@@ -21,21 +21,21 @@ export const modes: { id: ModeId; tab: string; short: string; arrives: string; i
     tab: "Another language",
     short: "Language",
     arrives: "Speech in the patient’s language",
-    intro: "The patient speaks or types in their own language. They hear it read back to confirm it was understood.",
+    intro: "The patient speaks or types in their own language, then checks a read-back before sharing it with the clinician.",
   },
   {
     id: "deaf",
     tab: "Deaf or hard of hearing",
     short: "Deaf/HoH",
     arrives: "Typing and taps, with captions",
-    intro: "Every question arrives as large captions. The patient types or taps an answer. No audio-only cues.",
+    intro: "Questions and replies appear as large text. The patient types or taps an answer. No audio-only cues.",
   },
   {
     id: "literacy",
     tab: "Low literacy",
     short: "Literacy",
     arrives: "Pictures, with read-aloud",
-    intro: "One question at a time, answered with pictures. Every screen can be read aloud in simple words.",
+    intro: "One question at a time, answered with pictures. Read-aloud supports the questions and answers.",
   },
   {
     id: "mute",
@@ -105,7 +105,7 @@ export function Panel({
             <p className="flex items-center gap-2 text-sm font-medium text-on-navy-soft">
               <Captions size={18} /> Caption
             </p>
-            <p className="mt-1 font-display text-2xl font-semibold leading-snug">Does it hurt more when you breathe in?</p>
+            <p className="mt-1 font-display text-2xl font-semibold leading-snug">Does your chest hurt when you breathe in?</p>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {["Yes", "No", "Not sure"].map((a, i) => (
@@ -133,7 +133,7 @@ export function Panel({
         <div className="flex flex-col gap-3">
           <p className="font-display text-xl font-bold">Where does it hurt?</p>
           <div className={`mx-auto w-full ${compact ? "max-w-48" : "max-w-64"} rounded-3xl bg-surface p-2 ring-1 ring-line`}>
-            <BodyPicture view="front" figure="male" spots={[{ id: "mode-demo", view: "front", x: 104, y: 128, partId: "chest" }]} className="mx-auto max-h-64 w-auto" />
+            <BodyPicture view="front" figure="male" spots={[{ id: "mode-demo", view: "front", x: 104, y: 128, partId: "chest" }]} className="mx-auto h-64 w-32" />
           </div>
           <p className="text-sm font-semibold text-blue-deeper">Chest marked · Next: when did it start?</p>
           <span className="flex min-h-12 items-center gap-2 self-start rounded-full bg-blue-soft px-5 text-base font-semibold text-blue-deeper">
@@ -145,7 +145,7 @@ export function Panel({
       return (
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-2">
-            {["Pain", "in my chest", "when I breathe", "for 2 days", "Dizzy", "Can’t sleep"].map((p, i) => (
+            {["Pain", "in my chest", "when I breathe", "for two days", "Dizzy", "Nauseous"].map((p, i) => (
               <span
                 key={p}
                 className={`flex min-h-12 items-center gap-1 rounded-full px-4 text-base font-semibold ${
@@ -187,6 +187,7 @@ export function Modes() {
   }
 
   const m = modes[active];
+  const partial = m.id === "literacy";
 
   return (
     <section id="modes" data-phone-screen="modes" aria-labelledby="modes-title" className="page-mist">
@@ -220,7 +221,7 @@ export function Modes() {
               aria-controls={`panel-${x.id}`}
               tabIndex={i === active ? 0 : -1}
               onClick={() => setActive(i)}
-              className={`press min-h-12 flex-auto whitespace-nowrap rounded-full px-2 text-sm leading-tight sm:flex-1 sm:px-4 sm:text-base text-base font-semibold ${
+              className={`press min-h-12 flex-auto whitespace-nowrap rounded-full px-2 text-sm leading-tight sm:flex-1 sm:px-4 sm:text-base font-semibold ${
                 i === active ? "bg-navy text-white" : "text-ink-soft hover:bg-ground-2 hover:text-ink"
               }`}
             >
@@ -258,12 +259,12 @@ export function Modes() {
                 <p className="mt-4 text-base text-on-navy-soft">The confirmed choice appears here for review. This is a simulated conversation; no staff are notified.</p>
               </div>
             ) : <>
-            <p className="mt-4 text-sm font-medium text-on-navy-soft">Chief complaint</p>
-            <p className="font-display text-2xl font-semibold leading-snug">{summary.chiefComplaint}</p>
+            <p className="mt-4 text-sm font-medium text-on-navy-soft">{partial ? "Report so far" : "Chief complaint"}</p>
+            <p className="font-display text-2xl font-semibold leading-snug">{partial ? "Chest pain" : summary.chiefComplaint}</p>
             <dl className="mt-6 grid grid-cols-2 gap-3 text-base">
               <div className="rounded-[1.25rem] bg-navy-raised p-4">
                 <dt className="text-sm text-on-navy-soft">Duration</dt>
-                <dd className="mt-0.5 font-semibold">{summary.duration}</dd>
+                <dd className="mt-0.5 font-semibold">{partial ? "Not answered yet" : summary.duration}</dd>
               </div>
               <div className="rounded-[1.25rem] bg-navy-raised p-4">
                 <dt className="text-sm text-on-navy-soft">Red flag</dt>

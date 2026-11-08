@@ -236,7 +236,7 @@ export function PrivacyScreen() {
   const rows = [
     { icon: <Shield size={20} />, title: "Kept in this tab only", note: "Nothing is saved to a server" },
     { icon: <IdMasked size={20} />, title: "No identifiers asked", note: "No names, IDs or birth dates" },
-    { icon: <Clear size={20} />, title: "Clears itself", note: "After 5 minutes without a tap" },
+    { icon: <Clear size={20} />, title: "Clears itself", note: "After 5 minutes of inactivity" },
   ];
   return (
     <>
@@ -253,7 +253,7 @@ export function PrivacyScreen() {
           </div>
         ))}
         <p className="mt-1 text-center text-sm text-ink-soft">
-          Auto-clear in <span className="font-semibold tabular-nums text-ink">4:59</span>
+          End or clear the session at any time.
         </p>
       </div>
       <div className="mt-auto px-4 pb-5">

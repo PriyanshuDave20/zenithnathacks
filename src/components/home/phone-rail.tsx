@@ -7,7 +7,7 @@ import { Panel, modes } from "./modes";
 import { ScreenBar } from "./phone";
 import { Phone3D } from "./phone-3d";
 import { useModesState } from "./rail-store";
-import { Keyboard } from "./icons";
+import { Captions, Handoff, Keyboard, Mic, PictoChest } from "./icons";
 import { PrivacyScreen, StepScreen } from "./step-screens";
 
 /**
@@ -21,12 +21,12 @@ import { PrivacyScreen, StepScreen } from "./step-screens";
  * Small screens keep their own in-flow phones in each section.
  */
 /** The input bar at the foot of the modes screen, in each mode's own way of answering. */
-const COMPOSER: Record<string, string> = {
-  language: "Speak or type",
-  deaf: "Type an answer",
-  literacy: "Tap a picture",
-  mute: "Choose a phrase",
-  eye: "Pass to clinician to review",
+const COMPOSER = {
+  language: { label: "Speak or type", Icon: Mic },
+  deaf: { label: "Type an answer", Icon: Captions },
+  literacy: { label: "Tap where it hurts", Icon: PictoChest },
+  mute: { label: "Choose a phrase", Icon: Keyboard },
+  eye: { label: "Pass to clinician", Icon: Handoff },
 };
 
 export function PhoneRail() {
@@ -58,6 +58,7 @@ export function PhoneRail() {
   const holder =
     stepIndex >= 0 ? steps[stepIndex].holder : screen === "modes" || screen === "hero" ? "Patient" : "Clinician";
   const m = modes[mode];
+  const composer = COMPOSER[m.id];
 
   return (
     <div data-phone-rail className="pointer-events-none absolute inset-0 z-10 hidden lg:block">
@@ -94,8 +95,8 @@ export function PhoneRail() {
                       </div>
                       <div className="px-4 pb-5 pt-3">
                         <span className="flex min-h-12 min-w-0 items-center gap-2 whitespace-nowrap rounded-full px-4 text-base text-ink-soft ring-1 ring-line">
-                          <Keyboard size={18} className="shrink-0" />
-                          <span className="truncate">{COMPOSER[m.id]}</span>
+                          <span aria-hidden="true" className="shrink-0"><composer.Icon size={18} /></span>
+                          <span className="truncate">{composer.label}</span>
                         </span>
                       </div>
                     </>
