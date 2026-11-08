@@ -15,6 +15,13 @@ Do not put secrets or patient data here.
 
 ## Entries
 
+### 2026-11-08  Zach / Claude  zach/body-refresh
+- Done: the body diagram now uses Zach's reference line drawing (`~/Downloads/Gemini_Generated_Image_jlb2ewjlb2ewjlb2.jpg` on Zach's machine, not committed), traced to vector paths (`SILHOUETTE` and `LINES` per view in `src/components/input/body-diagram.tsx`). Front has face and hair, collarbones, chest, navel, hip lines, open hands; back has spine, shoulder blades, buttocks. Line art draws on top of the red spots; spots and taps are clipped to the body. Sheets are now white with a Frost Line ring (as in the reference).
+- Tap pieces re-fitted to the new proportions (armpit y≈161, wrist ≈245, crotch ≈269, knee ≈346, ankle ≈431 in the 240x480 space). Browser probe: every part names correctly on both views; the gap between arm and torso and the space around the body take no tap.
+- Unchanged: spots, labels, `BodyDiagram` / `BodyMap` props, contracts.
+- Checked: typecheck, tests, eslint; Chrome desktop (taps, clinician summary map) and a 390px Arabic preview with keyboard focus (temporary route, removed). Process followed the impeccable polish playbook; ui-ux-pro-max (tap delay, contrast) already satisfied.
+- Notes: to replace the art, re-trace the image (marching squares on the 2816x1536 JPEG at half resolution, panels x 330-1356 and 1461-2487, y 92-1420; map with scale 460/596 about each panel's centre). Do not run Prettier on this file.
+
 ### 2026-11-08  Zach / Claude  zach/body-hotspots
 - Done: "Where does it hurt?" is now one continuous body. The patient taps anywhere and a soft red spot lands at that exact point; tapping a spot again removes it. The old part geometry stays, invisible, and only names the part under each tap, so translate inputs, read-back, red flags and labels are unchanged (still body-part ids). Chips show one per part with a count ("Estómago ×2"). Keyboard: Tab to a part, Enter places a spot at its centre (Enter again clears that part).
 - Clinician: new read-only `BodyMap` (front + back, every spot in place) in each patient bubble of the conversation and in the clinician summary ("Where it hurts · every spot the patient marked", all reports combined, plus an English list of parts).
