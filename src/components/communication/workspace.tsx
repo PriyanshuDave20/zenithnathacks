@@ -750,7 +750,7 @@ export function CommunicationWorkspace() {
           <>
             <Image
               src="/communication/synapse-gemini.png"
-              alt="Synapse"
+              alt=""
               width={640}
               height={400}
             />
@@ -852,7 +852,7 @@ export function CommunicationWorkspace() {
           <>
             <Image
               src="/communication/synapse-gemini.png"
-              alt="Synapse"
+              alt=""
               width={640}
               height={400}
             />
@@ -874,7 +874,7 @@ export function CommunicationWorkspace() {
           <>
             <Image
               src="/communication/synapse-gemini.png"
-              alt="Synapse"
+              alt=""
               width={640}
               height={400}
             />
@@ -1147,7 +1147,7 @@ export function CommunicationWorkspace() {
                         <div
                           className={s.tabs}
                           role="group"
-                          aria-label="Input method"
+                          aria-label={role === "patient" ? `${copy.pictures} / ${copy.type}` : "Input method"}
                         >
                           {(["voice", "pictures", "type"] as const)
                             .filter(
@@ -1267,7 +1267,7 @@ export function CommunicationWorkspace() {
                               />
                             ) : null}
                             <div>
-                              <h3 className={s.question}>
+                              <h3 id="pain-question" className={s.question}>
                                 {
                                   {
                                     en: "Pain: 0 is none, 10 is the worst",
@@ -1280,7 +1280,7 @@ export function CommunicationWorkspace() {
                               <div
                                 className={s.choices}
                                 role="group"
-                                aria-label="Pain intensity"
+                                aria-labelledby="pain-question"
                               >
                                 {Array.from({ length: 11 }, (_, n) => (
                                   <button

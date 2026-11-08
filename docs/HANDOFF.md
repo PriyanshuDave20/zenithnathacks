@@ -1,5 +1,11 @@
 # Handoff Log
 
+### 2026-11-07 Zach / Claude · zach/session-ui-fixes (a11y only)
+- Zach asked to keep all mocks and placeholders, so the dead-code cleanup was reverted: `session/session-app.tsx`, `clinician-screens.tsx`, `PatientResponse`, `HandBack`, `HolderPill`, `ChoicePill` all remain. `src/lib/mocks` untouched.
+- A11y: pain-scale group labelled by its localized question; patient-side input-method label localized; repeated splash logo alt empty; one missing `type="button"` (home/modes); small text 0.7-0.75em / text-xs raised to 0.8em / text-sm in workspace/flow CSS and eye demo.
+- Not touched (Backend 2 lane): body-diagram captions and gaze-layer button still 12px.
+- Checks: typecheck, eslint, 81 tests. No browser pass; verify 0.8em text at 390px.
+
 ### 2026-11-07 Zach / Codex · zach/combined-prs
 - Combined PR #15 at 2d51804d8670ca56b668705fca69ea49c371b099, #16 at 4b00450c8df733e04954dad987ec76c2366c2fb3, and #18 at 301c019f36dffb9479aae20c75f72ce0c91d1d3d on origin/main 8e857c9 using three non-fast-forward merges. No textual conflicts. All three exact heads are ancestors of integration HEAD. Backend/questions/session/communication/package/env files match #16 exactly; landing files matched #18 before the explicit /5 → /10 walkthrough alignment. No source branch rewritten or deleted.
 - Preserved provider opt-in, deterministic guided reports/static packs, free-text model path, frontend integration, original UI fixes and landing polish. Adjusted only the walkthrough severity denominator to match the newly integrated canonical scale.
