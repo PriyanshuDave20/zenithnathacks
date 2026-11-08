@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { SynapseWordmark } from "@/components/brand/synapse-logo";
 import {
   Check,
+  PictoHelp,
+  PictoNo,
   PictoPain,
+  PictoYes,
   Speaker,
   Handoff,
   Shield,
@@ -18,10 +21,10 @@ import "./flow.css";
 import { icuStyles as i } from "./styles";
 
 const OPTIONS = [
-  { id: "yes", label: "Yes", hint: "That is right", Icon: Check },
-  { id: "no", label: "No", hint: "That is not right", Icon: Handoff },
+  { id: "yes", label: "Yes", hint: "That is right", Icon: PictoYes },
+  { id: "no", label: "No", hint: "That is not right", Icon: PictoNo },
   { id: "pain", label: "Pain", hint: "Something hurts", Icon: PictoPain },
-  { id: "help", label: "Help", hint: "I need attention", Icon: Handoff },
+  { id: "help", label: "Help", hint: "I need attention", Icon: PictoHelp },
   {
     id: "reposition",
     label: "Move me",
