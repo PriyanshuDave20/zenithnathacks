@@ -9,6 +9,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 
 | Task | Lane | Owner | Branch | Status |
 |------|------|-------|--------|--------|
+| Guided summary Azure clip playback | Backend 1 + Prem-authorized scoped session playback | Prem / Codex | prem/guided-summary-azure | Done on branch: composed guided read-backs queue existing Azure MP3s; all 166 tests/typecheck/lint/build pass; 390px Spanish/Arabic/Chinese native playback and navigation cancellation pass; no provider calls or regenerated assets; real Safari sequence retest pending |
 | Clinician dashboard and post-login home | Frontend (Zach requested) | Zach / Codex | zach/clinician-dashboard | Implemented: protected /dashboard, profile snapshot/edit access, deliberate new session, subtle future slots; login/Home route there; 150 tests/typecheck/lint and mobile/desktop/browser flows pass; independent review fix resolved |
 | Calibration dot countdown | Backend 2 | Zach / Codex | zach/edge-safe-margin | Done: small per-dot seconds countdown below target, resets at each position; typecheck/changed-file lint pass; desktop/390px visual fixture checked |
 | Eye dwell jitter tolerance and pixel-correct landmark anchoring | Backend 2 | Zach / Codex | zach/edge-safe-margin | Implemented: 250ms pause/resume grace without off-target credit, sustained-look rearm, hard interruption for invalid pose; pixel-correct eye axes; 150 tests/typecheck/lint pass; real-camera retest pending |
