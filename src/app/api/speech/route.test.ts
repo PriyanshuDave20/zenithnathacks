@@ -5,7 +5,7 @@ import { GET, POST } from "./route";
 test("speech capabilities and disabled route expose no secrets and never cache", async t => {
   const old = process.env.SPEECH_PROVIDER; process.env.SPEECH_PROVIDER = "browser";
   t.after(() => { if (old === undefined) delete process.env.SPEECH_PROVIDER; else process.env.SPEECH_PROVIDER = old; });
-  const capabilities = GET();
+  const capabilities = GET(new Request("https://synapse.test/api/speech"));
   assert.deepEqual(await capabilities.json(), { provider: "browser" });
   assert.equal(capabilities.headers.get("Cache-Control"), "no-store");
   const response = await POST(new Request("https://synapse.test/api/speech", { method: "POST", body: JSON.stringify({ text: "Please wait.", language: "en" }) }));
@@ -29,7 +29,7 @@ test("speech route returns MPEG audio only and generic no-store provider failure
     const old = process.env[key]; process.env[key] = value;
     t.after(() => { if (old === undefined) delete process.env[key]; else process.env[key] = old; });
   }
-  assert.deepEqual(await GET().json(), { provider: "azure" });
+  assert.deepEqual(await GET(new Request("https://synapse.test/api/speech")).json(), { provider: "azure" });
   let fail = false;
   t.mock.method(globalThis, "fetch", async () => fail ? new Response("synthetic-secret", { status: 500 }) : new Response(new Uint8Array([1, 2, 3]), { headers: { "Content-Type": "audio/mpeg" } }));
   const request = () => new Request("https://synapse.test/api/speech", { method: "POST", body: JSON.stringify({ text: "请稍候。", language: "zh-Hans" }) });

@@ -6,7 +6,10 @@ const Input = z.strictObject({ text: z.string().trim().min(1).max(MAX_SPEECH_TEX
 const failure = (status: number, code: string) => Response.json({ error: { code, message: "Read aloud is unavailable. Use this device’s voice or try again." } }, { status, headers });
 
 /** Public capability metadata only; never sends server configuration or credentials. */
-export function GET() {
+export function GET(request: Request) {
+  // Cache Components can prerender pure GETs. A request-time read keeps provider
+  // configuration live when credentials are supplied after the production build.
+  void request.url;
   return Response.json({ provider: azureSpeechAvailable() ? "azure" : "browser" }, { headers });
 }
 
