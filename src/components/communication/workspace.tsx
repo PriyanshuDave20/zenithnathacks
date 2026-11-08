@@ -853,7 +853,7 @@ export function CommunicationWorkspace() {
             <h1>Pass the device to the patient</h1>
             <p>
               {setupMode === "icu"
-                ? "Eye mode is ready. When the board opens, tap Start once you are both looking at the screen; the patient then follows a moving dot for 30 seconds."
+                ? "Eye mode is ready. When the board opens, choose Intake or Conversation, then tap Ready once you are both looking at the screen; the patient then follows a moving dot for 30 seconds."
                 : readyForReply
                   ? lastReply?.unavailable
                     ? "Translation is unavailable. Return to the clinician or ask for an interpreter."
