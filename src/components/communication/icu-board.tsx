@@ -32,7 +32,6 @@ import "./icu.css";
 import "./flow.css";
 import { idleMsFor, optionFor, SESSION_WARNING_MS, useSessionTimeout } from "@/lib/session-timeout";
 import { icuStyles as i } from "./styles";
-import { getVisitPrefs } from "@/lib/visit-prefs";
 import { ClinicianBar } from "@/components/eye/clinician-bar";
 import { EyeWorkspace } from "@/components/eye/eye-workspace";
 import { describeAnswers } from "@/lib/eye/flow";
@@ -48,8 +47,7 @@ export function IcuBoard({
   const [expired, setExpired] = useState(false);
   // The conversation lives in memory (src/lib/eye/session.ts) so going back and forth keeps it; Clear wipes it.
   const eyeState = useEyeState();
-  // Starts in high contrast if the clinician chose that on the dashboard (this page renders only in the browser).
-  const [contrast, setContrast] = useState(() => getVisitPrefs().contrast);
+  const [contrast, setContrast] = useState(false);
   const [handoff, setHandoff] = useState(false);
   const [reviewed, setReviewed] = useState(false);
   useEffect(
