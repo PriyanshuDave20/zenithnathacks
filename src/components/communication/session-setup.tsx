@@ -1,5 +1,6 @@
 "use client";
 
+import type { BodyFigure } from "@/lib/input/body-parts";
 import { useId, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
   Mic,
@@ -58,6 +59,8 @@ export function SessionSetup({
   onLanguage,
   onMode,
   onPath,
+  figure,
+  onFigure,
   onStart,
   displayControls,
 }: {
@@ -67,6 +70,9 @@ export function SessionSetup({
   onLanguage: (value: PatientLanguage) => void;
   onMode: (value: SetupMode) => void;
   onPath: (value: "free" | "guided") => void;
+  /** The drawing used for "Where does it hurt?". Display only: never stored or sent. */
+  figure: BodyFigure;
+  onFigure: (value: BodyFigure) => void;
   onStart: () => void;
   displayControls?: ReactNode;
 }) {
@@ -148,6 +154,23 @@ export function SessionSetup({
                 >
                   Guided picture questions
                 </button>
+              </div>
+            </fieldset>
+          ) : null}
+          {mode !== "icu" ? (
+            <fieldset className="sf-fieldset sf-path">
+              <legend>Which body diagram should they see?</legend>
+              <div className="sf-path-options">
+                {(["male", "female"] as const).map((f) => (
+                  <button
+                    type="button"
+                    key={f}
+                    aria-pressed={figure === f}
+                    onClick={() => onFigure(f)}
+                  >
+                    {f === "male" ? "Male" : "Female"}
+                  </button>
+                ))}
               </div>
             </fieldset>
           ) : null}

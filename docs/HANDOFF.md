@@ -15,6 +15,14 @@ Do not put secrets or patient data here.
 
 ## Entries
 
+### 2026-11-08  Zach / Claude  zach/body-figure-choice
+- Done: female body drawing added (traced from Zach's `Gemini_Generated_Image_4uiyqs4uiyqs4uiy.jpeg`, not committed; same 240x480 scale as the male one, so spots keep their positions across figures). The clinician chooses on the setup screen: "Which body diagram should they see?" Male / Female (Male default, hidden for ICU). The choice flows to the guided intake diagram, the composer diagram, each conversation bubble's map and the clinician summary map.
+- Privacy: the figure choice is display only. It lives in workspace state (browser memory), is not part of any API request, contract or summary, and is never stored.
+- Tap geometry: the arm, torso and leg regions were re-fitted so they follow both figures (hands x <= 55 sit beside thighs x >= 68; the female hips reach x 68). This also fixed taps on the outer male palm that read as thigh. Browser probes on both figures name every part correctly, and nothing outside the body takes a tap.
+- API: `BodyDiagram` and `BodyMap` take an optional `figure` ("male" default); `IntakeGuided` takes `figure`; `SessionSetup` takes `figure` / `onFigure`. New `BodyFigure` type in `src/lib/input/body-parts.ts`.
+- Notes: the spot gradient now has a colour fallback (`var(--alert, #c8102e)`), because Turbopack's dev server sometimes serves a stale `globals.css` after branch switches and the spots then drew black. A hard reload or `npm run dev` restart also fixes it.
+- Checked: typecheck, 53 tests, eslint; Chrome: setup choice, female and male patient diagrams, taps, female clinician summary map.
+
 ### 2026-11-07  Prem / Codex  prem/frontend-api-wiring
 - Done: at Prem's request, wired `src/components/session/api.ts` to POST `/api/translate` and `/api/respond`, with strict request/response schemas, no caching, no credentials, a 30-second timeout and generic HTTP/invalid-response errors. The server still defaults to its offline mock provider; no SDK/key, provider/contract changes, database access or content logging added. Auth stays on its separate frontend mock; metrics remains disabled and is still the next Backend 1 task.
 - Guided bridge: resolves frontend choices/body-part IDs to their exact English labels as text; aliases `worse_when` to `aggravating_factors` and `other` to `associated_symptoms`. Preserves detailed left/right body parts, the frontend's /5 scale and duration wording without pretending they are the server's /10 options. Coordinates/spots remain only in browser memory. Unknown or ambiguous selections fail before fetch. Guided requests are accepted but still explicitly unavailable from the server mock; they do not gain general translation or clinical summaries.
