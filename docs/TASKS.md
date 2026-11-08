@@ -11,6 +11,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 |------|------|-------|--------|--------|
 | Eye mode naming and current landing-page examples | Frontend | Zach / Codex | zach/eye-mode-showcase | Implemented: automatic gaze demo with cursor/dwell/confirmed clinician choice, camera-free playback and reduced motion; merged zenith/gaze-tracking; Eye selected in clinician setup; typecheck and 64 tests pass; webcam/visual recheck pending |
 | Session confirmation, voice clear and patient read-back polish | Frontend | Zach / Codex | zach/session-ui-fixes | Done: legible end/clear confirmation, voice transcript reset, message retained during read-back loading, compact inline intake actions; mobile/desktop browser checks and 64 tests pass |
+| Landing demo accuracy and responsive polish | Frontend | Zach / Codex | zach/session-ui-fixes | Done: all five modes, six workflow previews, hero and privacy reviewed; body overflow, summary accuracy and mode icons fixed; checks pass |
 | **Done** | | | | |
 | Repository sync, project orientation, shared skills and baseline verification | Tooling / docs | Zach / Codex | zach/setup-verification | Done: main current; all 13 project skills present; typecheck and 22 tests pass; lint 0 errors |
 | Scaffold, agent skills, landing page | Both | Prem | prem/landing-hero | Done |
