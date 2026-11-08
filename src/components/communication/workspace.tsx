@@ -47,6 +47,7 @@ import {
   IntakeFree,
   IntakeGuided,
   ConfirmReadBack,
+  SpeechFeedback,
 } from "@/components/session/patient-screens";
 import "./flow.css";
 
@@ -226,6 +227,7 @@ export function CommunicationWorkspace() {
   const copy = COPY[language];
   const speech = useRecognition(role === "patient" ? meta.speech : "en-US");
   const voice = useSpeak();
+  const { stop: stopVoice } = voice;
   const { setFinalText } = speech;
   const canAudio = mode !== "deaf_hoh";
   const message = [draft, speech.finalText].filter(Boolean).join(" ").trim();
@@ -248,6 +250,7 @@ export function CommunicationWorkspace() {
   function clear(end = false) {
     version.current++;
     lock.current = false;
+    stopVoice();
     window.speechSynthesis?.cancel();
     speech.stop();
     speech.setFinalText("");
@@ -285,6 +288,7 @@ export function CommunicationWorkspace() {
       setFinalText("");
       setPatientReport(NO_REPORT);
       setStage("setup");
+      stopVoice();
       window.speechSynthesis?.cancel();
     };
     window.addEventListener("pagehide", wipe);
@@ -297,7 +301,7 @@ export function CommunicationWorkspace() {
       window.removeEventListener("pageshow", restore);
       wipe();
     };
-  }, [setFinalText]);
+  }, [setFinalText, stopVoice]);
   useEffect(() => {
     main.current?.focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
@@ -321,6 +325,7 @@ export function CommunicationWorkspace() {
     if (busy || pending) return;
     speech.stop();
     speech.setFinalText("");
+    stopVoice();
     window.speechSynthesis?.cancel();
     setDraft("");
     setSelected([]);
@@ -333,6 +338,7 @@ export function CommunicationWorkspace() {
   }
   function selectMode(next: Mode) {
     speech.stop();
+    stopVoice();
     window.speechSynthesis?.cancel();
     setMode(next);
     if (next === "deaf_hoh") setAudio(false);
@@ -671,6 +677,7 @@ export function CommunicationWorkspace() {
                     aria-pressed={audio}
                     onClick={() => {
                       setAudio(!audio);
+                      stopVoice();
                       window.speechSynthesis?.cancel();
                     }}
                   >
@@ -693,12 +700,13 @@ export function CommunicationWorkspace() {
               : s.main
         }
       >
+        {canAudio ? <SpeechFeedback status={voice.status} language={language} /> : null}
         {stage === "setup" ? (
           <SessionSetup
             language={language}
             mode={setupMode}
             path={patientPath}
-            onLanguage={setLanguage}
+            onLanguage={(next) => { stopVoice(); setLanguage(next); }}
             onMode={(next) => {
               setSetupMode(next);
               if (next !== "icu") {
@@ -1713,6 +1721,7 @@ export function CommunicationWorkspace() {
                       label={"Review summary"}
                       onClick={() => {
                         speech.stop();
+                        stopVoice();
                         window.speechSynthesis?.cancel();
                         setStage("summary");
                       }}
@@ -1749,6 +1758,7 @@ export function CommunicationWorkspace() {
                       onClick={() => {
                         setReadyForReply(true);
                         setStage("patient-ready");
+                        stopVoice();
                         window.speechSynthesis?.cancel();
                       }}
                       primary={true}

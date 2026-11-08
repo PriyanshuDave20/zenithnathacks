@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type SetStateAction } from "react";
+import { createSpeechPlayback, type SpeechPlaybackState } from "./speech-playback";
 
 // Minimal typing for the Web Speech API (not in the TS DOM lib everywhere).
 type RecognitionResultList = { length: number; [i: number]: { isFinal: boolean; 0: { transcript: string } } };
@@ -162,21 +163,20 @@ export function useSpeak() {
     () => typeof window !== "undefined" && "speechSynthesis" in window,
     () => false,
   );
-  const [speaking, setSpeaking] = useState(false);
+  const [state, setState] = useState<SpeechPlaybackState>({ speaking: false, status: null });
+  const playback = useRef<ReturnType<typeof createSpeechPlayback> | null>(null);
 
   const speak = useCallback((text: string, lang: string) => {
-    if (!("speechSynthesis" in window) || !text) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang;
-    u.rate = 0.92;
-    u.onend = () => setSpeaking(false);
-    u.onerror = () => setSpeaking(false);
-    setSpeaking(true);
-    window.speechSynthesis.speak(u);
+    playback.current?.speak(text, lang);
+  }, []);
+  const stop = useCallback(() => playback.current?.stop(), []);
+
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return;
+    const current = createSpeechPlayback(window.speechSynthesis, text => new SpeechSynthesisUtterance(text), setState);
+    playback.current = current;
+    return () => { current.dispose(); playback.current = null; };
   }, []);
 
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
-
-  return { supported, speaking, speak };
+  return { supported, ...state, speak, stop };
 }

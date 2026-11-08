@@ -18,6 +18,10 @@ type Strings = {
   back: string;
   questionOf: (n: number, t: number) => string;
   readAloud: string;
+  speechLoading: string;
+  speechReady: string;
+  speechUnavailable: string;
+  speechFailed: string;
   working: string;
   isThisRight: string;
   yesRight: string;
@@ -61,6 +65,10 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     back: "Back",
     questionOf: (n, t) => `Question ${n} of ${t}`,
     readAloud: "Read aloud",
+    speechLoading: "Loading this device’s voices…",
+    speechReady: "The voice is ready. Tap the audio button again.",
+    speechUnavailable: "A voice for this language isn’t available. Ask the clinician to add this language’s voice in the device’s speech settings, then try again.",
+    speechFailed: "Read aloud couldn’t start. Tap again, or ask the clinician to check this language’s voice in the device’s speech settings.",
     working: "One moment…",
     isThisRight: "Is this what you meant?",
     yesRight: "Yes, that's right",
@@ -102,6 +110,10 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     back: "Atrás",
     questionOf: (n, t) => `Pregunta ${n} de ${t}`,
     readAloud: "Leer en voz alta",
+    speechLoading: "Cargando las voces de este dispositivo…",
+    speechReady: "La voz está lista. Toque el botón de audio otra vez.",
+    speechUnavailable: "No hay una voz disponible para este idioma. Pida al personal médico que añada una voz para este idioma en los ajustes de voz del dispositivo y vuelva a intentarlo.",
+    speechFailed: "No se pudo iniciar la lectura. Toque otra vez o pida al personal médico que revise la voz de este idioma en los ajustes del dispositivo.",
     working: "Un momento…",
     isThisRight: "¿Es esto lo que quiso decir?",
     yesRight: "Sí, es correcto",
@@ -143,6 +155,10 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     back: "رجوع",
     questionOf: (n, t) => `السؤال ${n} من ${t}`,
     readAloud: "اقرأ بصوت عالٍ",
+    speechLoading: "جارٍ تحميل أصوات هذا الجهاز…",
+    speechReady: "الصوت جاهز. اضغط على زر الصوت مرة أخرى.",
+    speechUnavailable: "لا يتوفر صوت لهذه اللغة. اطلب من الطاقم الطبي إضافة صوت لهذه اللغة في إعدادات النطق بالجهاز، ثم حاول مرة أخرى.",
+    speechFailed: "تعذر بدء القراءة بصوت عالٍ. اضغط مرة أخرى أو اطلب من الطاقم الطبي التحقق من صوت هذه اللغة في إعدادات النطق بالجهاز.",
     working: "لحظة من فضلك…",
     isThisRight: "هل هذا ما قصدته؟",
     yesRight: "نعم، صحيح",
@@ -184,6 +200,10 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     back: "返回",
     questionOf: (n, t) => `第 ${n} 题，共 ${t} 题`,
     readAloud: "朗读",
+    speechLoading: "正在加载此设备的语音…",
+    speechReady: "语音已准备好。请再次点击语音按钮。",
+    speechUnavailable: "此语言的语音不可用。请医护人员在设备的语音设置中添加此语言的语音，然后重试。",
+    speechFailed: "无法开始朗读。请再次点击，或请医护人员检查设备语音设置中此语言的语音。",
     working: "请稍候…",
     isThisRight: "这是您想表达的意思吗？",
     yesRight: "对，没错",
