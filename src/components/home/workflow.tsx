@@ -76,7 +76,7 @@ export function Workflow() {
           <div className="lg:hidden">
             <Phone3D
               label={`Step ${mActive + 1}: ${steps[mActive].title}`}
-              className="w-[min(17rem,100%,calc((100svh-27rem)*0.48))]"
+              className="w-[min(17rem,100%,max(12.5rem,calc((100svh-27rem)*0.48)))]"
               swing={mPass}
               swingDir={steps[mActive].holder === "Patient" ? -1 : 1}
             >
@@ -95,7 +95,7 @@ export function Workflow() {
                   className="grid min-h-11 min-w-11 place-items-center"
                 >
                   <span
-                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                    className={`h-1.5 rounded-full transition-[width,background-color] duration-500 ${
                       i === mActive ? "w-8 bg-blue-deep" : "w-1.5 bg-line"
                     }`}
                   />

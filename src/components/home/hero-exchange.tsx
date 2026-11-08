@@ -164,7 +164,7 @@ export function HeroExchange() {
       {(screen, control, label) => (
         <>
           {/* Sized so the whole exchange, summary included, lands in the first phone viewport */}
-          <Phone3D label={label} className="w-[min(20.5rem,100%,calc((100svh-24rem)*0.48))]">
+          <Phone3D label={label} className="w-[min(20.5rem,100%,max(13rem,calc((100svh-24rem)*0.48)))]">
             {screen}
           </Phone3D>
           <div className="relative z-10 mt-4">{control}</div>

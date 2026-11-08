@@ -302,9 +302,24 @@ export function CommunicationWorkspace() {
       wipe();
     };
   }, [setFinalText, stopVoice]);
+  const firstStage = useRef(true);
   useEffect(() => {
-    main.current?.focus({ preventScroll: true });
-    window.scrollTo({ top: 0 });
+    const el = main.current;
+    el?.focus({ preventScroll: true });
+    // A new screen starts at the top at once. The page's smooth scrolling is for anchor links, not for this.
+    window.scrollTo({ top: 0, behavior: "instant" });
+    const first = firstStage.current;
+    firstStage.current = false;
+    // Continuity cue: the new screen settles in. Handoff screens carry their own pass motion, so they skip it.
+    const handoffScreen = stage === "handoff" || stage === "end" || stage === "patient-ready";
+    if (first || handoffScreen || !el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    el.animate(
+      [
+        { opacity: 0.55, transform: "translateY(8px)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 240, easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
+    );
   }, [stage]);
   useEffect(() => {
     stream.current?.scrollTo({ top: stream.current.scrollHeight });
@@ -763,7 +778,7 @@ export function CommunicationWorkspace() {
               width={640}
               height={400}
             />
-            <Handoff size={48} />
+            <Handoff size={48} className="sc-pass sc-pass-to-patient" />
             <h1>Pass the device to the patient</h1>
             <p>
               {setupMode === "icu"
@@ -890,7 +905,7 @@ export function CommunicationWorkspace() {
               width={640}
               height={400}
             />
-            <Handoff size={48} />
+            <Handoff size={48} className="sc-pass sc-pass-to-clinician" />
             <h1 lang={language} dir={meta.dir}>
               {text.passToClinician}
             </h1>

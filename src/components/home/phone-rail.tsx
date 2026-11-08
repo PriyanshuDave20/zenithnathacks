@@ -78,7 +78,7 @@ export function PhoneRail() {
                       {steps.map((s, i) => (
                         <span
                           key={s.id}
-                          className={`h-1.5 rounded-full transition-all duration-500 ${
+                          className={`h-1.5 rounded-full transition-[width,background-color] duration-500 ${
                             i === stepIndex ? "w-8 bg-blue-deep" : "w-1.5 bg-line"
                           }`}
                         />
@@ -111,7 +111,7 @@ export function PhoneRail() {
                   <>
                     <Phone3D
                       label={label}
-                      className="w-[min(20.5rem,calc((100svh-12rem)*0.48))]"
+                      className="w-[min(20.5rem,calc((100svh-17rem)*0.48))]"
                       swing={swing}
                       swingDir={holder === "Patient" ? -1 : 1}
                     >
