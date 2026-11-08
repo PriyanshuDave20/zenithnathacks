@@ -336,13 +336,43 @@ export function IcuBoard({
             <p>
               Camera processing stays on this device. Selections are kept only for this conversation.
             </p>
-            <button
-              type="button"
-              className={s.primary}
-              onClick={() => setHandoff(true)}
-            >
-              Pass to clinician
-            </button>
+            <div style={{ display: "flex", flexWrap: "wrap", flexShrink: 0, maxWidth: "100%", gap: 12, alignItems: "stretch", justifyContent: "flex-end" }}>
+              {gazePhase === "on" ? (
+                // Big, always on screen, and a normal button: the person can dwell on it with their eyes like
+                // any choice, or the clinician can tap it. Inline styles so a stale dev stylesheet cannot shrink it.
+                <button
+                  type="button"
+                  data-gaze-target="stop-eye-control"
+                  aria-label="Stop eye control. Look here for two seconds, or tap."
+                  onClick={stopGaze}
+                  style={{
+                    minHeight: 72,
+                    minWidth: "18rem",
+                    maxWidth: "100%",
+                    padding: "0 32px",
+                    borderRadius: 9999,
+                    background: "#101e34",
+                    color: "#fff",
+                    fontSize: 22,
+                    fontWeight: 800,
+                    lineHeight: 1.1,
+                    boxShadow: "0 0 0 3px #fff, 0 0 0 5px #101e34",
+                  }}
+                >
+                  Stop eye control
+                  <span style={{ display: "block", marginTop: 4, fontSize: 13, fontWeight: 500, opacity: 0.8 }}>
+                    Look here for 2 seconds, or tap
+                  </span>
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className={s.primary}
+                onClick={() => setHandoff(true)}
+              >
+                Pass to clinician
+              </button>
+            </div>
           </div>
         </footer>
       ) : null}

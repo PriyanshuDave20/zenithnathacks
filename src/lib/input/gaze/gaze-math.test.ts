@@ -480,3 +480,29 @@ test("OneEuroFilter is steady at rest and follows a real jump without lag", () =
   assert.ok(frames >= 0 && frames <= 3, `a 500 px jump should be followed within 3 frames (took ${frames})`);
   assert.deepEqual(new OneEuroFilter().next({ x: 5, y: 6 }, 33), { x: 5, y: 6 });
 });
+
+test("BlinkGuard does not mistake a noisy eye-opening reading for blinks, and still catches real ones", () => {
+  // The eye-opening reading from a webcam is noisy frame to frame. A guard tuned on a clean signal threw
+  // away half of all frames at 3% noise with nobody blinking; it must leave a noisy steady look alone.
+  const noise = (i: number, pct: number) => 0.26 * (1 + (Math.sin(i * 12.9898) + Math.sin(i * 78.233 + 1.7)) * 0.7 * (pct / 100));
+  for (const pct of [3, 6, 8]) {
+    const guard = new BlinkGuard();
+    let dropped = 0;
+    for (let i = 0; i < 900; i++) if (!guard.next({ x: 0, y: 0, a: noise(i, pct), p: 0 }, i * 33)) dropped++;
+    assert.ok(dropped <= 9, `${pct}% noise, no blinks: ${dropped} of 900 frames dropped`);
+  }
+  // Real blinks every 75 frames inside 4.5% noise: the deepest frame of every blink is dropped.
+  const guard = new BlinkGuard();
+  let caught = 0;
+  let blinks = 0;
+  for (let i = 0; i < 1500; i++) {
+    const phase = i % 75;
+    const depth = phase >= 30 && phase < 36 ? (phase < 33 ? (phase - 29) / 3 : (36 - phase) / 3) : 0;
+    const out = guard.next({ x: 0, y: 0.04 * depth, a: noise(i, 4.5) - 0.15 * depth, p: 0 }, i * 33);
+    if (phase === 32 && i > 150) {
+      blinks++;
+      if (!out) caught++;
+    }
+  }
+  assert.ok(blinks >= 15 && caught >= blinks - 1, `caught ${caught} of ${blinks} blinks`);
+});
