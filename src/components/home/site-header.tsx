@@ -15,7 +15,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-8">
         <Link href="/" className="flex items-center gap-2.5 rounded-lg" aria-label="Synapse home">
           <SynapseMark className="h-9 w-auto" />
-          <SynapseWordmark className="h-[0.9rem] w-auto" />
+          <SynapseWordmark className="hidden h-[0.9rem] w-auto min-[360px]:block" />
         </Link>
         <nav aria-label="Sections" className="hidden md:block">
           <ul className="flex items-center gap-1">

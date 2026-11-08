@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { PHRASES, type Mode, type PatientLanguage, type TranslateInput, type TranslateResponse } from "@/lib/mocks";
 import { getGuidedQuestions } from "@/lib/questions/localization";
 import {
@@ -80,11 +80,13 @@ export function IntakeFree({
   lang,
   mode,
   initialText,
+  initialPhrases = [],
   onSubmit,
 }: {
   lang: LangMeta;
   mode: Mode;
   initialText: string;
+  initialPhrases?: string[];
   onSubmit: (inputs: TranslateInput[]) => void;
 }) {
   const t = STRINGS[lang.code];
@@ -92,23 +94,44 @@ export function IntakeFree({
   const { supported: canSpeak, speak } = useSpeak();
   const [typing, setTyping] = useState(mode === "deaf_hoh" || mode === "mute" || Boolean(initialText));
   const [typed, setTyped] = useState(initialText);
-  const [phrases, setPhrases] = useState<string[]>([]);
+  const [phrases, setPhrases] = useState<string[]>(initialPhrases);
+  const [finishing, setFinishing] = useState(false);
+  const inFlight = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const fieldId = useId();
 
   const micAvailable = rec.supported && !rec.error;
-  const effectiveTyping = typing || !micAvailable;
   const showMic = mode !== "mute" && !typing && micAvailable;
   const spoken = [rec.finalText, rec.interim].filter(Boolean).join(" ");
   const composed = phrases.map((id) => PHRASES.find((p) => p.id === id)!.text[lang.code]).join(" ");
 
-  const value = (effectiveTyping ? typed : rec.finalText).trim();
+  const value = [typed, spoken].filter(Boolean).join(" ").trim();
+  const typedValue = rec.error ? value : typed;
   const full = [composed, value].filter(Boolean).join(". ");
 
-  function submit() {
-    rec.stop();
-    const inputs: TranslateInput[] = [];
-    inputs.push(...phrases.map((id) => ({ questionId: "chief_complaint", kind: "option" as const, value: `phrase:${id}` })));
-    if (value) inputs.push({ kind: effectiveTyping ? "text" : "speech_transcript", value });
+  async function switchToTyping() {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setFinishing(true);
+    const transcript = await rec.finish();
+    if (!mounted.current) return;
+    setTyped(current => [current, transcript].filter(Boolean).join(" "));
+    rec.clear();
+    setTyping(true);
+    setFinishing(false);
+    inFlight.current = false;
+  }
+
+  async function submit() {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setFinishing(true);
+    const transcript = await rec.finish();
+    if (!mounted.current) return;
+    const inputs: TranslateInput[] = phrases.map(id => ({ questionId: "chief_complaint", kind: "option", value: `phrase:${id}` }));
+    if (typed.trim()) inputs.push({ kind: "text", value: typed.trim() });
+    if (transcript.trim()) inputs.push({ kind: "speech_transcript", value: transcript.trim() });
     onSubmit(inputs);
   }
 
@@ -163,6 +186,7 @@ export function IntakeFree({
         <div lang={lang.code} dir={lang.dir} className="mt-10 flex flex-col items-center gap-5">
           <button
             type="button"
+            disabled={finishing}
             onClick={rec.listening ? rec.stop : rec.start}
             aria-pressed={rec.listening}
             className={`press grid size-32 place-items-center rounded-full text-white shadow-lift sm:size-36 ${
@@ -175,12 +199,12 @@ export function IntakeFree({
           <p className="text-xl font-semibold text-ink" aria-live="polite">
             {rec.listening ? t.listening : t.speak}
           </p>
-          {spoken ? (
+          {value ? (
             <div className="flex w-full flex-col gap-3">
               <SpeechBubble tone="patient" caption={t.yourMessage} lang={lang.code} dir={lang.dir}>
-                {spoken}
+                {value}
               </SpeechBubble>
-              <QuietButton onClick={rec.clear} className="self-start">
+              <QuietButton onClick={() => { rec.clear(); setTyped(""); }} className="self-start">
                 {t.clearPhrases}
               </QuietButton>
             </div>
@@ -196,13 +220,14 @@ export function IntakeFree({
           </label>
           <textarea
             id={fieldId}
-            value={typed}
-            onChange={(e) => setTyped(e.target.value)}
+            value={typedValue}
+            disabled={finishing}
+            onChange={(e) => { setTyped(e.target.value); if (rec.error) { rec.clear(); setTyping(true); } }}
             rows={4}
             className="field-control resize-y rounded-field p-5 font-display text-[clamp(1.25rem,4vw,1.5rem)] font-semibold leading-snug"
           />
-          {mode !== "mute" && micAvailable ? (
-            <QuietButton icon={<Mic size={20} />} onClick={() => setTyping(false)} className="self-start">
+          {mode !== "mute" && rec.supported ? (
+            <QuietButton icon={<Mic size={20} />} disabled={finishing} onClick={async () => { if (rec.error) await switchToTyping(); setTyping(false); }} className="self-start">
               {t.speakInstead}
             </QuietButton>
           ) : null}
@@ -211,12 +236,12 @@ export function IntakeFree({
 
       <div className="mt-8 flex flex-col-reverse gap-3 pb-[env(safe-area-inset-bottom)] sm:flex-row sm:items-center sm:justify-end">
         {showMic ? (
-          <QuietButton icon={<Keyboard size={20} />} onClick={() => (rec.stop(), setTyped(rec.finalText), setTyping(true))}>
+          <QuietButton icon={<Keyboard size={20} />} disabled={finishing} onClick={switchToTyping}>
             {t.typeInstead}
           </QuietButton>
         ) : null}
-        <PrimaryButton className="shadow-none" onClick={submit} disabled={!full} trailing={<ArrowRight size={22} className={lang.dir === "rtl" ? "rotate-180" : ""} />}>
-          <span lang={lang.code}>{t.done}</span>
+        <PrimaryButton className="shadow-none" onClick={submit} aria-busy={finishing} disabled={!full || finishing} trailing={<ArrowRight size={22} className={lang.dir === "rtl" ? "rotate-180" : ""} />}>
+          <span lang={lang.code}>{finishing ? t.working : t.done}</span>
         </PrimaryButton>
       </div>
     </Screen>
@@ -229,6 +254,8 @@ export function IntakeGuided({
   lang,
   mode,
   figure,
+  initialInputs = [],
+  initialSpots = [],
   onSubmit,
   onUnavailable,
 }: {
@@ -236,17 +263,19 @@ export function IntakeGuided({
   mode: Mode;
   /** The body drawing the clinician chose. */
   figure?: BodyFigure;
+  initialInputs?: TranslateInput[];
+  initialSpots?: BodySpot[];
   /** `spots` are the exact places touched on the body diagram, for the clinician's map. */
   onSubmit: (inputs: TranslateInput[], spots?: BodySpot[]) => void;
   onUnavailable?: () => void;
 }) {
   const t = STRINGS[lang.code];
   const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>(() => Object.fromEntries(initialInputs.filter(i => i.kind === "option" && i.questionId).map(i => [i.questionId!, i.value])));
   // "Where" can be answered on the body diagram (default for modes that rely on pictures and taps)
   // or with the picture tiles. The diagram takes any number of spots anywhere on the body.
-  const [useBody, setUseBody] = useState(mode !== "standard");
-  const [spots, setSpots] = useState<BodySpot[]>([]);
+  const [useBody, setUseBody] = useState(initialInputs.length ? initialSpots.length > 0 : mode !== "standard");
+  const [spots, setSpots] = useState<BodySpot[]>(initialSpots);
   const parts = spotParts(spots);
   const { speak } = useSpeak();
   const questions = getGuidedQuestions(lang.code);
@@ -437,7 +466,7 @@ export function ConfirmReadBack({
             </QuietButton>
           )}
           <PrimaryButton onClick={onYes} icon={<Check size={22} />}>
-            <span lang={lang.code}>{t.yesRight}</span>
+            <span lang={lang.code}>{failed ? t.shareUntranslated : t.yesRight}</span>
           </PrimaryButton>
         </ActionBar>
       ) : null}

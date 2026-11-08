@@ -155,6 +155,7 @@ export function GazeLayer() {
   const unstableRef = useRef(false);
   const generationRef = useRef(0);
 
+  const calibrationDialog = useRef<HTMLDialogElement>(null);
   const active = phase === "calibrating" || phase === "on";
 
   const enable = useCallback(async () => {
@@ -199,6 +200,22 @@ export function GazeLayer() {
     setPhase("off");
   }, []);
 
+
+  useEffect(() => {
+    window.addEventListener("synapse:gaze-stop", disable);
+    return () => window.removeEventListener("synapse:gaze-stop", disable);
+  }, [disable]);
+
+  useEffect(() => {
+    if (phase !== "calibrating") return;
+    const dialog = calibrationDialog.current;
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    dialog?.showModal();
+    return () => {
+      dialog?.close();
+      if (previous?.isConnected) previous.focus({ preventScroll: true });
+    };
+  }, [phase]);
 
   const recalibrate = useCallback(() => {
     samplesRef.current = [];
@@ -409,7 +426,7 @@ export function GazeLayer() {
       ) : null}
 
       {phase === "calibrating" ? (
-        <div role="dialog" aria-label="Gaze calibration" className="fixed inset-0 z-[70] bg-navy/90 text-white">
+        <dialog ref={calibrationDialog} aria-modal="true" aria-label="Gaze calibration" onCancel={(event) => { event.preventDefault(); disable(); }} className="fixed inset-0 z-[70] m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-navy/90 text-white">
           <p className="mx-auto mt-[max(4rem,10svh)] max-w-md px-6 text-center text-lg font-semibold leading-snug">
             Follow the dot with your eyes for 30 seconds. Keep your head still and let your eyes do the moving.
           </p>
@@ -434,7 +451,7 @@ export function GazeLayer() {
           >
             Cancel calibration
           </button>
-        </div>
+        </dialog>
       ) : null}
 
       {status || (phase === "on" && (noFace || unstable)) ? (

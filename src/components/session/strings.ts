@@ -21,6 +21,7 @@ type Strings = {
   working: string;
   isThisRight: string;
   yesRight: string;
+  shareUntranslated: string;
   tryAgain: string;
   passToClinician: string;
   clinicianSays: string;
@@ -63,6 +64,7 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     working: "One moment…",
     isThisRight: "Is this what you meant?",
     yesRight: "Yes, that's right",
+    shareUntranslated: "Share without translation",
     tryAgain: "No, try again",
     passToClinician: "Pass the device to the clinician",
     clinicianSays: "Your clinician says",
@@ -103,6 +105,7 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     working: "Un momento…",
     isThisRight: "¿Es esto lo que quiso decir?",
     yesRight: "Sí, es correcto",
+    shareUntranslated: "Compartir sin traducción",
     tryAgain: "No, decirlo otra vez",
     passToClinician: "Pase el dispositivo al personal médico",
     clinicianSays: "El personal médico dice",
@@ -143,6 +146,7 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     working: "لحظة من فضلك…",
     isThisRight: "هل هذا ما قصدته؟",
     yesRight: "نعم، صحيح",
+    shareUntranslated: "المشاركة بدون ترجمة",
     tryAgain: "لا، سأعيد",
     passToClinician: "سلّم الجهاز إلى الطاقم الطبي",
     clinicianSays: "يقول الطاقم الطبي",
@@ -183,6 +187,7 @@ export const STRINGS: Record<PatientLanguage, Strings> = {
     working: "请稍候…",
     isThisRight: "这是您想表达的意思吗？",
     yesRight: "对，没错",
+    shareUntranslated: "不翻译，直接分享",
     tryAgain: "不对，重新说",
     passToClinician: "请把设备交给医护人员",
     clinicianSays: "医护人员说",
