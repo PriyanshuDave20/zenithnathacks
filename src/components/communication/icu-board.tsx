@@ -36,6 +36,7 @@ import "./workspace.css";
 import { workspaceStyles as s } from "./styles";
 import "./icu.css";
 import "./flow.css";
+import { idleMsFor, optionFor, SESSION_WARNING_MS, useSessionTimeout } from "@/lib/session-timeout";
 import { icuStyles as i } from "./styles";
 
 const OPTIONS = [
@@ -127,10 +128,11 @@ export function IcuBoard({
     setGazeAvailable(boardUp);
     return () => setGazeAvailable(false);
   }, [boardUp]);
+  const sessionTimeout = useSessionTimeout();
   const idle = useIdle({
     enabled: !expired,
-    idleMs: 570000, // 9:30 of inactivity, then the 30 s warning: cleared after 10 minutes
-    graceMs: 30000,
+    idleMs: idleMsFor(sessionTimeout),
+    graceMs: SESSION_WARNING_MS,
     onExpire: () => {
       setSelected(null);
       setHandoff(false);
@@ -171,7 +173,7 @@ export function IcuBoard({
       {expired ? (
         <main ref={main} tabIndex={-1} className={s.handoff}>
           <h1>Session cleared</h1>
-          <p>The selected phrase was removed after ten minutes of inactivity.</p>
+          <p>The selected phrase was removed after {optionFor(sessionTimeout).spoken} of inactivity.</p>
           <button type="button" className="sf-handoff-choice" onClick={() => setExpired(false)}>Start a new conversation</button>
           <Link href="/start" className={s.quiet}>Back to setup</Link>
         </main>

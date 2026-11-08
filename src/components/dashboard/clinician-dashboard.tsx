@@ -7,6 +7,7 @@ import { SynapseMark, SynapseWordmark } from "@/components/brand/synapse-logo";
 import { ArrowRight, Handoff, Shield } from "@/components/home/icons";
 import { signOut, useClinician } from "@/components/auth/api";
 import { initials } from "@/components/auth/auth-ui";
+import { SESSION_TIMEOUT_OPTIONS, setSessionTimeout, useSessionTimeout } from "@/lib/session-timeout";
 
 const roles = { doctor: "Doctor", nurse: "Nurse", other: "Clinician" };
 
@@ -15,6 +16,7 @@ export function ClinicianDashboard() {
   const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const timeout = useSessionTimeout();
 
   async function onSignOut() {
     setSigningOut(true);
@@ -89,6 +91,21 @@ export function ClinicianDashboard() {
             </Link>
           </section>
         </div>
+
+        <section aria-labelledby="timeout-title" className="mt-6 min-w-0 rounded-sheet bg-surface p-7 sm:p-8">
+          <h2 id="timeout-title" className="font-display text-xl font-semibold">Session timeout</h2>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
+            A conversation clears itself after this long without activity, and a 30-second warning with Keep session comes first. You can also clear it yourself at any time. Saved on this device only.
+          </p>
+          <div role="radiogroup" aria-labelledby="timeout-title" className="mt-5 flex flex-wrap gap-2">
+            {SESSION_TIMEOUT_OPTIONS.map((o) => (
+              <label key={o.id} className="press relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-5 text-base font-semibold ring-1 ring-line has-[:checked]:bg-navy has-[:checked]:text-white has-[:checked]:ring-navy has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-deeper">
+                <input type="radio" name="session-timeout" value={o.id} checked={timeout === o.id} onChange={() => setSessionTimeout(o.id)} className="absolute inset-0 size-full cursor-pointer opacity-0" />
+                {o.label}{o.id === "6h" ? " (default)" : ""}
+              </label>
+            ))}
+          </div>
+        </section>
 
         <aside aria-label="Session privacy" className="my-7 flex max-w-2xl items-start gap-3 text-sm leading-relaxed text-ink-soft sm:my-8">
           <Shield size={20} className="mt-0.5 shrink-0 text-blue-deeper" />

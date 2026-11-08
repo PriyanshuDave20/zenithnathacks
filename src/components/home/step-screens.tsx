@@ -236,7 +236,7 @@ export function PrivacyScreen() {
   const rows = [
     { icon: <Shield size={20} />, title: "Kept in this tab only", note: "Nothing is saved to a server" },
     { icon: <IdMasked size={20} />, title: "No identifiers asked", note: "No names, IDs or birth dates" },
-    { icon: <Clear size={20} />, title: "Clears itself", note: "After 10 minutes of inactivity" },
+    { icon: <Clear size={20} />, title: "Clears itself", note: "After 6 hours of inactivity (you can shorten it)" },
   ];
   return (
     <>

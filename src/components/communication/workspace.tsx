@@ -52,6 +52,7 @@ import {
   SpeechFeedback,
 } from "@/components/session/patient-screens";
 import "./flow.css";
+import { idleMsFor, SESSION_WARNING_MS, useSessionTimeout } from "@/lib/session-timeout";
 
 const PICTOS = {
   head: PictoHead,
@@ -327,6 +328,7 @@ export function CommunicationWorkspace() {
   useEffect(() => {
     stream.current?.scrollTo({ top: stream.current.scrollHeight });
   }, [turns.length, pending]);
+  const sessionTimeout = useSessionTimeout();
   const idle = useIdle({
     enabled:
       stage !== "end" &&
@@ -334,8 +336,8 @@ export function CommunicationWorkspace() {
         turns.length > 0 ||
         patientInputs.length > 0 ||
         !!draft),
-    idleMs: 570000, // 9:30 of inactivity, then the 30 s warning: cleared after 10 minutes
-    graceMs: 30000,
+    idleMs: idleMsFor(sessionTimeout),
+    graceMs: SESSION_WARNING_MS,
     onExpire: () => clear(true),
   });
 
