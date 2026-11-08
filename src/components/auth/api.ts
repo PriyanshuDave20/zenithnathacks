@@ -102,7 +102,7 @@ export async function updateProfile(patch: ProfilePatch): Promise<ClinicianProfi
 export async function signOut(): Promise<void> {
   // Clear patient content immediately, even if revocation must be retried.
   clearPatientSession();
-  await request("/api/auth/signout", "POST");
+  await request("/api/auth/signout", "POST", {});
   store.invalidate();
   notify();
 }
