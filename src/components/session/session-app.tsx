@@ -14,7 +14,8 @@ import {
   type TranslateInput,
   type TranslateResponse,
 } from "@/lib/mocks";
-import { respond, track, translate } from "./api";
+import { respond, translate } from "./api";
+import { SessionMetrics } from "./metrics-lifecycle";
 import { requestGaze } from "@/lib/input/gaze/gaze-request";
 import {
   EndScreen,
@@ -139,6 +140,7 @@ export function SessionApp() {
   const [toast, setToast] = useState<string | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
+  const metrics = useRef(new SessionMetrics());
   const meta = PATIENT_LANGUAGES.find((l) => l.code === s.language)!;
   const lang: LangMeta = { code: meta.code, dir: meta.dir, speech: meta.speech, english: meta.english, name: meta.name };
   const inSession = s.stage !== "start" && s.stage !== "end";
@@ -148,6 +150,7 @@ export function SessionApp() {
   // pagehide / bfcache restore for full-page navigations.
   useEffect(() => {
     const wipe = () => {
+      metrics.current.reset();
       window.speechSynthesis?.cancel();
       dispatch({ type: "clear" });
     };
@@ -186,6 +189,7 @@ export function SessionApp() {
   }, [toast]);
 
   const clear = useCallback((reason: string) => {
+    metrics.current.reset();
     window.speechSynthesis?.cancel();
     dispatch({ type: "clear" });
     setConfirmClear(false);
@@ -295,7 +299,7 @@ export function SessionApp() {
             <StartScreen
               onStart={({ language, mode, path }) => {
                 dispatch({ type: "start", language, mode, path, at: Date.now() });
-                track({ event: "session_started", mode });
+                metrics.current.start(mode);
               }}
             />
           ) : null}
@@ -319,7 +323,10 @@ export function SessionApp() {
               translation={s.translation}
               failed={s.translateFailed}
               fallbackText={fallbackText}
-              onYes={() => dispatch({ type: "go", stage: "to-clinician" })}
+              onYes={() => {
+                metrics.current.firstMessage();
+                dispatch({ type: "go", stage: "to-clinician" });
+              }}
               onRetry={() => dispatch({ type: "retry-translate" })}
               onTryAgain={() => dispatch({ type: "go", stage: "intake" })}
             />
@@ -333,7 +340,6 @@ export function SessionApp() {
               buttonLabel="I’m the clinician"
               onContinue={() => {
                 if (!s.firstMessageSent) {
-                  track({ event: "first_message", mode: s.mode, msSinceStart: Date.now() - s.startedAt });
                   dispatch({ type: "first-message" });
                 }
                 dispatch({ type: "go", stage: "review" });
@@ -352,6 +358,7 @@ export function SessionApp() {
               exchanges={s.exchanges}
               onReply={() => dispatch({ type: "go", stage: "reply" })}
               onEnd={() => {
+                metrics.current.reset();
                 window.speechSynthesis?.cancel();
                 dispatch({ type: "clear" });
                 dispatch({ type: "go", stage: "end" });
@@ -382,7 +389,7 @@ export function SessionApp() {
               teachBackPrompt={s.exchanges[s.exchanges.length - 1].response.teachBackPrompt}
               inEnglish={s.exchanges[s.exchanges.length - 1].inEnglish}
               onAnswer={(answer) => {
-                if (answer === "yes") track({ event: "teachback_confirmed", mode: s.mode });
+                if (answer === "yes") metrics.current.teachback();
                 dispatch({ type: "teach-back", answer });
               }}
             />
@@ -390,7 +397,7 @@ export function SessionApp() {
 
           {s.stage === "hand-back" ? <HandBack lang={lang} onDone={() => dispatch({ type: "go", stage: "review" })} /> : null}
 
-          {s.stage === "end" ? <EndScreen onNew={() => dispatch({ type: "clear" })} /> : null}
+          {s.stage === "end" ? <EndScreen onNew={() => { metrics.current.reset(); dispatch({ type: "clear" }); }} /> : null}
         </div>
       </div>
 

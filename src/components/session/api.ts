@@ -2,6 +2,7 @@
 import { z } from "zod";
 import {
   RespondRequestSchema,
+  MetricsEventSchema,
   RespondResponseSchema,
   TranslateRequestSchema,
   TranslateResponseSchema,
@@ -53,7 +54,25 @@ export function isReplyUnavailable(response: RespondResponse): boolean {
     || response.patientText === "Mock provider: no translated reply available.";
 }
 
-/** Metrics remain disabled until their route and anonymous sink are implemented. */
+/** Best-effort anonymous counts: never await, retry, log, or read an error body. */
 export function track(event: MetricsEvent): void {
-  void event;
+  try {
+    // Project explicitly so an accidental wider object can never send content or identifiers.
+    const parsed = MetricsEventSchema.safeParse({
+      event: event.event,
+      mode: event.mode,
+      ...(event.msSinceStart === undefined ? {} : { msSinceStart: event.msSinceStart }),
+    });
+    if (!parsed.success) return;
+    void fetch("/api/metrics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(parsed.data),
+      credentials: "omit",
+      cache: "no-store",
+      signal: AbortSignal.timeout(5_000),
+    }).catch(() => {});
+  } catch {
+    // Disabled browser APIs and synchronous fetch failures also leave the visit unaffected.
+  }
 }
