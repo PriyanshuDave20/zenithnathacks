@@ -38,6 +38,21 @@ export function useRecognition(lang: string) {
     rec.current?.stop();
   }, []);
 
+  const clear = useCallback(() => {
+    const current = rec.current;
+    if (current) {
+      current.onresult = null;
+      current.onend = null;
+      current.onerror = null;
+      current.abort();
+    }
+    rec.current = null;
+    setListening(false);
+    setFinalText("");
+    setInterim("");
+    setError(null);
+  }, []);
+
   const start = useCallback(() => {
     const Ctor = getCtor();
     if (!Ctor) {
@@ -78,7 +93,7 @@ export function useRecognition(lang: string) {
 
   useEffect(() => () => rec.current?.abort(), []);
 
-  return { supported, listening, finalText, setFinalText, interim, error, start, stop };
+  return { supported, listening, finalText, setFinalText, interim, error, start, stop, clear };
 }
 
 /** Text-to-speech (read-aloud and speaking for patients who cannot speak). */

@@ -46,8 +46,8 @@ export const SETUP_MODES = [
   },
   {
     id: "icu",
-    label: "Eye selection · ICU",
-    hint: "Large communication targets. Interface preview; eye tracking not connected.",
+    label: "Eye mode",
+    hint: "Look at a large choice and hold your gaze to select it.",
     Icon: Handoff,
   },
 ] as const;
@@ -130,8 +130,7 @@ export function SessionSetup({
           </fieldset>
           {mode === "icu" ? (
             <p className="sf-preview-note">
-              ICU is an English-only interface preview. Eye tracking will be
-              connected by the input-channel team.
+              Eye mode uses an English six-choice board. On the patient screen, enable the eye control and complete calibration. Camera access is optional; tap and keyboard remain available.
             </p>
           ) : null}
           {mode !== "icu" ? (

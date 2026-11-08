@@ -1,21 +1,19 @@
 "use client";
 
-import { useRef, type KeyboardEvent, type ReactNode } from "react";
+import { useRef, type KeyboardEvent } from "react";
 import { languages, summary } from "./data";
 import { Bubble } from "./phone";
+import { EyeDemo } from "./eye-demo";
+import { BodyPicture } from "@/components/input/body-diagram";
 import { useModesState } from "./rail-store";
 import {
   Captions,
   Check,
   Keyboard,
-  PictoBreath,
-  PictoCalendar,
-  PictoChest,
-  PictoPain,
   Speaker,
 } from "./icons";
 
-type ModeId = "language" | "deaf" | "literacy" | "mute";
+type ModeId = "language" | "deaf" | "literacy" | "mute" | "eye";
 
 export const modes: { id: ModeId; tab: string; short: string; arrives: string; intro: string }[] = [
   {
@@ -44,40 +42,36 @@ export const modes: { id: ModeId; tab: string; short: string; arrives: string; i
     tab: "Can’t speak",
     short: "Can’t speak",
     arrives: "Tapped phrases, spoken aloud",
-    intro: "The patient builds a sentence from tapped phrases, and the device speaks it for them.",
+    intro: "The patient types or chooses a phrase, checks their message, then passes the device back for the clinician’s review.",
+  },
+  {
+    id: "eye",
+    tab: "Eye mode",
+    short: "Eye mode",
+    arrives: "A choice from the communication board",
+    intro: "Watch a patient look toward a choice, hold their gaze for two seconds, and confirm their message. The small cursor shows where they are looking. This simulated example uses no camera.",
   },
 ];
-
-function Tile({ on, label, children }: { on?: boolean; label: string; children: ReactNode }) {
-  return (
-    <span
-      className={`flex min-h-28 flex-col items-center justify-center gap-2 rounded-[1.75rem] p-3 text-center text-base font-semibold ${
-        on ? "bg-blue-deep text-white shadow-soft" : "bg-surface text-ink ring-1 ring-line"
-      }`}
-    >
-      {children}
-      <span className="flex items-center gap-1">
-        {on ? <Check size={14} /> : null}
-        {label}
-      </span>
-    </span>
-  );
-}
 
 export function Panel({
   mode,
   lang,
   setLang,
   compact = false,
+  setEyeChoice,
 }: {
   mode: ModeId;
   lang: number;
   setLang: (n: number) => void;
   /** Inside the phone: narrow layout regardless of the viewport. */
   compact?: boolean;
+  eyeChoice: string | null;
+  setEyeChoice: (choice: string) => void;
 }) {
   const l = languages[lang];
   switch (mode) {
+    case "eye":
+      return <EyeDemo compact={compact} onChoice={setEyeChoice} />;
     case "language":
       return (
         <div className="flex flex-col gap-3">
@@ -138,20 +132,10 @@ export function Panel({
       return (
         <div className="flex flex-col gap-3">
           <p className="font-display text-xl font-bold">Where does it hurt?</p>
-          <div className={`grid grid-cols-2 gap-2 ${compact ? "" : "sm:grid-cols-4"}`}>
-            <Tile on label="Chest">
-              <PictoChest size={38} />
-            </Tile>
-            <Tile on label="Breathing">
-              <PictoBreath size={38} />
-            </Tile>
-            <Tile on label="2 days">
-              <PictoCalendar size={38} />
-            </Tile>
-            <Tile label="Sharp pain">
-              <PictoPain size={38} />
-            </Tile>
+          <div className={`mx-auto w-full ${compact ? "max-w-48" : "max-w-64"} rounded-3xl bg-surface p-2 ring-1 ring-line`}>
+            <BodyPicture view="front" figure="male" spots={[{ id: "mode-demo", view: "front", x: 104, y: 128, partId: "chest" }]} className="mx-auto max-h-64 w-auto" />
           </div>
+          <p className="text-sm font-semibold text-blue-deeper">Chest marked · Next: when did it start?</p>
           <span className="flex min-h-12 items-center gap-2 self-start rounded-full bg-blue-soft px-5 text-base font-semibold text-blue-deeper">
             <Speaker size={20} /> Read aloud
           </span>
@@ -174,7 +158,7 @@ export function Panel({
             ))}
           </div>
           <div className="mt-1 rounded-[1.5rem] bg-surface p-4 ring-1 ring-line">
-            <p className="text-sm font-medium text-ink-soft">Speaking aloud for the patient</p>
+            <p className="text-sm font-medium text-ink-soft">Message ready for read-back</p>
             <p className="mt-0.5 font-display text-xl font-semibold leading-snug">Pain in my chest when I breathe, for 2 days.</p>
             <span className="level mt-3 flex h-6 items-center gap-1" aria-hidden="true">
               {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((d) => (
@@ -188,7 +172,7 @@ export function Panel({
 }
 
 export function Modes() {
-  const { mode: active, setMode: setActive, lang, setLang } = useModesState();
+  const { mode: active, setMode: setActive, lang, setLang, eyeChoice, setEyeChoice } = useModesState();
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
 
   function onKey(e: KeyboardEvent) {
@@ -214,17 +198,17 @@ export function Modes() {
           id="modes-title"
           className="max-w-[16ch] font-display text-[clamp(2.25rem,6vw,3.5rem)] font-bold leading-[1.04] tracking-[-0.03em] [text-wrap:balance]"
         >
-          Same symptom. Four ways to say it.
+          A way to communicate. For every patient.
         </h2>
         <p className="mt-5 max-w-[38rem] text-lg leading-relaxed text-ink-soft">
-          Choose how the patient communicates. However it arrives, the clinician gets the same clear summary.
+          Choose how the patient communicates. Explore speech, captions, pictures, typed phrases, and the Eye mode board.
         </p>
 
         <div
           role="tablist"
           aria-label="Patient modes"
           onKeyDown={onKey}
-          className="mt-10 flex flex-wrap gap-0.5 rounded-[1.75rem] bg-surface p-1.5 shadow-soft sm:flex-nowrap sm:gap-1 sm:rounded-full"
+          className="mt-10 flex flex-wrap gap-0.5 rounded-[1.75rem] bg-surface p-1.5 shadow-soft sm:gap-1"
         >
           {modes.map((x, i) => (
             <button
@@ -258,7 +242,7 @@ export function Modes() {
             <span className="inline-block rounded-full bg-blue-soft px-3 py-1 text-sm font-semibold text-blue-deeper">Patient</span>
             <p className="mt-3 max-w-[34rem] text-base leading-relaxed text-ink-soft">{m.intro}</p>
             <div className="mt-6">
-              <Panel mode={m.id} lang={lang} setLang={setLang} />
+              <Panel mode={m.id} lang={lang} setLang={setLang} eyeChoice={eyeChoice} setEyeChoice={setEyeChoice} />
             </div>
           </div>
 
@@ -269,6 +253,13 @@ export function Modes() {
             className="flex flex-col self-start rounded-[2.25rem] rounded-br-[0.5rem] bg-navy p-6 text-white sm:p-8 lg:w-full lg:max-w-[34rem]"
           >
             <span className="self-start rounded-full bg-navy-raised px-3 py-1 text-sm font-semibold text-white">Clinician · English</span>
+            {m.id === "eye" ? (
+              <div className="mt-4" aria-live="polite">
+                <p className="text-sm text-on-navy-soft">What the patient chose</p>
+                <p className="mt-2 font-display text-2xl font-semibold">{eyeChoice ?? "No choice yet"}</p>
+                <p className="mt-4 text-base text-on-navy-soft">The confirmed choice appears here for review. This is a simulated conversation; no staff are notified.</p>
+              </div>
+            ) : <>
             <p className="mt-4 text-sm font-medium text-on-navy-soft">Chief complaint</p>
             <p className="font-display text-2xl font-semibold leading-snug">{summary.chiefComplaint}</p>
             <dl className="mt-6 grid grid-cols-2 gap-3 text-base">
@@ -281,6 +272,7 @@ export function Modes() {
                 <dd className="mt-0.5 font-semibold text-blue">{summary.redFlag}</dd>
               </div>
             </dl>
+            </>}
             <p className="mt-6 text-sm text-on-navy-soft">
               Arrived as: <span className="font-semibold text-white">{m.arrives}</span>
             </p>

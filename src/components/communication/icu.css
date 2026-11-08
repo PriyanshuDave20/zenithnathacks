@@ -53,10 +53,6 @@
   width: 0;
   height: 100%;
 }
-.scIcu-target:is(:hover, :focus-visible) .scIcu-track span {
-  width: 100%;
-  transition: width 1.5s linear;
-}
 .scIcu-chosen {
   display: flex;
   align-items: center;
@@ -91,11 +87,5 @@
   }
   .scIcu-target > span {
     font-size: 0.8em;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .scIcu-target:is(:hover, :focus-visible) .scIcu-track span {
-    transition: none;
-    width: 100%;
   }
 }

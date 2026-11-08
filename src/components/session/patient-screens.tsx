@@ -175,15 +175,15 @@ export function IntakeFree({
             {rec.listening ? t.listening : t.speak}
           </p>
           {spoken ? (
-            <div className="w-full">
+            <div className="flex w-full flex-col gap-3">
               <SpeechBubble tone="patient" caption={t.yourMessage} lang={lang.code} dir={lang.dir}>
                 {spoken}
               </SpeechBubble>
+              <QuietButton onClick={rec.clear} className="self-start">
+                {t.clearPhrases}
+              </QuietButton>
             </div>
           ) : null}
-          <QuietButton icon={<Keyboard size={20} />} onClick={() => (rec.stop(), setTyped(rec.finalText), setTyping(true))}>
-            {t.typeInstead}
-          </QuietButton>
         </div>
       ) : null}
 
@@ -208,11 +208,16 @@ export function IntakeFree({
         </div>
       ) : null}
 
-      <ActionBar>
-        <PrimaryButton onClick={submit} disabled={!full} trailing={<ArrowRight size={22} className={lang.dir === "rtl" ? "rotate-180" : ""} />}>
+      <div className="mt-8 flex flex-col-reverse gap-3 pb-[env(safe-area-inset-bottom)] sm:flex-row sm:items-center sm:justify-end">
+        {showMic ? (
+          <QuietButton icon={<Keyboard size={20} />} onClick={() => (rec.stop(), setTyped(rec.finalText), setTyping(true))}>
+            {t.typeInstead}
+          </QuietButton>
+        ) : null}
+        <PrimaryButton className="shadow-none" onClick={submit} disabled={!full} trailing={<ArrowRight size={22} className={lang.dir === "rtl" ? "rotate-180" : ""} />}>
           <span lang={lang.code}>{t.done}</span>
         </PrimaryButton>
-      </ActionBar>
+      </div>
     </Screen>
   );
 }
@@ -380,9 +385,15 @@ export function ConfirmReadBack({
     <Screen label="Patient checks the read-back" dir={lang.dir} lang={lang.code}>
       <div lang={lang.code} dir={lang.dir} className="flex flex-1 flex-col gap-6">
         {pending ? (
-          <div className="flex flex-1 items-center justify-center py-16">
-            <Spinner label={t.working} />
-          </div>
+          <>
+            <Title>{t.yourMessage}</Title>
+            <SpeechBubble tone="patient" caption={lang.name} lang={lang.code} dir={lang.dir} full>
+              {fallbackText}
+            </SpeechBubble>
+            <div aria-busy="true" className="flex min-h-24 items-center justify-center">
+              <Spinner label={t.working} />
+            </div>
+          </>
         ) : failed ? (
           <>
             <Title>{t.yourMessage}</Title>
