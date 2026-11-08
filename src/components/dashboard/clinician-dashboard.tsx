@@ -9,6 +9,7 @@ import { signOut, useClinician } from "@/components/auth/api";
 import { initials } from "@/components/auth/auth-ui";
 import { SESSION_TIMEOUT_OPTIONS, setSessionTimeout, useSessionTimeout } from "@/lib/session-timeout";
 import { COPY_OPTIONS, setSummaryPrefs, useSummaryPrefs } from "@/lib/summary-prefs";
+import { MAX_QUICK_REPLIES, MAX_QUICK_REPLY_LENGTH, addQuickReply, removeQuickReply, useQuickReplies } from "@/lib/quick-replies";
 import { HubTheme } from "@/components/accessibility/hub-theme";
 import { ThemeToggle } from "@/components/accessibility/theme-toggle";
 import { SetupCheck } from "./setup-check";
@@ -23,6 +24,19 @@ export function ClinicianDashboard() {
   const timeout = useSessionTimeout();
   const prefs = useSummaryPrefs();
   const [prefsSaved, setPrefsSaved] = useState(false);
+  const quickReplies = useQuickReplies();
+  const [draftReply, setDraftReply] = useState("");
+  const [replyNote, setReplyNote] = useState("");
+  const submitQuickReply = (event: React.FormEvent) => {
+    event.preventDefault();
+    const result = addQuickReply(draftReply);
+    if (result === "added") {
+      setDraftReply("");
+      setReplyNote("Saved on this device.");
+    } else if (result === "duplicate") setReplyNote("You already saved that reply.");
+    else if (result === "full") setReplyNote(`You can save up to ${MAX_QUICK_REPLIES} replies. Remove one first.`);
+    else setReplyNote("Type a reply to save.");
+  };
   const savePrefs = (patch: Parameters<typeof setSummaryPrefs>[0]) => {
     setSummaryPrefs(patch);
     setPrefsSaved(true);
@@ -163,20 +177,46 @@ export function ClinicianDashboard() {
           <p>Each conversation is temporary. Patient messages and session details aren’t saved to your account.</p>
         </aside>
 
-        <section aria-labelledby="future-tools-title" className="border-t border-line pt-7 sm:pt-8">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <h2 id="future-tools-title" className="font-display text-xl font-semibold">Room for what’s next</h2>
-            <span className="rounded-full bg-blue-soft px-3 py-1 text-xs font-semibold text-blue-deeper">Future features</span>
-          </div>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">More clinician tools can live here as Synapse grows.</p>
-          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label="Reserved spaces for upcoming features">
-            {["Saved quick replies"].map(label => (
-              <div key={label} className="flex min-h-24 flex-wrap items-center justify-between gap-4 rounded-inset border border-dashed border-ink-soft/40 px-5 py-5">
-                <span className="text-sm font-medium text-ink-soft">{label}</span>
-                <span className="text-xs text-ink-soft">Not available yet</span>
-              </div>
-            ))}
-          </div>
+        <section aria-labelledby="quick-replies-title" className="mt-6 min-w-0 rounded-sheet bg-surface p-7 sm:p-8">
+          <h2 id="quick-replies-title" className="font-display text-xl font-semibold">Saved quick replies</h2>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
+            Phrases you use often. They appear at the top of the reply screen, ready to tap. Keep them general: never include a patient’s name or any identifier. Saved on this device only.
+          </p>
+          <form onSubmit={submitQuickReply} className="mt-5 flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-start">
+            <label className="min-w-0 flex-1">
+              <span className="sr-only">New quick reply</span>
+              <input
+                value={draftReply}
+                onChange={(e) => { setDraftReply(e.target.value); setReplyNote(""); }}
+                maxLength={MAX_QUICK_REPLY_LENGTH}
+                placeholder="e.g. Please wait here. A nurse will come soon."
+                className="field-control min-h-12 w-full rounded-field px-4 text-base"
+              />
+            </label>
+            <button type="submit" className="press inline-flex min-h-12 items-center justify-center rounded-full bg-blue-deep px-6 text-base font-semibold text-white">
+              Add reply
+            </button>
+          </form>
+          <p aria-live="polite" className="mt-3 min-h-5 text-sm text-ink-soft">{replyNote}</p>
+          {quickReplies.length ? (
+            <ul className="mt-2 flex max-w-2xl flex-col gap-2">
+              {quickReplies.map(reply => (
+                <li key={reply} className="flex items-center justify-between gap-3 rounded-inset bg-ground-2 py-2 ps-4 pe-2">
+                  <span className="min-w-0 break-words text-base">{reply}</span>
+                  <button
+                    type="button"
+                    aria-label={`Remove saved reply: ${reply}`}
+                    onClick={() => { removeQuickReply(reply); setReplyNote("Removed."); }}
+                    className="press inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold text-blue-deeper hover:underline"
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="max-w-xl text-sm text-ink-soft">No saved replies yet.</p>
+          )}
         </section>
       </main>
       <footer className="mx-auto w-full max-w-6xl px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-xs leading-relaxed text-ink-soft sm:px-8">

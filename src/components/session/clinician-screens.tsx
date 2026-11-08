@@ -1,5 +1,6 @@
 "use client";
 
+import { addQuickReply, useQuickReplies } from "@/lib/quick-replies";
 import { HomeLink } from "@/components/auth/home-link";
 
 import { useId, useState } from "react";
@@ -426,6 +427,8 @@ export function ReplyScreen({
   const [message, setMessage] = useState("");
   const fieldId = useId();
   const trimmed = message.trim();
+  const saved = useQuickReplies();
+  const canSave = !!trimmed && !saved.includes(trimmed) && !CLINICIAN_REPLIES.some((r) => r.en === trimmed);
   const demoNotice = trimmed && !mockCanTranslateReply(trimmed, lang.code);
 
   return (
@@ -439,6 +442,26 @@ export function ReplyScreen({
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <div>
+          {saved.length ? (
+            <>
+              <h2 className="mb-3 text-base font-semibold text-ink-soft">Your saved replies</h2>
+              <div className="mb-6 flex flex-col gap-2">
+                {saved.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    aria-pressed={message === r}
+                    onClick={() => setMessage(r)}
+                    className={`press min-h-14 rounded-[1.5rem] px-5 py-3 text-left text-base font-semibold leading-snug ${
+                      message === r ? "bg-blue-deep text-white shadow-soft" : "bg-surface text-ink ring-1 ring-line hover:ring-ink-soft"
+                    }`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : null}
           <h2 className="mb-3 text-base font-semibold text-ink-soft">Suggested replies</h2>
           <div className="flex flex-col gap-2">
             {CLINICIAN_REPLIES.map((r) => (
@@ -467,6 +490,11 @@ export function ReplyScreen({
             rows={5}
             className="field-control resize-y rounded-field p-5 text-lg leading-relaxed"
           />
+          {canSave ? (
+            <QuietButton onClick={() => addQuickReply(trimmed)} className="self-start">
+              Save as quick reply
+            </QuietButton>
+          ) : null}
           {demoNotice ? (
             <p className="text-sm leading-relaxed text-ink-soft">
               Demo: only the suggested replies have translations right now. Other replies reach the patient in English until the translation

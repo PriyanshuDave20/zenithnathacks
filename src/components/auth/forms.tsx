@@ -75,7 +75,7 @@ export function SignInForm() {
       footer={
         <>
           New to Synapse?{" "}
-          <Link href="/signup" className="font-semibold text-blue-deeper underline">
+          <Link href="/signup" className="inline-block py-3 font-semibold text-blue-deeper underline">
             Create an account
           </Link>
         </>
@@ -88,7 +88,7 @@ export function SignInForm() {
         {error ? <FormError>{error}</FormError> : null}
         <TextField label="Work email" type="email" name="email" autoComplete="email" inputMode="email" required value={email} onChange={(e) => setEmail(e.target.value)} error={fieldErrors.email} />
         <PasswordField label="Password" name="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} error={fieldErrors.password} />
-        <Link href="/forgot-password" className="-mt-2 w-fit text-base font-semibold text-blue-deeper underline">
+        <Link href="/forgot-password" className="-my-2 w-fit py-2.5 text-base font-semibold text-blue-deeper underline">
           Forgot password?
         </Link>
         <SubmitButton busy={busy === "email"} busyLabel="Signing in…">
@@ -176,7 +176,7 @@ export function SignUpForm() {
       footer={
         <>
           Already have an account?{" "}
-          <Link href="/signin" className="font-semibold text-blue-deeper underline">
+          <Link href="/signin" className="inline-block py-3 font-semibold text-blue-deeper underline">
             Sign in
           </Link>
         </>
@@ -229,7 +229,7 @@ export function ForgotPasswordForm() {
       title="Reset your password"
       lede={USING_MOCK_AUTH ? "Try the password-reset screen. Email delivery is not connected in this demo." : "Enter your work email and we’ll send you a link to choose a new password."}
       footer={
-        <Link href="/signin" className="font-semibold text-blue-deeper underline">
+        <Link href="/signin" className="inline-block py-3 font-semibold text-blue-deeper underline">
           Back to sign in
         </Link>
       }
