@@ -67,18 +67,21 @@ export function SpeechFeedback({ status, language }: { status: SpeechPlaybackSta
     "voice-ready": t.speechReady,
     "voice-unavailable": t.speechUnavailable,
     "playback-failed": t.speechFailed,
+    "loading-audio": t.speechAudioLoading,
+    "audio-ready": t.speechAudioReady,
+    "browser-ready": t.speechBrowserReady,
   }[status];
   return <p role="status" lang={language} dir={language === "ar" ? "rtl" : "ltr"} className="max-w-prose text-base font-semibold text-ink-soft">{message}</p>;
 }
 
-function ReadAloud({ text, lang, label, language }: { text: string; lang: string; label: string; language: PatientLanguage }) {
+function ReadAloud({ text, lang, label, language, kind = "dynamic" }: { text: string; lang: string; label: string; language: PatientLanguage; kind?: "dynamic" | "public" }) {
   const { supported, speaking, status, speak } = useSpeak();
   if (!supported) return null;
   return (
     <div className="flex flex-col items-start gap-2">
       <button
         type="button"
-        onClick={() => speak(text, lang)}
+        onClick={() => speak(text, lang, { kind })}
         className="press inline-flex min-h-12 items-center gap-2 self-start rounded-full bg-blue-soft px-5 text-base font-semibold text-blue-deeper hover:bg-ground-2"
       >
         <Speaker size={20} />
@@ -187,7 +190,7 @@ export function IntakeFree({
               </SpeechBubble>
               <div className="flex flex-wrap gap-2">
                 {canSpeak ? (
-                  <QuietButton icon={<Speaker size={20} />} onClick={() => speak(composed, lang.speech)}>
+                  <QuietButton icon={<Speaker size={20} />} onClick={() => speak(composed, lang.speech, { kind: "public" })}>
                     {t.speakForMe}
                   </QuietButton>
                 ) : null}
@@ -315,7 +318,7 @@ export function IntakeGuided({
     setSpots(next);
     // Low-literacy and can't-speak patients hear the part named back (the clinician hears it too).
     const part = added && getBodyPart(added.partId);
-    if (part && (mode === "low_literacy" || mode === "mute" || mode === "icu")) speak(part.text[lang.code], lang.speech);
+    if (part && (mode === "low_literacy" || mode === "mute" || mode === "icu")) speak(part.text[lang.code], lang.speech, { kind: "public" });
   }
 
   function next() {
@@ -345,7 +348,7 @@ export function IntakeGuided({
         </div>
         <div key={q.id} className="screen-in flex flex-col gap-4">
           <Title>{q.text[lang.code]}</Title>
-          {mode !== "deaf_hoh" ? <ReadAloud text={q.text[lang.code]} lang={lang.speech} label={t.readAloud} language={lang.code} /> : null}
+          {mode !== "deaf_hoh" ? <ReadAloud text={q.text[lang.code]} lang={lang.speech} label={t.readAloud} language={lang.code} kind="public" /> : null}
           {mode !== "deaf_hoh" ? <SpeechFeedback status={speechStatus} language={lang.code} /> : null}
 
           {bodyOn ? (
@@ -427,12 +430,14 @@ export function ConfirmReadBack({
   onYes,
   onRetry,
   onTryAgain,
+  kind = "public",
 }: {
   lang: LangMeta;
   mode: Mode;
   translation?: TranslateResponse;
   failed: boolean;
   fallbackText: string;
+  kind?: "dynamic" | "public";
   onYes: () => void;
   onRetry: () => void;
   onTryAgain: () => void;
@@ -468,7 +473,7 @@ export function ConfirmReadBack({
             <SpeechBubble tone="readback" caption={t.yourMessage} lang={lang.code} dir={lang.dir} full>
               {translation!.backTranslation}
             </SpeechBubble>
-            {mode !== "deaf_hoh" ? <ReadAloud text={translation!.backTranslation} lang={lang.speech} label={t.readAloud} language={lang.code} /> : null}
+            {mode !== "deaf_hoh" ? <ReadAloud text={translation!.backTranslation} lang={lang.speech} label={t.readAloud} language={lang.code} kind={kind} /> : null}
           </>
         )}
       </div>

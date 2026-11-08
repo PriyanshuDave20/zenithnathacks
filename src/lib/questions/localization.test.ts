@@ -5,20 +5,24 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { generateLanguagePack, generateToFile } from "./generator";
 import { getGuidedQuestions, getLanguagePack, QUESTION_SOURCE, validateLanguagePack, validateWritingSystem } from "./localization";
-import type { ModelRequest } from "../server/llm";
-
-const fakeModel = async ({ user }: ModelRequest) => JSON.stringify(JSON.parse(user));
+const fakeTranslator = async ({ texts }: { texts: string[] }) => ({ texts: [...texts] });
 
 test("offline pack generation covers all 17 questions and exact option IDs in bounded static-only batches", async () => {
   let calls = 0;
-  const pack = await generateLanguagePack("es", async ({ system, user }) => {
+  const publicText = new Set(Object.entries(QUESTION_SOURCE).flatMap(([id, question]) => [
+    question.text,
+    ...Object.entries(question.options).filter(([option]) => id !== "how_strong" || !/^s\d+$/.test(option)).map(([, text]) => text),
+  ]));
+  const pack = await generateLanguagePack("es", async ({ texts, from, to }) => {
     calls += 1;
-    assert.match(system, /Omit identifiers/);
-    assert.match(system, /Preserve negation/);
-    assert.ok(Object.keys(JSON.parse(user).questions).length <= 3);
-    return fakeModel({ system, user });
+    assert.equal(from, "en");
+    assert.equal(to, "es");
+    assert.ok(texts.length <= 25);
+    assert.ok(texts.every(text => publicText.has(text)));
+    return fakeTranslator({ texts });
   });
-  assert.equal(calls, 6);
+  assert.ok(calls > 1);
+  assert.equal(pack.generatedBy, "Azure Translator REST v3");
   assert.equal(pack.reviewStatus, "draft");
   assert.deepEqual(pack.source, QUESTION_SOURCE);
   assert.deepEqual(Object.keys(pack.questions), Object.keys(QUESTION_SOURCE));
@@ -26,7 +30,7 @@ test("offline pack generation covers all 17 questions and exact option IDs in bo
 });
 
 test("packs reject missing IDs, stale wording, blank translations, extra answers and changed scales", async () => {
-  const valid = await generateLanguagePack("es", fakeModel);
+  const valid = await generateLanguagePack("es", fakeTranslator);
   for (const change of [
     (pack: typeof valid) => { delete pack.questions.where; },
     (pack: typeof valid) => { pack.questions.where.text = " "; },
@@ -39,20 +43,18 @@ test("packs reject missing IDs, stale wording, blank translations, extra answers
     change(pack);
     assert.throws(() => validateLanguagePack(pack));
   }
-  await assert.rejects(generateLanguagePack("es", async ({ user }) => {
-    const body = JSON.parse(user);
-    if (body.questions.how_strong) body.questions.how_strong.options.s10 = "5 out of 5";
-    return JSON.stringify(body);
-  }));
-  await assert.rejects(generateLanguagePack("unsupported", fakeModel));
+  await assert.rejects(generateLanguagePack("es", async ({ texts }) => ({ texts: texts.slice(1) })));
+  await assert.rejects(generateLanguagePack("es", async ({ texts }) => ({ texts: [...texts, "extra"] })));
+  await assert.rejects(generateLanguagePack("es", async ({ texts }) => ({ texts: texts.map(text => `${text} 999`) })));
+  await assert.rejects(generateLanguagePack("unsupported", fakeTranslator));
 });
 
-test("current packs are reused without model calls and failed regeneration preserves the last complete JSON", async (t) => {
+test("current packs are reused without provider calls and failed regeneration preserves the last complete JSON", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "synapse-public-packs-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   await mkdir(join(root, "src/lib/questions"), { recursive: true });
   const path = join(root, "src/lib/questions/language-packs.json");
-  await writeFile(path, JSON.stringify([await generateLanguagePack("es", fakeModel)]));
+  await writeFile(path, JSON.stringify([await generateLanguagePack("es", fakeTranslator)]));
   const previous = await readFile(path, "utf8");
   let calls = 0;
   const fail = async () => { calls += 1; throw new Error("Synthetic provider failure"); };

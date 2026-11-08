@@ -1,4 +1,4 @@
-export type SpeechPlaybackStatus = "loading-voices" | "voice-ready" | "voice-unavailable" | "playback-failed" | null;
+export type SpeechPlaybackStatus = "loading-voices" | "voice-ready" | "voice-unavailable" | "playback-failed" | "loading-audio" | "audio-ready" | "browser-ready" | null;
 export type SpeechPlaybackState = { speaking: boolean; status: SpeechPlaybackStatus };
 
 const locale = (tag: string) => tag.toLowerCase().replace(/_/g, "-");
