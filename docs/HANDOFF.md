@@ -1,5 +1,13 @@
 # Handoff Log
 
+### 2026-11-07 Zach / Codex · zach/session-ui-fixes
+- Fixed white-on-white Cancel/Clear confirmation controls in the navy communication header; explicit End and clear label, navy focus treatment and high-contrast override. Cancel retains the report; confirming clears it.
+- Added localized Clear beside voice transcripts. Recognition clear detaches callbacks before aborting, then resets final/interim text, listening and errors so late results cannot restore cleared words.
+- Patient read-back loading keeps the submitted message visible with accessible busy feedback instead of a blank spinner screen. Existing read-back/retry flow preserved.
+- Used impeccable, UI/UX Pro Max, Apple Design and local graphify. Verified Chromium at 390x844 and 1280x900: transcript reset/restart with simulated recognition, submission/loading/read-back, handoff, end/cancel/clear, no horizontal overflow. Actual microphone recognition untested.
+- Checks: typecheck, all 64 tests, lint (0 errors; 188 existing skill warnings), diff whitespace. React checklist reviewed. Preserved pre-existing .codex/config.toml and package-lock.json changes.
+- Touched communication workspace CSS/TSX, session patient-screens/use-speech, task board and this log. No API/contracts/storage changes.
+
 ### 2026-11-07 Zach / Codex · zach/eye-mode-showcase (pursuit calibration integration)
 - Installed MediaPipe is now present. Merged latest fetched zenith/gaze-tracking through 6294390: 30-second pursuit sweep covering viewport and visible interactive hotspots. Preserved automatic landing demo, Eye selected in clinician setup, gaze channel marking, roll/blink validation, fresh-frame timing, look-away rearm, smaller cursor and Recalibrate control.
 - Resolved overlap in gaze-layer, gaze-math and both team logs. Fit now requires 90% of pursuit samples within 22% of their targets and enough screen coverage; invalid fits require retry. Calibration begins after model startup, pauses over hidden/background gaps and uses camera-frame timing for smoothing. Disabled/ignored targets are excluded from calibration hotspots. Updated board guidance to the new sweep.

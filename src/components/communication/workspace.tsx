@@ -596,12 +596,9 @@ export function CommunicationWorkspace() {
             {clearConfirm ? (
               <>
                 {
-                  <Action
-                    label={"Cancel"}
-                    onClick={() => setClearConfirm(false)}
-                  />
+                  <button type="button" onClick={() => setClearConfirm(false)}>Cancel</button>
                 }
-                {<Action label={"Clear now"} onClick={() => clear(ending)} />}
+                <button type="button" className="sc-confirmClear" onClick={() => clear(ending)}>{ending ? "End and clear" : "Clear now"}</button>
               </>
             ) : (
               <button
