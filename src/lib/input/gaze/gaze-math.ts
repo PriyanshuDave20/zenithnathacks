@@ -228,6 +228,18 @@ export function fitGazeCalibration(samples: CalibrationSample[]): GazeFit {
   return { mapping: model.mapping, quality: med <= GOOD_MEDIAN && p80 <= GOOD_P80 ? "good" : "fair", medianError: med };
 }
 
+/**
+ * Space to keep clear at every screen edge, in px. A system effect can light or cover the border of the
+ * whole display in the dark (macOS Tahoe's "Edge Light" draws a bright frame around it, over every app,
+ * and only pulls back from the mouse pointer, not from an eye-tracking cursor), and a page cannot detect
+ * it or know how wide it is. So controls and calibration targets stay this far in. Scales with the screen
+ * (smaller of width and height); `wide` is for when the light has been turned up.
+ */
+export function edgeSafePx(width: number, height: number, wide = false): number {
+  const vmin = Math.min(width, height);
+  return wide ? Math.round(Math.min(180, Math.max(32, vmin * 0.14))) : Math.round(Math.min(112, Math.max(24, vmin * 0.08)));
+}
+
 /** Middle (per-component median) of a set of readings, e.g. what the eyes looked like during a steady look. */
 export function medianFeatures(list: GazeFeatures[]): GazeFeatures | null {
   if (!list.length) return null;

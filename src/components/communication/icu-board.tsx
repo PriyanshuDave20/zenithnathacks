@@ -15,18 +15,21 @@ import {
 } from "@/components/home/icons";
 import {
   cancelGazeRequest,
+  getGazeEdgeWide,
   getGazeError,
   getGazePhase,
   getGazeRequested,
   getGazeSkipped,
   reopenGaze,
   requestGazeStart,
+  setGazeEdgeWide,
   setGazeAvailable,
   skipGaze,
   stopGaze,
   subscribeGaze,
 } from "@/components/input/gaze/gaze-availability";
 import { useIdle } from "@/components/session/use-idle";
+import { edgeSafePx } from "@/lib/input/gaze/gaze-math";
 import { GATE_CSS } from "./eye-gate-styles";
 import type { SelectEvent } from "@/lib/contracts/input";
 import "./workspace.css";
@@ -80,6 +83,31 @@ export function IcuBoard({
   const gazePhase = useSyncExternalStore(subscribeGaze, getGazePhase, () => "off" as const);
   const gazeError = useSyncExternalStore(subscribeGaze, getGazeError, () => null);
   const gazeSkipped = useSyncExternalStore(subscribeGaze, getGazeSkipped, () => false);
+  const edgeWide = useSyncExternalStore(subscribeGaze, getGazeEdgeWide, () => false);
+  // Keep controls clear of the screen edge. In the dark a system effect (macOS Edge Light) can light or cover the
+  // border of the whole display, over the page, and the page cannot see it. The margin is published as --eye-edge
+  // so the tracking layer's own buttons use the same one.
+  useEffect(() => {
+    const apply = () => {
+      const edge = edgeSafePx(window.innerWidth, window.innerHeight, edgeWide);
+      const root = document.documentElement.style;
+      root.setProperty("--eye-edge", `${edge}px`);
+      // Top and bottom get half by default (full-width margins there would eat a third of a laptop screen);
+      // all four sides get the full margin once the clinician says the edge light is on.
+      root.setProperty("--eye-edge-v", `${Math.round(edgeWide ? edge : edge / 2)}px`);
+      // The floating eye buttons sit this far in from the side; on a wide enough screen the board leaves a gutter for
+      // them (button width + a gap) so they never lie on top of a choice.
+      root.setProperty("--eye-gutter", window.innerWidth >= 900 ? `${edge + 100}px` : "0px");
+    };
+    apply();
+    window.addEventListener("resize", apply);
+    return () => {
+      window.removeEventListener("resize", apply);
+      document.documentElement.style.removeProperty("--eye-edge");
+      document.documentElement.style.removeProperty("--eye-edge-v");
+      document.documentElement.style.removeProperty("--eye-gutter");
+    };
+  }, [edgeWide]);
   // 3-2-1 after the clinician taps Ready, so the patient can settle before the camera starts.
   const [count, setCount] = useState<number | null>(null);
   useEffect(() => {
@@ -119,7 +147,7 @@ export function IcuBoard({
   return (
     <div className={`${s.root} ${contrast ? s.high : ""}`}>
       <header className={s.header}>
-        <div className={s.headerInner}>
+        <div className={s.headerInner} style={{ paddingInline: "max(24px, var(--eye-edge, 24px))", paddingTop: "max(8px, var(--eye-edge-v, 8px))" }}>
           <Link href="/start" aria-label="Back to communication workspace">
             <SynapseWordmark accent="#77a0c4" />
           </Link>
@@ -171,7 +199,7 @@ export function IcuBoard({
           </button>
         </main>
       ) : reviewed ? (
-        <main ref={main} tabIndex={-1} className={s.main}>
+        <main ref={main} tabIndex={-1} className={s.main} style={{ paddingInline: "max(24px, var(--eye-edge, 24px))" }}>
           <section className={s.sheet}>
             <h1>What the patient chose</h1>
             <p className="sf-icu-review-choice" role="status">
@@ -197,7 +225,7 @@ export function IcuBoard({
           </section>
         </main>
       ) : (
-        <main ref={main} tabIndex={-1} className={`${s.main} sf-icu-patient`}>
+        <main ref={main} tabIndex={-1} className={`${s.main} sf-icu-patient`} style={{ paddingInline: "max(24px, var(--eye-edge, 24px))" }}>
           {boardUp && !gazeSkipped && (count !== null || !gazeRequested || gazePhase === "off" || gazePhase === "starting") ? (
             <div className="sf-icu-gate" role="dialog" aria-modal="true" aria-labelledby="icu-gate-title">
               <style>{GATE_CSS}</style>
@@ -221,8 +249,14 @@ export function IcuBoard({
                   <button type="button" className="sf-icu-gate-btn" autoFocus onClick={() => setCount(3)}>
                     {gazeError ? "Try again" : "Ready"}
                   </button>
-                  <button type="button" className="sf-icu-gate-quiet" onClick={skipGaze}>Use touch or keyboard instead</button>
-                  <Link href="/start" className="sf-icu-gate-quiet">Back to setup</Link>
+                  <label className="sf-icu-gate-edge">
+                    <input type="checkbox" checked={edgeWide} onChange={(event) => setGazeEdgeWide(event.target.checked)} />
+                    <span>My screen lights up around the edges in the dark (Mac Edge Light). Keep buttons further in.</span>
+                  </label>
+                  <div className="sf-icu-gate-row">
+                    <button type="button" className="sf-icu-gate-quiet" onClick={skipGaze}>Use touch or keyboard instead</button>
+                    <Link href="/start" className="sf-icu-gate-quiet">Back to setup</Link>
+                  </div>
                 </>
               )}
             </div>
@@ -241,7 +275,7 @@ export function IcuBoard({
               </button>
             ) : null}
           </div>
-          <div className={i.layout}>
+          <div className={i.layout} style={{ maxWidth: "min(1050px, calc(100vw - 2 * var(--eye-gutter, 0px)))" }}>
             <section className={s.panel} aria-labelledby="icu-prompt">
               <div className={s.panelHead}>
                 <div>
@@ -331,7 +365,7 @@ export function IcuBoard({
         </aside>
       ) : null}
       {!expired && !handoff && !reviewed ? (
-        <footer className={s.footer}>
+        <footer className={s.footer} style={{ paddingBottom: "max(16px, var(--eye-edge-v, 16px))", paddingInline: "max(24px, var(--eye-edge, 24px))" }}>
           <div className={s.footerInner}>
             <p>
               Camera processing stays on this device. Selections are kept only for this conversation.

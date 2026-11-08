@@ -8,11 +8,12 @@
 // and status layers are pointer-events-none, so the site behaves exactly as before when gaze is off.
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { cancelGazeRequest, getGazeAvailable, getGazeRequested, setGazeError, setGazePhase, subscribeGaze } from "./gaze-availability";
+import { cancelGazeRequest, getGazeAvailable, getGazeEdgeWide, getGazeRequested, setGazeError, setGazePhase, subscribeGaze } from "./gaze-availability";
 import { DwellController } from "@/lib/input/gaze/dwell";
 import {
   applyGazeMapping,
   BlinkGuard,
+  edgeSafePx,
   FeatureSmoother,
   FixationFilter,
   fitGazeCalibration,
@@ -85,17 +86,21 @@ const INTERACTIVE = [
 function buildCalibrationWaypoints(): { x: number; y: number }[] {
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const inset = 0.12;
+  // The dot must never go under a bright screen edge (a system light such as Mac Edge Light draws over
+  // the page and would hide it): keep it, with room for its own ring, inside the edge-safe margin.
+  const safe = edgeSafePx(w, h, getGazeEdgeWide()) + 28;
+  const insetX = Math.max(0.12, safe / w);
+  const insetY = Math.max(0.12, safe / h);
   const pts = [
     { x: 0.5 * w, y: 0.5 * h },
-    { x: inset * w, y: inset * h },
-    { x: 0.5 * w, y: inset * h },
-    { x: (1 - inset) * w, y: inset * h },
-    { x: (1 - inset) * w, y: 0.5 * h },
-    { x: (1 - inset) * w, y: (1 - inset) * h },
-    { x: 0.5 * w, y: (1 - inset) * h },
-    { x: inset * w, y: (1 - inset) * h },
-    { x: inset * w, y: 0.5 * h },
+    { x: insetX * w, y: insetY * h },
+    { x: 0.5 * w, y: insetY * h },
+    { x: (1 - insetX) * w, y: insetY * h },
+    { x: (1 - insetX) * w, y: 0.5 * h },
+    { x: (1 - insetX) * w, y: (1 - insetY) * h },
+    { x: 0.5 * w, y: (1 - insetY) * h },
+    { x: insetX * w, y: (1 - insetY) * h },
+    { x: insetX * w, y: 0.5 * h },
   ];
   const picked: { x: number; y: number }[] = [];
   const minDist = 0.16 * Math.hypot(w, h);
@@ -105,8 +110,8 @@ function buildCalibrationWaypoints(): { x: number; y: number }[] {
     const r = el.getBoundingClientRect();
     if (r.width < 8 || r.height < 8) continue;
     if (r.bottom < 0 || r.top > h || r.right < 0 || r.left > w) continue;
-    const x = Math.min(Math.max(r.left + r.width / 2, 24), w - 24);
-    const y = Math.min(Math.max(r.top + r.height / 2, 24), h - 24);
+    const x = Math.min(Math.max(r.left + r.width / 2, safe), w - safe);
+    const y = Math.min(Math.max(r.top + r.height / 2, safe), h - safe);
     if ([...pts, ...picked].some((p) => Math.hypot(p.x - x, p.y - y) < minDist)) continue;
     picked.push({ x, y });
   }
@@ -692,7 +697,8 @@ export function GazeLayer() {
           <button
             type="button"
             onClick={cancelCalibration}
-            className="press absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-6 py-3 text-base font-semibold text-white hover:bg-white/20"
+            style={{ bottom: "max(40px, var(--eye-edge, 40px))" }}
+            className="press absolute left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-6 py-3 text-base font-semibold text-white hover:bg-white/20"
           >
             Cancel calibration
           </button>
@@ -703,8 +709,9 @@ export function GazeLayer() {
         <p
           role="status"
           aria-live="polite"
-          className="pointer-events-none fixed end-2 z-[70] max-w-48 rounded-field bg-surface p-3 text-sm font-medium leading-snug text-ink shadow-soft ring-1 ring-line"
-          style={{ top: "calc(50% + 8.4rem)" }}
+          className="pointer-events-none fixed z-[70] rounded-field bg-surface p-3 text-sm font-medium leading-snug text-ink shadow-soft ring-1 ring-line"
+          // A toast under the header, centred: the one place on the board with no control to lie on top of.
+          style={{ top: "calc(var(--eye-edge-v, 8px) + 76px)", insetInlineStart: "50%", transform: "translateX(-50%)", width: "max-content", maxWidth: "min(32rem, calc(100vw - 2 * max(24px, var(--eye-edge, 24px))))", textAlign: "center" }}
         >
           {status ?? (phase === "on" ? hint : null) ?? (unstable ? "Tracking is struggling - try brighter, even lighting." : "No face seen - sit centred in front of the camera.")}
         </p>
@@ -712,6 +719,7 @@ export function GazeLayer() {
 
       {phase === "on" ? (
         <button type="button" onClick={recalibrate}
+          style={{ insetInlineEnd: "var(--eye-edge, 8px)" }}
           className="press fixed end-2 top-[calc(50%+2rem)] z-[70] min-h-11 rounded-full bg-surface px-3 text-xs font-semibold text-ink shadow-soft ring-1 ring-line">
           Recalibrate
         </button>
@@ -722,7 +730,7 @@ export function GazeLayer() {
           type="button"
           onClick={recenter}
           className="press"
-          style={{ position: "fixed", insetInlineEnd: 8, top: "calc(50% + 4.9rem)", zIndex: 70, minHeight: 44, padding: "0 12px", borderRadius: 9999, background: "#fff", color: "#101e34", fontSize: 12, fontWeight: 600, boxShadow: "0 1px 2px rgb(16 30 52 / 0.12), inset 0 0 0 1px #d5e0eb" }}
+          style={{ position: "fixed", insetInlineEnd: "var(--eye-edge, 8px)", top: "calc(50% + 4.9rem)", zIndex: 70, minHeight: 44, padding: "0 12px", borderRadius: 9999, background: "#fff", color: "#101e34", fontSize: 12, fontWeight: 600, boxShadow: "0 1px 2px rgb(16 30 52 / 0.12), inset 0 0 0 1px #d5e0eb" }}
         >
           Recenter
         </button>
@@ -749,6 +757,7 @@ export function GazeLayer() {
           disabled={phase === "starting"}
           aria-label={toggleLabel}
           title="Gaze control (webcam)"
+          style={{ insetInlineEnd: "var(--eye-edge, 8px)" }}
           className={`press fixed end-2 top-1/2 z-[70] grid size-11 -translate-y-1/2 place-items-center rounded-full shadow-soft ring-1 motion-reduce:transition-none ${
             active ? "bg-blue-deep text-white ring-blue-deep" : "bg-surface/95 text-ink-soft ring-line hover:text-ink"
           }`}
