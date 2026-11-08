@@ -15,6 +15,15 @@ Do not put secrets or patient data here.
 
 ## Entries
 
+### 2026-11-08  Zach / Claude  zach/body-hotspots
+- Done: "Where does it hurt?" is now one continuous body. The patient taps anywhere and a soft red spot lands at that exact point; tapping a spot again removes it. The old part geometry stays, invisible, and only names the part under each tap, so translate inputs, read-back, red flags and labels are unchanged (still body-part ids). Chips show one per part with a count ("Estómago ×2"). Keyboard: Tab to a part, Enter places a spot at its centre (Enter again clears that part).
+- Clinician: new read-only `BodyMap` (front + back, every spot in place) in each patient bubble of the conversation and in the clinician summary ("Where it hurts · every spot the patient marked", all reports combined, plus an English list of parts).
+- Data: `BodySpot { id, view, x, y, partId }` (x/y in the 240x480 diagram viewBox) plus `spotParts` / `spotLabels` / `spotsToInputs` in `src/lib/input/body-parts.ts`. Spots live only on the client `Turn` (`turn.spots`) in browser memory; they are not in the contracts, so the real API and "Copy communication summary" never see coordinates. Adding them to the contract needs team sign-off.
+- API change (component only): `BodyDiagram` takes `spots` / `onSpotsChange(spots, added?)` instead of `selected` / `onToggle`. `IntakeGuided` calls `onSubmit(inputs, spots)`.
+- Lane: `src/components/input` + `src/lib/input` are Backend 2 (unowned); Zach asked for this directly. Also touched `globals.css` (new `--alert` / `--alert-deep` tokens), `workspace.tsx`, `patient-screens.tsx`.
+- Checked: typecheck, 48 tests, eslint clean on touched files; browser (Chrome, desktop width): taps, removal, ×2 count, guided flow to read-back, clinician summary map shows all spots. Not checked: a real 390px phone viewport, RTL (Arabic) tapping, high-contrast mode.
+- Notes: an SVG `stopColor` attribute can't read `var(--x)`; put it in `style`. Turbopack served a stale `globals.css` after adding tokens until `npm run dev` was restarted.
+
 ### 2026-11-08  Zach / Claude  zach/asset-pictograms
 - Done: every `Picto*` pictogram now uses Akash's artwork from `Akash NAT HACKS 2026 File/Asset-Icons.svg` instead of the hand-drawn line icons. New `src/components/home/asset-pictograms.tsx` holds 23 icons cut from the sheet (filled, `currentColor`, square viewBox); `icons.tsx` re-exports them, so existing imports (`PICTOS` in patient-screens/workspace, landing `modes.tsx`, ICU) pick them up unchanged. New ones available: `PictoYes/No/Help/Water/Pain/Nurse/Bathroom/NotUnderstood`. ICU board Yes/No/Help tiles now use the matching sheet tiles (Move me / Take a break kept their old icons; no matching art).
 - Notes: the sheet is one traced SVG with no groups; icons were cut by path bounding box per grid cell (script kept outside the repo). If Akash updates the sheet, regenerate rather than hand-edit the path data. `PictoPain` is now a filled square tile, so on the landing `modes.tsx` row it sits beside line icons.

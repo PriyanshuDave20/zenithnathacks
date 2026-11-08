@@ -14,6 +14,9 @@
   --surface: #ffffff;
   --ink: #101e34;
   --ink-soft: #4a6380;
+  /* Pain spots on the body diagram */
+  --alert: #c8102e;
+  --alert-deep: #7a0a1a;
   --line: #d5e0eb;
   --on-navy-soft: #b9c9db;
 
@@ -41,6 +44,8 @@
   --color-navy-raised: var(--navy-raised);
   --color-blue: var(--blue);
   --color-blue-deep: var(--blue-deep);
+  --color-alert: var(--alert);
+  --color-alert-deep: var(--alert-deep);
   --color-blue-deeper: var(--blue-deeper);
   --color-blue-soft: var(--blue-soft);
   --color-ground: var(--ground);
