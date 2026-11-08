@@ -14,16 +14,20 @@ import {
   Shield,
 } from "@/components/home/icons";
 import {
+  cancelGazeRequest,
   getGazeError,
   getGazePhase,
   getGazeRequested,
   getGazeSkipped,
+  reopenGaze,
   requestGazeStart,
   setGazeAvailable,
   skipGaze,
+  stopGaze,
   subscribeGaze,
 } from "@/components/input/gaze/gaze-availability";
 import { useIdle } from "@/components/session/use-idle";
+import { GATE_CSS } from "./eye-gate-styles";
 import type { SelectEvent } from "@/lib/contracts/input";
 import "./workspace.css";
 import { workspaceStyles as s } from "./styles";
@@ -121,6 +125,11 @@ export function IcuBoard({
           </Link>
           <span className={s.holder}>Eye mode</span>
           <div className={s.headerActions}>
+            {gazeRequested && !handoff && !reviewed && !expired ? (
+              <button type="button" onClick={stopGaze}>
+                Stop eye control
+              </button>
+            ) : null}
             <button
               type="button"
               aria-pressed={contrast}
@@ -191,6 +200,7 @@ export function IcuBoard({
         <main ref={main} tabIndex={-1} className={`${s.main} sf-icu-patient`}>
           {boardUp && !gazeSkipped && (count !== null || !gazeRequested || gazePhase === "off" || gazePhase === "starting") ? (
             <div className="sf-icu-gate" role="dialog" aria-modal="true" aria-labelledby="icu-gate-title">
+              <style>{GATE_CSS}</style>
               {count !== null ? (
                 <>
                   <h2 id="icu-gate-title" className="sf-icu-gate-label">Get ready: look at the screen</h2>
@@ -201,6 +211,7 @@ export function IcuBoard({
                 <>
                   <h2 id="icu-gate-title" className="sf-icu-gate-label">Starting the camera…</h2>
                   <p className="sf-icu-gate-note">Allow camera access if your browser asks. Calibration begins next: the patient follows the dot for 30 seconds.</p>
+                  <button type="button" className="sf-icu-gate-quiet" onClick={cancelGazeRequest}>Cancel</button>
                 </>
               ) : (
                 <>
@@ -211,6 +222,7 @@ export function IcuBoard({
                     {gazeError ? "Try again" : "Ready"}
                   </button>
                   <button type="button" className="sf-icu-gate-quiet" onClick={skipGaze}>Use touch or keyboard instead</button>
+                  <Link href="/start" className="sf-icu-gate-quiet">Back to setup</Link>
                 </>
               )}
             </div>
@@ -223,6 +235,11 @@ export function IcuBoard({
             <span className={s.badge}>
               {gazePhase === "on" ? "Eye control on" : "Eye control off"}
             </span>
+            {gazeSkipped && gazePhase !== "on" ? (
+              <button type="button" className={s.quiet} onClick={reopenGaze}>
+                Set up eye control
+              </button>
+            ) : null}
           </div>
           <div className={i.layout}>
             <section className={s.panel} aria-labelledby="icu-prompt">
@@ -319,13 +336,43 @@ export function IcuBoard({
             <p>
               Camera processing stays on this device. Selections are kept only for this conversation.
             </p>
-            <button
-              type="button"
-              className={s.primary}
-              onClick={() => setHandoff(true)}
-            >
-              Pass to clinician
-            </button>
+            <div style={{ display: "flex", flexWrap: "wrap", flexShrink: 0, maxWidth: "100%", gap: 12, alignItems: "stretch", justifyContent: "flex-end" }}>
+              {gazePhase === "on" ? (
+                // Big, always on screen, and a normal button: the person can dwell on it with their eyes like
+                // any choice, or the clinician can tap it. Inline styles so a stale dev stylesheet cannot shrink it.
+                <button
+                  type="button"
+                  data-gaze-target="stop-eye-control"
+                  aria-label="Stop eye control. Look here for two seconds, or tap."
+                  onClick={stopGaze}
+                  style={{
+                    minHeight: 72,
+                    minWidth: "18rem",
+                    maxWidth: "100%",
+                    padding: "0 32px",
+                    borderRadius: 9999,
+                    background: "#101e34",
+                    color: "#fff",
+                    fontSize: 22,
+                    fontWeight: 800,
+                    lineHeight: 1.1,
+                    boxShadow: "0 0 0 3px #fff, 0 0 0 5px #101e34",
+                  }}
+                >
+                  Stop eye control
+                  <span style={{ display: "block", marginTop: 4, fontSize: 13, fontWeight: 500, opacity: 0.8 }}>
+                    Look here for 2 seconds, or tap
+                  </span>
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className={s.primary}
+                onClick={() => setHandoff(true)}
+              >
+                Pass to clinician
+              </button>
+            </div>
           </div>
         </footer>
       ) : null}

@@ -63,7 +63,8 @@ test("rejects invalid modes, levels, kinds, and response structures", () => {
   for (const readingLevel of [0, 6, 2.5, "3", null]) {
     assert.equal(PatientContextSchema.safeParse({ ...context, readingLevel }).success, false);
   }
-  assert.equal(PatientContextSchema.safeParse({ ...context, mode: "icu" }).success, false);
+  assert.equal(PatientContextSchema.safeParse({ ...context, mode: "telepathy" }).success, false);
+  assert.equal(PatientContextSchema.safeParse({ ...context, mode: "icu" }).success, true);
   assert.equal(TranslateRequestSchema.safeParse({ context, inputs: [{ kind: "video", value: "" }] }).success, false);
   assert.equal(TranslateResponseSchema.safeParse({ ...STORIES[0].translateResponse, redactions: -1 }).success, false);
   assert.equal(TranslateResponseSchema.safeParse({ ...STORIES[0].translateResponse, redactions: 0.5 }).success, false);
