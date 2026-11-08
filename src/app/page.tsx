@@ -1,4 +1,3 @@
-import { LoggedOutHome } from "@/components/auth/logged-out-home";
 import { SiteHeader } from "@/components/home/site-header";
 import { Hero } from "@/components/home/hero";
 import { Workflow } from "@/components/home/workflow";
@@ -10,7 +9,7 @@ import { PhoneRail } from "@/components/home/phone-rail";
 
 export default function Home() {
   return (
-    <LoggedOutHome>
+    <>
       <SiteHeader />
       <main className="relative flex-1 bg-ground">
         <Hero />
@@ -21,6 +20,6 @@ export default function Home() {
       </main>
       <Closing />
       <HeartbeatJourney />
-    </LoggedOutHome>
+    </>
   );
 }

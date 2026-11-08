@@ -1,7 +1,6 @@
 "use client";
 
-import { HomeLink } from "@/components/auth/home-link";
-
+import Link from "next/link";
 import { useId, useState } from "react";
 import {
   CLINICIAN_REPLIES,
@@ -514,11 +513,12 @@ export function EndScreen({ onNew }: { onNew: () => void }) {
         </p>
       </div>
       <ActionBar>
-        <HomeLink
+        <Link
+          href="/"
           className="press inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-base font-semibold text-blue-deeper ring-1 ring-line hover:bg-blue-soft sm:w-auto"
         >
           Back to home
-        </HomeLink>
+        </Link>
         <PrimaryButton onClick={onNew}>New patient</PrimaryButton>
       </ActionBar>
     </Screen>

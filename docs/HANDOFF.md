@@ -1,12 +1,5 @@
 # Handoff Log
 
-### 2026-11-08 Zach / Codex · zach/clinician-home-route — signed-in Home goes to dashboard
-- Zach explicitly requested frontend navigation: signed-in clinician Home must lead to the dashboard, with landing only for logged-out visitors. Existing dashboard/workspace is `/start`; no new dashboard route created. Started a separate task branch after PR #33 merged, synced main `b6931ec`. Existing tooling/lockfile/skill changes preserved/excluded.
-- Added shared `HomeLink`, resolving to `/start` for a clinician and `/` when signed out. Replaced logo/Home links in the communication workspace, profile, auth screens, landing header and legacy session/end screens while retaining their markup/classes/accessible names. Loading auth links use the protected `/start` rather than guessing logged-out.
-- Added `LoggedOutHome` around the server-rendered landing composition. Browser mock auth resolves before showing the public page; signed-in root visits use router.replace('/start') and an existing loading status rather than flashing marketing. No auth provider/backend/storage changes. This is UX routing using the existing mock clinician session, not a server security boundary.
-- Verified: 150 tests, typecheck, full lint (0 errors / 188 existing bundled-skill warnings), whitespace and condensed React checklist pass. At 390px in isolated Playwright with synthetic demo auth: signed-in `/` -> `/start`, landing absent; profile Home href/click -> `/start`; after demo sign-out, auth Home href `/`; signed-out `/` stays `/` and landing renders. Console has 0 errors and existing Next smooth-scroll warning. No real Safari session modified.
-- Files: `src/components/auth/{home-link.tsx,logged-out-home.tsx,auth-ui.tsx,profile.tsx}`, `src/app/page.tsx`, Home links in `src/components/{communication/workspace.tsx,home/site-header.tsx,session/session-app.tsx,session/clinician-screens.tsx}`, task board and handoff.
-
 ### 2026-11-08 Zach / Codex · per-dot calibration countdown
 - Added a small seconds countdown 10px below the calibration dot. Moves with the dot and resets for each position; calculated from the same calibration clock/slot as the target (includes the initial lead-in). Existing overall 30-second timer remains.
 - Uses 14px semibold tabular numerals and existing On-Navy Mist token; no pulsing/moving digits or per-frame React state. Part of the existing aria-hidden visual target, so no repeated screen-reader announcements. No calibration timing/fit changes.

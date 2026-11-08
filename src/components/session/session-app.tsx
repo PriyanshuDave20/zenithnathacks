@@ -1,7 +1,6 @@
 "use client";
 
-import { HomeLink } from "@/components/auth/home-link";
-
+import Link from "next/link";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { AccountLink } from "@/components/auth/account-link";
 import { SynapseMark } from "@/components/brand/synapse-logo";
@@ -244,9 +243,9 @@ export function SessionApp() {
     <div className="flex min-h-dvh flex-col bg-ground">
       <header className="on-navy sticky top-0 z-30 border-b border-white/10 bg-navy/92 pt-[env(safe-area-inset-top)] text-white backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-4 sm:px-6">
-          <HomeLink className="rounded-lg" aria-label="Synapse home">
+          <Link href="/" className="rounded-lg" aria-label="Synapse home">
             <SynapseMark className="h-9 w-auto" />
-          </HomeLink>
+          </Link>
           <span className="hidden font-display text-lg font-bold min-[380px]:inline">Session</span>
           <span aria-live="polite" className="inline-flex">
             <span className="sr-only">Now holding the device: </span>
