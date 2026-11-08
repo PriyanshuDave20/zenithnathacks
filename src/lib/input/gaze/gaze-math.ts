@@ -47,9 +47,12 @@ function dist(a: { x: number; y: number }, b: { x: number; y: number }) {
 }
 
 /** Returns null when no full face is present. */
-export function gazeFeatures(landmarks: { x: number; y: number }[] | null | undefined): GazeFeatures | null {
+export function gazeFeatures(landmarks: { x: number; y: number }[] | null | undefined, frameAspectRatio = 1): GazeFeatures | null {
   if (!landmarks || landmarks.length <= R_IRIS + 4) return null;
-  const lm = landmarks;
+  if (!Number.isFinite(frameAspectRatio) || frameAspectRatio <= 0) return null;
+  // Camera x/y are normalised independently. Restore equal physical units before computing
+  // lengths/angles: a tilted eye on a 16:9 frame otherwise acquires false iris displacement.
+  const lm = frameAspectRatio === 1 ? landmarks : landmarks.map(p => ({ x: p.x * frameAspectRatio, y: p.y }));
   const required = [L_IRIS, R_IRIS, L_OUTER, L_INNER, R_INNER, R_OUTER, L_UPPER, L_LOWER, R_UPPER, R_LOWER, NOSE, CHEEK_L, CHEEK_R, BROW, CHIN];
   if (required.some(i => !lm[i] || !Number.isFinite(lm[i].x) || !Number.isFinite(lm[i].y))) return null;
   if (dist(lm[L_OUTER], lm[L_INNER]) < 0.005 || dist(lm[R_OUTER], lm[R_INNER]) < 0.005) return null;

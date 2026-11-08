@@ -653,3 +653,24 @@ test("stationary calibration excludes target transitions and pairs delayed frame
     assert.ok(counts.reduce((a, b) => a + b, 0) < 800, "no frame rate may fill the sample cap before the last target");
   }
 });
+
+
+test("eye-corner anchoring uses equal pixel units for rectangular cameras and head roll", () => {
+  const original = face({ 468: { x: 0.443, y: 0.464 }, 473: { x: 0.543, y: 0.464 } });
+  const baseline = gazeFeatures(original)!;
+  for (const aspect of [4 / 3, 16 / 9, 9 / 16]) {
+    for (const angle of [-0.3, 0, 0.3]) {
+      const camera = original.map(p => ({
+        ...p,
+        x: 0.5 + ((p.x - 0.5) * Math.cos(angle) - (p.y - 0.5) * Math.sin(angle)) / aspect,
+        y: 0.5 + (p.x - 0.5) * Math.sin(angle) + (p.y - 0.5) * Math.cos(angle),
+      }));
+      const f = gazeFeatures(camera, aspect)!;
+      assert.ok(Math.abs(f.x - baseline.x) < 1e-10);
+      assert.ok(Math.abs(f.y - baseline.y) < 1e-10);
+      assert.ok(Math.abs(f.a - baseline.a) < 1e-10);
+    }
+  }
+  assert.equal(gazeFeatures(original, 0), null);
+  assert.equal(gazeFeatures(original, NaN), null);
+});

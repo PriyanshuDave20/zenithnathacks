@@ -402,7 +402,7 @@ export function GazeLayer() {
 
       if (phase === "calibrating" && (document.hidden || elapsed > 250)) calibStartRef.current += elapsed;
       if (document.hidden) {
-        dwell.update(now, null);
+        dwell.interrupt(now);
         lastSmoothed = null;
         return;
       }
@@ -410,12 +410,12 @@ export function GazeLayer() {
       const landmarks = trackerRef.current?.detect(now);
       if (landmarks === undefined) {
         if (now - lastFeatureAt > BLINK_GRACE_MS) {
-          dwell.update(now, null);
+          dwell.interrupt(now);
           ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
         }
         return;
       }
-      const observed = blinkGuardRef.current.next(gazeFeatures(landmarks), now);
+      const observed = blinkGuardRef.current.next(gazeFeatures(landmarks, trackerRef.current?.frameAspectRatio ?? 1), now);
       const reading = blinkBufferRef.current.next(observed, now);
       const features = reading?.features ?? null;
       // A blink or tracking loss invalidates filter history too: otherwise the old fixation and
@@ -533,9 +533,9 @@ export function GazeLayer() {
       const held = !features && lastSmoothed && now - lastFeatureAt <= BLINK_GRACE_MS;
       if (!features) {
         if (!held) lastSmoothed = null;
-        dwell.update(now, null);
+        const paused = dwell.update(now, null, false);
+        if (ringRef.current) ringRef.current.style.strokeDashoffset = String(RING_C * (1 - paused.progress));
         cursor.style.opacity = held ? "1" : "0.25";
-        ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
         return; // held points must not be added repeatedly to the fixation history
       }
 
@@ -579,7 +579,7 @@ export function GazeLayer() {
           }
           setRecentering(false);
         }
-        dwell.update(now, null);
+        dwell.interrupt(now);
         ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
         return;
       }
@@ -587,7 +587,7 @@ export function GazeLayer() {
       // A still-head calibration cannot predict the correction for an unseen head/device pose.
       // Keep Recenter available by touch, but never dwell-select with an invalid mapping.
       if (postureOutside) {
-        dwell.update(now, null);
+        dwell.interrupt(now);
         ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
         stickyTargetRef.current = null;
         fixationRef.current.reset();
@@ -633,7 +633,7 @@ export function GazeLayer() {
         }
       }
 
-      if (state.progress >= 1 && target && key) {
+      if (state.progress >= 1 && target && key && state.target === key) {
         const box = target.getBoundingClientRect();
         activate(target, box.left + box.width / 2, box.top + box.height / 2);
         dwell.fired(now);
