@@ -833,7 +833,11 @@
     flex-wrap: wrap;
   }
   .sc-headerActions {
-    flex-shrink: 0;
+    /* Wrap onto their own row: a nowrap row of four buttons is wider than a phone and drags the whole page with it. */
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    min-width: 0;
+    margin-inline-start: 0;
   }
   .sc-root .sc-headerActions button {
     font-size: 0.8em;

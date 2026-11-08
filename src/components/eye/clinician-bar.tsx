@@ -34,10 +34,10 @@ export function ClinicianBar() {
         type="button"
         aria-expanded={open}
         onClick={() => setOpen(!open)}
-        style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", minHeight: 48, padding: "8px 16px", borderRadius: 16, border: "1px solid #c9d6e4", background: "#fff", color: "#101e34", textAlign: "left", font: "inherit", cursor: "pointer" }}
+        style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "4px 12px", width: "100%", minHeight: 48, padding: "8px 16px", borderRadius: 16, border: "1px solid #c9d6e4", background: "#fff", color: "#101e34", textAlign: "left", font: "inherit", cursor: "pointer" }}
       >
-        <strong style={{ flexShrink: 0 }}>For the clinician · {label}:</strong>
-        <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{line}</span>
+        <strong style={{ flexShrink: 1, minWidth: 0 }}>For the clinician · {label}:</strong>
+        <span style={{ flex: "1 1 8rem", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{line}</span>
         <span style={{ flexShrink: 0, fontWeight: 700 }}>{open ? "Hide" : "Details"}</span>
       </button>
       {open ? (

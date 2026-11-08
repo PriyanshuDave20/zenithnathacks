@@ -16,7 +16,7 @@ export const GATE_CSS = `
   overflow-y: auto;
   text-align: center;
   color: #fff;
-  background: rgb(16 30 52 / 0.96);
+  background: rgb(16 30 52 / 0.985);
 }
 /* Centres when there is room, scrolls from the top when there is not (justify-content: center would clip the top). */
 .sf-icu-gate::before,
@@ -46,11 +46,11 @@ export const GATE_CSS = `
 .sc-root .sf-icu-gate .sf-icu-gate-btn {
   display: grid;
   place-items: center;
-  /* Never taller than the room left inside the edge-safe margin once the text and buttons around it are counted. */
-  width: min(calc(100vw - 2 * max(24px, var(--eye-edge, 24px))), 22rem, max(9rem, calc(100svh - 2 * var(--eye-edge-v, 24px) - 21rem)));
-  aspect-ratio: 1;
+  /* A wide pill, not a circle: the label always fits and the mode picker above it has room on a phone. */
+  width: min(calc(100vw - 2 * max(24px, var(--eye-edge, 24px))), 26rem);
+  min-height: 5.5rem;
   border-radius: 9999px;
-  font-size: clamp(2.4rem, 8vw, 4rem);
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
   font-weight: 800;
   background: #77a0c4;
   color: #101e34;

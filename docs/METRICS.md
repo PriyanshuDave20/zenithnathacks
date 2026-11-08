@@ -66,7 +66,7 @@ explicitly shares their untranslated words. **Teach-back confirmed** means an
 affirmative comprehension response after a clinician reply. Each event fires once
 per active local flow, using the initial mode as its cohort. Returning to setup
 within that flow does not create another event. Clear, expiry and navigation
-cleanup reset the clock/flags. The legacy session component uses the same helper.
+cleanup reset the clock/flags. The unused legacy session component has been removed.
 
 Eye starts on a deliberate choice on the patient board, including selecting its
 mode or interacting with a resumed board. Its first new committed choice counts

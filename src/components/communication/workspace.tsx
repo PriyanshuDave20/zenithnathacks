@@ -48,6 +48,7 @@ import { EkgLoader, VoiceBars } from "./motion";
 import { SessionSetup, type SetupMode } from "./session-setup";
 import { ScaleSlider as ScaleControl } from "@/components/session/scale-slider";
 import { getSummaryPrefs } from "@/lib/summary-prefs";
+import { addQuickReply, useQuickReplies } from "@/lib/quick-replies";
 import {
   IntakeFree,
   IntakeGuided,
@@ -221,6 +222,7 @@ export function CommunicationWorkspace() {
   const [help, setHelp] = useState(false);
   const [sound, setSound] = useState(false);
   const [draft, setDraft] = useState("");
+  const savedReplies = useQuickReplies();
   const [channel, setChannel] = useState<"voice" | "pictures" | "type">(
     "voice",
   );
@@ -845,7 +847,7 @@ export function CommunicationWorkspace() {
             <h1>Pass the device to the patient</h1>
             <p>
               {setupMode === "icu"
-                ? "Eye mode is ready. When the board opens, tap Start once you are both looking at the screen; the patient then follows a moving dot for 30 seconds."
+                ? "Eye mode is ready. When the board opens, choose Intake or Conversation, then tap Ready once you are both looking at the screen; the patient then follows a moving dot for 30 seconds."
                 : readyForReply
                   ? lastReply?.unavailable
                     ? "Translation is unavailable. Return to the clinician or ask for an interpreter."
@@ -1440,6 +1442,7 @@ export function CommunicationWorkspace() {
                             style={{ marginBottom: 20 }}
                           >
                             {[
+                              ...savedReplies.map((reply) => ({ en: reply })),
                               { en: "Please point to where it hurts." },
                               ...CLINICIAN_REPLIES,
                             ].map((r) => (
@@ -1473,6 +1476,17 @@ export function CommunicationWorkspace() {
                             speech.setFinalText("");
                           }}
                         />
+                        {role === "clinician" && message.trim() && !savedReplies.includes(message.trim())
+                          && !CLINICIAN_REPLIES.some((r) => r.en === message.trim())
+                          && message.trim() !== "Please point to where it hurts." ? (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => addQuickReply(message)}
+                          >
+                            Save as quick reply
+                          </button>
+                        ) : null}
                         {selected.length + bodyParts.length ? (
                           <p role="status">
                             {selected.length + bodyParts.length}{" "}
