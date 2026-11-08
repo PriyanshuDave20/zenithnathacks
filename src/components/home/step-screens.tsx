@@ -75,6 +75,7 @@ export function StepScreen({ step, index }: { step: Step; index: number }) {
               <Pill>Deaf / HoH</Pill>
               <Pill on>Pictures</Pill>
               <Pill>Can&rsquo;t speak</Pill>
+              <Pill>Eye mode</Pill>
             </div>
             <Label>Where should the patient start?</Label>
             <div className="grid grid-cols-2 gap-1.5">

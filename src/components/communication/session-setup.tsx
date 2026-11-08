@@ -46,7 +46,7 @@ export const SETUP_MODES = [
   },
   {
     id: "icu",
-    label: "Eye selection · ICU",
+    label: "Eye mode",
     hint: "Large communication targets. Interface preview; eye tracking not connected.",
     Icon: Handoff,
   },
@@ -130,7 +130,7 @@ export function SessionSetup({
           </fieldset>
           {mode === "icu" ? (
             <p className="sf-preview-note">
-              ICU is an English-only interface preview. Eye tracking will be
+              Eye mode is an English-only interface preview. Eye tracking will be
               connected by the input-channel team.
             </p>
           ) : null}

@@ -1,5 +1,13 @@
 # Handoff Log
 
+### 2026-11-07 Zach / Codex · zach/eye-mode-showcase
+- Renamed patient-facing ICU labels to Eye mode (existing /icu URL and internal identifiers retained for compatibility).
+- Landing modes now include an interactive six-choice Eye board with shared selection in the desktop phone/mobile panel and corresponding clinician review. Explicit manual-preview status; gaze/camera integration remains unconnected. No fabricated clinical summary for Eye choices.
+- Setup walkthrough includes Eye mode; picture-mode example uses the current BodyPicture artwork and marked chest instead of mixed question tiles.
+- Validation: typecheck and 53 tests pass; lint has existing warnings in vendored skill scripts. Browser host unavailable, so mobile/desktop visual QA remains unverified.
+- Existing .codex/config.toml change left untouched. Pull --rebase blocked by that unstaged change; fetched origin/main matches starting HEAD. GitHub CLI network access unavailable.
+
+
 Newest entry first. Add one at the end of every work session (human or agent). Keep each entry short and factual.
 Do not put secrets or patient data here.
 

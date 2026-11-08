@@ -3,7 +3,7 @@ import { RequireClinician } from "@/components/auth/require-clinician";
 import { IcuBoard } from "@/components/communication/icu-board";
 
 export const metadata: Metadata = {
-  title: "ICU communication · Synapse",
+  title: "Eye mode · Synapse",
   description: "A frontend preview of the eye-selection communication board.",
 };
 

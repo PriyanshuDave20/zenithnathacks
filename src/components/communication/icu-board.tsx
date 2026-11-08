@@ -64,7 +64,7 @@ export function IcuBoard({
           <Link href="/start" aria-label="Back to communication workspace">
             <SynapseWordmark accent="#77a0c4" />
           </Link>
-          <span className={s.holder}>ICU · Eye selection</span>
+          <span className={s.holder}>Eye mode</span>
           <div className={s.headerActions}>
             <button
               type="button"
@@ -121,7 +121,7 @@ export function IcuBoard({
                 Return to patient’s board
               </button>
               <Link href="/start" className={s.quiet}>
-                Finish ICU preview
+                Finish Eye mode preview
               </Link>
             </div>
           </section>

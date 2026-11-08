@@ -26,12 +26,13 @@ const COMPOSER: Record<string, string> = {
   deaf: "Type an answer",
   literacy: "Tap a picture",
   mute: "Tap to speak",
+  eye: "Pass to clinician to review",
 };
 
 export function PhoneRail() {
   const [screen, setScreen] = useState("hero");
   const [swing, setSwing] = useState(0);
-  const { mode, lang, setLang } = useModesState();
+  const { mode, lang, setLang, eyeChoice, setEyeChoice } = useModesState();
   const current = useRef("hero");
 
   useEffect(() => {
@@ -88,8 +89,8 @@ export function PhoneRail() {
                   content = (
                     <>
                       <ScreenBar holder="Patient" step={m.short} />
-                      <div className="min-h-0 flex-1 overflow-hidden px-4 pt-4">
-                        <Panel mode={m.id} lang={lang} setLang={setLang} compact />
+                      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4">
+                        <Panel mode={m.id} lang={lang} setLang={setLang} eyeChoice={eyeChoice} setEyeChoice={setEyeChoice} compact />
                       </div>
                       <div className="px-4 pb-5 pt-3">
                         <span className="flex min-h-12 min-w-0 items-center gap-2 whitespace-nowrap rounded-full px-4 text-base text-ink-soft ring-1 ring-line">

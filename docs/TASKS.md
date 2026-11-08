@@ -9,6 +9,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 
 | Task | Lane | Owner | Branch | Status |
 |------|------|-------|--------|--------|
+| Eye mode naming and current landing-page examples | Frontend | Zach / Codex | zach/eye-mode-showcase | Done: five mode examples, interactive manual Eye board and clinician choice review, current body diagram |
 | **Done** | | | | |
 | Repository sync, project orientation, shared skills and baseline verification | Tooling / docs | Zach / Codex | zach/setup-verification | Done: main current; all 13 project skills present; typecheck and 22 tests pass; lint 0 errors |
 | Scaffold, agent skills, landing page | Both | Prem | prem/landing-hero | Done |

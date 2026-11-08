@@ -775,7 +775,7 @@ export function CommunicationWorkspace() {
             </p>
             {setupMode === "icu" ? (
               <Link className="sf-handoff-choice" href="/icu">
-                Open patient’s ICU board
+                Open patient’s Eye mode board
               </Link>
             ) : (
               <button
