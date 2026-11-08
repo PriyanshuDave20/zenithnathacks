@@ -22,6 +22,7 @@ const tests = [
   "src/lib/server/respond/respond.test.ts",
   "src/app/api/respond/route.test.ts",
   "src/components/session/api.test.ts",
+  "src/components/session/speech-playback.test.ts",
 ];
 
 try {

@@ -37,6 +37,7 @@ import { getBodyPart, spotParts, spotsToInputs, type BodyFigure, type BodySpot }
 import { STRINGS } from "./strings";
 import { ActionBar, PrimaryButton, QuietButton, Screen, SpeechBubble, Spinner, Tile, Title } from "./ui";
 import { useRecognition, useSpeak } from "./use-speech";
+import type { SpeechPlaybackStatus } from "./speech-playback";
 
 export type LangMeta = { code: PatientLanguage; dir: "ltr" | "rtl"; speech: string; english: string; name: string };
 
@@ -58,19 +59,34 @@ const PICTOS: Record<string, (p: { size?: number }) => ReactNode> = {
   dizzy: PictoDizzy,
 };
 
-function ReadAloud({ text, lang, label }: { text: string; lang: string; label: string }) {
-  const { supported, speaking, speak } = useSpeak();
+export function SpeechFeedback({ status, language }: { status: SpeechPlaybackStatus; language: PatientLanguage }) {
+  if (!status) return null;
+  const t = STRINGS[language];
+  const message = {
+    "loading-voices": t.speechLoading,
+    "voice-ready": t.speechReady,
+    "voice-unavailable": t.speechUnavailable,
+    "playback-failed": t.speechFailed,
+  }[status];
+  return <p role="status" lang={language} dir={language === "ar" ? "rtl" : "ltr"} className="max-w-prose text-base font-semibold text-ink-soft">{message}</p>;
+}
+
+function ReadAloud({ text, lang, label, language }: { text: string; lang: string; label: string; language: PatientLanguage }) {
+  const { supported, speaking, status, speak } = useSpeak();
   if (!supported) return null;
   return (
-    <button
-      type="button"
-      onClick={() => speak(text, lang)}
-      className="press inline-flex min-h-12 items-center gap-2 self-start rounded-full bg-blue-soft px-5 text-base font-semibold text-blue-deeper hover:bg-ground-2"
-    >
-      <Speaker size={20} />
-      {label}
-      {speaking ? <span className="sr-only"> (playing)</span> : null}
-    </button>
+    <div className="flex flex-col items-start gap-2">
+      <button
+        type="button"
+        onClick={() => speak(text, lang)}
+        className="press inline-flex min-h-12 items-center gap-2 self-start rounded-full bg-blue-soft px-5 text-base font-semibold text-blue-deeper hover:bg-ground-2"
+      >
+        <Speaker size={20} />
+        {label}
+        {speaking ? <span className="sr-only"> (playing)</span> : null}
+      </button>
+      <SpeechFeedback status={status} language={language} />
+    </div>
   );
 }
 
@@ -91,7 +107,7 @@ export function IntakeFree({
 }) {
   const t = STRINGS[lang.code];
   const rec = useRecognition(lang.speech);
-  const { supported: canSpeak, speak } = useSpeak();
+  const { supported: canSpeak, status: speechStatus, speak } = useSpeak();
   const [typing, setTyping] = useState(mode === "deaf_hoh" || mode === "mute" || Boolean(initialText));
   const [typed, setTyped] = useState(initialText);
   const [phrases, setPhrases] = useState<string[]>(initialPhrases);
@@ -177,6 +193,7 @@ export function IntakeFree({
                 ) : null}
                 <QuietButton onClick={() => setPhrases([])}>{t.clearPhrases}</QuietButton>
               </div>
+              <SpeechFeedback status={speechStatus} language={lang.code} />
             </div>
           ) : null}
         </div>
@@ -277,7 +294,7 @@ export function IntakeGuided({
   const [useBody, setUseBody] = useState(initialInputs.length ? initialSpots.length > 0 : mode !== "standard");
   const [spots, setSpots] = useState<BodySpot[]>(initialSpots);
   const parts = spotParts(spots);
-  const { speak } = useSpeak();
+  const { status: speechStatus, speak } = useSpeak();
   const questions = getGuidedQuestions(lang.code);
   if (!questions) return (
     <Screen label="Guided questions unavailable" dir={lang.dir} lang={lang.code}>
@@ -328,7 +345,8 @@ export function IntakeGuided({
         </div>
         <div key={q.id} className="screen-in flex flex-col gap-4">
           <Title>{q.text[lang.code]}</Title>
-          {mode !== "deaf_hoh" ? <ReadAloud text={q.text[lang.code]} lang={lang.speech} label={t.readAloud} /> : null}
+          {mode !== "deaf_hoh" ? <ReadAloud text={q.text[lang.code]} lang={lang.speech} label={t.readAloud} language={lang.code} /> : null}
+          {mode !== "deaf_hoh" ? <SpeechFeedback status={speechStatus} language={lang.code} /> : null}
 
           {bodyOn ? (
             <div className="mt-2">
@@ -450,7 +468,7 @@ export function ConfirmReadBack({
             <SpeechBubble tone="readback" caption={t.yourMessage} lang={lang.code} dir={lang.dir} full>
               {translation!.backTranslation}
             </SpeechBubble>
-            {mode !== "deaf_hoh" ? <ReadAloud text={translation!.backTranslation} lang={lang.speech} label={t.readAloud} /> : null}
+            {mode !== "deaf_hoh" ? <ReadAloud text={translation!.backTranslation} lang={lang.speech} label={t.readAloud} language={lang.code} /> : null}
           </>
         )}
       </div>
@@ -502,7 +520,7 @@ export function PatientResponse({
         </SpeechBubble>
         {inEnglish ? <p className="text-sm font-semibold text-ink-soft">{t.inEnglish}</p> : null}
         {mode !== "deaf_hoh" ? (
-          <ReadAloud text={text} lang={inEnglish ? "en-US" : lang.speech} label={t.listen} />
+          <ReadAloud text={text} lang={inEnglish ? "en-US" : lang.speech} label={t.listen} language={lang.code} />
         ) : null}
         <h2 className="mt-6 font-display text-[clamp(1.5rem,5vw,2rem)] font-bold leading-tight">{teachBackPrompt}</h2>
         <div className="grid gap-3 sm:grid-cols-3">
