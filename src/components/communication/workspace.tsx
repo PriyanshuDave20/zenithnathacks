@@ -45,6 +45,7 @@ import "./workspace.css";
 import { workspaceStyles as s } from "./styles";
 import { EkgLoader, VoiceBars } from "./motion";
 import { SessionSetup, type SetupMode } from "./session-setup";
+import { getVisitPrefs } from "@/lib/visit-prefs";
 import {
   IntakeFree,
   IntakeGuided,
@@ -184,11 +185,16 @@ function Action({
 
 export function CommunicationWorkspace() {
   const [stage, setStage] = useState<Stage>("setup");
-  const [language, setLanguage] = useState<PatientLanguage>("es");
-  const [mode, setMode] = useState<Mode>("standard");
+  // The clinician's own starting choices (dashboard "Visit defaults"), read once when the visit starts. This page only
+  // renders in the browser (it sits behind the sign-in check), so reading storage here cannot disagree with the server.
+  const [defaults] = useState(getVisitPrefs);
+  const [language, setLanguage] = useState<PatientLanguage>(defaults.language ?? "es");
+  const [mode, setMode] = useState<Mode>(defaults.mode && defaults.mode !== "icu" ? defaults.mode : "standard");
   const [role, setRole] = useState<"patient" | "clinician">("clinician");
-  const [setupMode, setSetupMode] = useState<SetupMode>("icu");
-  const [patientPath, setPatientPath] = useState<"free" | "guided">("free");
+  const [setupMode, setSetupMode] = useState<SetupMode>(defaults.mode ?? "icu");
+  const [patientPath, setPatientPath] = useState<"free" | "guided">(
+    defaults.mode && defaults.mode !== "icu" && defaults.mode !== "standard" ? "guided" : "free",
+  );
   // Which body drawing the patient and clinician see. Display only: not sent or stored.
   const [bodyFigure, setBodyFigure] = useState<BodyFigure>("male");
   // The patient's last submitted report, kept so a failed translation can be retried or shown as-is.
@@ -207,7 +213,7 @@ export function CommunicationWorkspace() {
   const [accessOpen, setAccessOpen] = useState(false);
   const [severity, setSeverity] = useState<number | null>(null);
   const [scale, setScale] = useState(1);
-  const [highContrast, setHighContrast] = useState(false);
+  const [highContrast, setHighContrast] = useState(defaults.contrast);
   const [audio, setAudio] = useState(false);
   const [flipped, setFlipped] = useState(false);
   const [help, setHelp] = useState(false);

@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { EMPTY_ANSWERS, type EyeMode, type EyeScreen, type FlowAnswers } from "./flow";
+import { getVisitPrefs } from "@/lib/visit-prefs";
 import { speakAloud, stopSpeaking } from "./speak";
 
 // The Eye mode conversation lives in this module's memory, nothing else: no localStorage, no cookies, no server.
@@ -45,7 +46,9 @@ export function useEyeState(): EyeState {
 export const eye = {
   /** The clinician picks a mode. Intake starts at the questions; Conversation starts at its home screen. */
   start(mode: EyeMode) {
-    set({ mode, screen: mode === "intake" ? "pain_q" : "home", answers: EMPTY_ANSWERS });
+    // A fresh session follows the clinician's default for speaking aloud; switching modes keeps the current switch.
+    const muted = state.mode === null ? !getVisitPrefs().speakAloud : state.muted;
+    set({ mode, muted, screen: mode === "intake" ? "pain_q" : "home", answers: EMPTY_ANSWERS });
   },
   go(screen: EyeScreen) {
     set({ screen });

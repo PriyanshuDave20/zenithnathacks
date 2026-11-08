@@ -8,6 +8,9 @@ import { ArrowRight, Handoff, Shield } from "@/components/home/icons";
 import { signOut, useClinician } from "@/components/auth/api";
 import { initials } from "@/components/auth/auth-ui";
 import { SESSION_TIMEOUT_OPTIONS, setSessionTimeout, useSessionTimeout } from "@/lib/session-timeout";
+import { MODES, setVisitPrefs, useVisitPrefs } from "@/lib/visit-prefs";
+import { PATIENT_LANGUAGES, type Mode, type PatientLanguage } from "@/lib/mocks";
+import { SetupCheck } from "./setup-check";
 
 const roles = { doctor: "Doctor", nurse: "Nurse", other: "Clinician" };
 
@@ -17,6 +20,12 @@ export function ClinicianDashboard() {
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const timeout = useSessionTimeout();
+  const prefs = useVisitPrefs();
+  const [prefsSaved, setPrefsSaved] = useState(false);
+  const savePrefs = (patch: Parameters<typeof setVisitPrefs>[0]) => {
+    setVisitPrefs(patch);
+    setPrefsSaved(true);
+  };
 
   async function onSignOut() {
     setSigningOut(true);
@@ -107,6 +116,53 @@ export function ClinicianDashboard() {
           </div>
         </section>
 
+        <section aria-labelledby="defaults-title" className="mt-6 min-w-0 rounded-sheet bg-surface p-7 sm:p-8">
+          <h2 id="defaults-title" className="font-display text-xl font-semibold">Visit defaults</h2>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
+            What the start screen shows first, so you tap less. You can still change anything for a visit. Saved on this device only.
+          </p>
+          <div className="mt-5 grid gap-6 lg:grid-cols-2">
+            <div className="min-w-0">
+              <label htmlFor="default-language" className="text-base font-semibold">Patient language</label>
+              <select
+                id="default-language"
+                value={prefs.language ?? ""}
+                onChange={(event) => savePrefs({ language: (event.target.value || null) as PatientLanguage | null })}
+                className="mt-2 block min-h-12 w-full max-w-sm rounded-field bg-surface px-4 text-base ring-1 ring-line"
+              >
+                <option value="">No preference</option>
+                {[...PATIENT_LANGUAGES].sort((a, b) => a.english.localeCompare(b.english)).map((l) => (
+                  <option key={l.code} value={l.code}>{l.english} ({l.name})</option>
+                ))}
+              </select>
+              <div className="mt-6 space-y-1">
+                <label className="flex min-h-11 cursor-pointer items-center gap-3 text-base">
+                  <input type="checkbox" checked={prefs.contrast} onChange={(event) => savePrefs({ contrast: event.target.checked })} className="size-5" />
+                  Start in high contrast
+                </label>
+                <label className="flex min-h-11 cursor-pointer items-center gap-3 text-base">
+                  <input type="checkbox" checked={prefs.speakAloud} onChange={(event) => savePrefs({ speakAloud: event.target.checked })} className="size-5" />
+                  Eye mode speaks the patient’s choices aloud
+                </label>
+              </div>
+            </div>
+            <fieldset className="min-w-0">
+              <legend className="text-base font-semibold">How the patient communicates</legend>
+              <div role="radiogroup" aria-label="How the patient communicates" className="mt-2 flex flex-wrap gap-2">
+                {[{ id: null, label: "No preference" }, ...MODES].map((m) => (
+                  <label key={m.id ?? "none"} className="press relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-5 text-base font-semibold ring-1 ring-line has-[:checked]:bg-navy has-[:checked]:text-white has-[:checked]:ring-navy has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-deeper">
+                    <input type="radio" name="default-mode" value={m.id ?? ""} checked={prefs.mode === m.id} onChange={() => savePrefs({ mode: m.id as Mode | null })} className="absolute inset-0 size-full cursor-pointer opacity-0" />
+                    {m.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+          <p aria-live="polite" className="mt-4 min-h-5 text-sm text-ink-soft">{prefsSaved ? "Saved on this device." : ""}</p>
+        </section>
+
+        <SetupCheck />
+
         <aside aria-label="Session privacy" className="my-7 flex max-w-2xl items-start gap-3 text-sm leading-relaxed text-ink-soft sm:my-8">
           <Shield size={20} className="mt-0.5 shrink-0 text-blue-deeper" />
           <p>Each conversation is temporary. Patient messages and session details aren’t saved to your account.</p>
@@ -119,7 +175,7 @@ export function ClinicianDashboard() {
           </div>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">More clinician tools can live here as Synapse grows.</p>
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label="Reserved spaces for upcoming features">
-            {["Additional tools", "Workspace additions"].map(label => (
+            {["Saved quick replies"].map(label => (
               <div key={label} className="flex min-h-24 flex-wrap items-center justify-between gap-4 rounded-inset border border-dashed border-ink-soft/40 px-5 py-5">
                 <span className="text-sm font-medium text-ink-soft">{label}</span>
                 <span className="text-xs text-ink-soft">Not available yet</span>
