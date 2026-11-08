@@ -1,6 +1,6 @@
 # Resume plan: real clinician accounts and frontend metrics
 
-Status: **implementation completed on `prem/clinician-auth-metrics`; review PRs pending**.
+Status: **implementation completed on `prem/clinician-auth-metrics`; draft implementation PR#47 / contract PR#46 open**.
 The original plan below is retained as planning history. See `docs/AUTH.md`,
 `docs/METRICS.md` and the newest handoff for delivered behavior and remaining setup.
 Clinician auth and profiles are live-tested against Neon; Google/reset-email activation
