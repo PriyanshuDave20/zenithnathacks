@@ -3204,6 +3204,1074 @@
       "language": "en",
       "text": "Left heel",
       "src": "/speech/en-734fba4b98e262d8b28b882803139061310de2be61ad1ce0595adedbbf0a177a.mp3"
+    },
+    {
+      "id": "question:chief_complaint",
+      "language": "es",
+      "text": "¿Cuál es el principal problema que te ha traído aquí hoy?",
+      "src": "/speech/es-506b1d7571dd54eb34905af933210a4f8da094c71e5fa39cdd82bfdae2f56d64.mp3"
+    },
+    {
+      "id": "option:chief_complaint:pain",
+      "language": "es",
+      "text": "Dolor",
+      "src": "/speech/es-964d03a2f3eebb63592ab3c74beec44962096889ee927b9daec1d4e1cfe1bc39.mp3"
+    },
+    {
+      "id": "option:chief_complaint:breathing",
+      "language": "es",
+      "text": "Dificultad para respirar",
+      "src": "/speech/es-ac6e259f999438093a2b109f5ab02719a03c3477598e7ba665f66c08bbd218a9.mp3"
+    },
+    {
+      "id": "option:chief_complaint:fever",
+      "language": "es",
+      "text": "Fiebre",
+      "src": "/speech/es-fac4b85cda26a2f647642726cbfdbb582b93cf609df247f922a63137072f8a74.mp3"
+    },
+    {
+      "id": "option:chief_complaint:other",
+      "language": "es",
+      "text": "Otra cosa",
+      "src": "/speech/es-9c2206678601950d83183113a1827712ff54a3def271dbbb18649a289b12d2fa.mp3"
+    },
+    {
+      "id": "option:chief_complaint:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:onset",
+      "language": "es",
+      "text": "¿Cuándo empezó? ¿Fue repentino o lento?",
+      "src": "/speech/es-7ec96775f0d189b679d52dc94196e652bb03f633eafb7d7d33bdc8611458eef9.mp3"
+    },
+    {
+      "id": "option:onset:sudden",
+      "language": "es",
+      "text": "De repente",
+      "src": "/speech/es-ffb627456bcfd37845b77d16f279bd5bd85f15915b516f4368b650fe52d78db2.mp3"
+    },
+    {
+      "id": "option:onset:gradual",
+      "language": "es",
+      "text": "Despacio",
+      "src": "/speech/es-20a3ba0767c03311668ca60c721227106d7acd77fcef85340001d2c232b5931e.mp3"
+    },
+    {
+      "id": "option:onset:today",
+      "language": "es",
+      "text": "Hoy",
+      "src": "/speech/es-473b2fdde34123e8d9d36bd6d1cbb5e9fe0af9b931d04a418a46cb066806715f.mp3"
+    },
+    {
+      "id": "option:onset:days",
+      "language": "es",
+      "text": "Hace unos días",
+      "src": "/speech/es-1cea3d54877efebd4061b61ca58ecf31d23f9e8bdc895504a72668aceac2287b.mp3"
+    },
+    {
+      "id": "option:onset:longer",
+      "language": "es",
+      "text": "Hace mucho tiempo",
+      "src": "/speech/es-0d1bdb2af0cf60cc57ba5f5b600aa11c91359ea82609632e7297a45335f2920f.mp3"
+    },
+    {
+      "id": "option:onset:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:where",
+      "language": "es",
+      "text": "¿Dónde lo sientes? Por favor, señala con un dedo.",
+      "src": "/speech/es-987905b523e48163be75b5816058e6d195e2806a4a4b5ebef8dd697149f4e691.mp3"
+    },
+    {
+      "id": "option:where:head",
+      "language": "es",
+      "text": "Cabeza",
+      "src": "/speech/es-d1b61c8ccf179764c9b63ea1fedccf7e3a290815ba0e3384804a2b9970beddfc.mp3"
+    },
+    {
+      "id": "option:where:neck",
+      "language": "es",
+      "text": "Cuello",
+      "src": "/speech/es-e5a55dae883d3111d9eb9556fcf1ff0e5761a0c896f3c4f6f5617c8e640b6697.mp3"
+    },
+    {
+      "id": "option:where:chest",
+      "language": "es",
+      "text": "Pecho",
+      "src": "/speech/es-e4ab55563a07373177598da0475c67c4abd87440ef695430c558b204edb95156.mp3"
+    },
+    {
+      "id": "option:where:abdomen",
+      "language": "es",
+      "text": "Estómago",
+      "src": "/speech/es-ad3d066ae9980bc14e3832f3d71d5882f3430a2851bc64a93edebe8d841b12b4.mp3"
+    },
+    {
+      "id": "option:where:back",
+      "language": "es",
+      "text": "Atrás",
+      "src": "/speech/es-08b45e0570461dbbddbfb152e8e46125e8da6e1b7f195188d4bf129ab3140e44.mp3"
+    },
+    {
+      "id": "option:where:left_arm",
+      "language": "es",
+      "text": "Brazo izquierdo",
+      "src": "/speech/es-6db06abf6abdd2cff9d063a70ea9d0a8ca2590a2d1858f40fc90949e93ab45c4.mp3"
+    },
+    {
+      "id": "option:where:right_arm",
+      "language": "es",
+      "text": "Brazo derecho",
+      "src": "/speech/es-3e937a58ace4a1ad4278ddeb5ce9481e4035317b0bde6c58a306a1c4597f1f26.mp3"
+    },
+    {
+      "id": "option:where:left_leg",
+      "language": "es",
+      "text": "Pierna izquierda",
+      "src": "/speech/es-7369b6a9d02a9a09885fdd306c71cc99900994960402d7167a550ad1195da77e.mp3"
+    },
+    {
+      "id": "option:where:right_leg",
+      "language": "es",
+      "text": "Pierna derecha",
+      "src": "/speech/es-9f0016fc762bcde26c1e523370e42d019cb0da5ec3ea55d6db9725b03691a791.mp3"
+    },
+    {
+      "id": "option:where:elsewhere",
+      "language": "es",
+      "text": "En otro lugar",
+      "src": "/speech/es-499bbee1605a6064ada4b923762c56d6836a88d5823a17a91c64141c73500126.mp3"
+    },
+    {
+      "id": "option:where:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:how_long",
+      "language": "es",
+      "text": "¿Cuánto dura? ¿Está ahí todo el tiempo o va y viene?",
+      "src": "/speech/es-d9761d8276bff66dc6557fd35e9d3928479e9fc3412e5289fe1d3d76169f7eeb.mp3"
+    },
+    {
+      "id": "option:how_long:minutes",
+      "language": "es",
+      "text": "Actas",
+      "src": "/speech/es-e0fa784848d712b55d31e89d7ff95248adf1b07185cbfe0fba4f8c8329552ddf.mp3"
+    },
+    {
+      "id": "option:how_long:hours",
+      "language": "es",
+      "text": "Horarios",
+      "src": "/speech/es-b2302444d3d894d3c5e6dfe48758fa679065c97eab8fcc21cba67dab77eb9e9a.mp3"
+    },
+    {
+      "id": "option:how_long:days",
+      "language": "es",
+      "text": "Días",
+      "src": "/speech/es-df2bd92acf8a11f462fa2ccab48f06d76b537743124c467784fbc2ef596d9b6a.mp3"
+    },
+    {
+      "id": "option:how_long:constant",
+      "language": "es",
+      "text": "Todo el tiempo",
+      "src": "/speech/es-3a2ea6ad2fc6f4c92a8ef55e8fa77092964dc55e1942d15c225a0dcc61025ab4.mp3"
+    },
+    {
+      "id": "option:how_long:intermittent",
+      "language": "es",
+      "text": "Va y viene",
+      "src": "/speech/es-2b10c46300e6c5455b400996198365dd62200a767ddb4e24dec69415370764bf.mp3"
+    },
+    {
+      "id": "option:how_long:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:how_strong",
+      "language": "es",
+      "text": "De 0 (sin dolor) a 10 (el peor dolor que puedas imaginar), ¿qué tan grave es?",
+      "src": "/speech/es-ff46dc2ccd37c38c32c9c9015119996699b9892dda28f7d52667238f8573e17a.mp3"
+    },
+    {
+      "id": "option:how_strong:s0",
+      "language": "es",
+      "text": "0/10",
+      "src": "/speech/es-a9ff19fb25f7d0be4f74739ea9e74e79cb1dcf0e31519e88cf0a41c42f4e1986.mp3"
+    },
+    {
+      "id": "option:how_strong:s1",
+      "language": "es",
+      "text": "1/10",
+      "src": "/speech/es-81630f6386939ae41812c10c54a3bffff25a92aefbede83980e1db9fffc7356f.mp3"
+    },
+    {
+      "id": "option:how_strong:s2",
+      "language": "es",
+      "text": "2/10",
+      "src": "/speech/es-affc8c32a907436252583d263b413a686c3b0efe8d5e45d349d25de035d5edd2.mp3"
+    },
+    {
+      "id": "option:how_strong:s3",
+      "language": "es",
+      "text": "3/10",
+      "src": "/speech/es-e75980232abfddbd42723876b3c98541e11c1ff3c5321472d4ba923b97408322.mp3"
+    },
+    {
+      "id": "option:how_strong:s4",
+      "language": "es",
+      "text": "4/10",
+      "src": "/speech/es-7a456efe4fe4e6d6d7b2bf557e64dfebd3773fa727fc3c5eb1daf98e502514e8.mp3"
+    },
+    {
+      "id": "option:how_strong:s5",
+      "language": "es",
+      "text": "5/10",
+      "src": "/speech/es-65ee9289ff475f2038fbb1f4cda8d461724f38543f23958c58d6e9df9f3966d2.mp3"
+    },
+    {
+      "id": "option:how_strong:s6",
+      "language": "es",
+      "text": "6/10",
+      "src": "/speech/es-83677fb1f6fab2fdcd2eb8eb8725c4cc0b8a1f2eef91292d0b2906fd7e067a6c.mp3"
+    },
+    {
+      "id": "option:how_strong:s7",
+      "language": "es",
+      "text": "7/10",
+      "src": "/speech/es-2ae4ee9d3a6c950bd89ac1a519b9c1630cf816475ec46e790781012507db2d5c.mp3"
+    },
+    {
+      "id": "option:how_strong:s8",
+      "language": "es",
+      "text": "8/10",
+      "src": "/speech/es-7b1044fda1f26c54ab33aeda0d1352852ed210dd6acab56ce7af362274259f05.mp3"
+    },
+    {
+      "id": "option:how_strong:s9",
+      "language": "es",
+      "text": "9/10",
+      "src": "/speech/es-e46e01500c53676ef9dadc19f894e03cf9ff650187ffaf37f5250ff832553994.mp3"
+    },
+    {
+      "id": "option:how_strong:s10",
+      "language": "es",
+      "text": "10/10",
+      "src": "/speech/es-67e50641cae70fa331af780ed56a451075b02738db528f059e63d7eccfd04319.mp3"
+    },
+    {
+      "id": "option:how_strong:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:character",
+      "language": "es",
+      "text": "¿Cómo se siente? ¿Aguda, sorda, ardiente, apretando o algo más?",
+      "src": "/speech/es-34ab68783f35b7b57ab5121f828189c2c79be9f38e1bae5d03a3da2dada3c17c.mp3"
+    },
+    {
+      "id": "option:character:sharp",
+      "language": "es",
+      "text": "Sharp",
+      "src": "/speech/es-eca428863018d5c086cedc9353ab9fa9cedd841e10edca25478c9c0e3106cbe2.mp3"
+    },
+    {
+      "id": "option:character:dull",
+      "language": "es",
+      "text": "Aburrido",
+      "src": "/speech/es-04a8416338f163f1e6676f87b0fa72aae2d595096aee9eb8c83b17cd870e24d1.mp3"
+    },
+    {
+      "id": "option:character:burning",
+      "language": "es",
+      "text": "Quema",
+      "src": "/speech/es-4eb95f42ce474056c624a6b8cb2218284214bd5f450159b74e4bc2f68d41cb8a.mp3"
+    },
+    {
+      "id": "option:character:squeezing",
+      "language": "es",
+      "text": "Apretar",
+      "src": "/speech/es-352bca9822e2d75444f2bed6dddbabd85816a491c677ad40857dfedd728ac38d.mp3"
+    },
+    {
+      "id": "option:character:other",
+      "language": "es",
+      "text": "Otra cosa",
+      "src": "/speech/es-9c2206678601950d83183113a1827712ff54a3def271dbbb18649a289b12d2fa.mp3"
+    },
+    {
+      "id": "option:character:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:aggravating_factors",
+      "language": "es",
+      "text": "¿Qué lo empeora?",
+      "src": "/speech/es-e0d2630ef6c0adc1019c5976e2df233acdd34bd46819ebe9cec11559810881f2.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:moving",
+      "language": "es",
+      "text": "Mudanza",
+      "src": "/speech/es-dab23f7abe4ffef14e21dca43d55f45f61b4cf37b274d6ac36f9f859c4c6710e.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:breathing",
+      "language": "es",
+      "text": "Respiración",
+      "src": "/speech/es-7817c7ed593243b7ad2a9df97d37c8384dbd5c5f310dfa4da678d9f2c55b2fe6.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:eating",
+      "language": "es",
+      "text": "Alimentación",
+      "src": "/speech/es-a047580d0a922fe00827a713fcbc1e351bd55bc36219f85ac8bc4bdef5fd5454.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:nothing",
+      "language": "es",
+      "text": "Nada en particular",
+      "src": "/speech/es-b0caea4618a96ae04f3ce8b2cf7ddd57a1056f7b20fa486b8e4905dd0c01798a.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:other",
+      "language": "es",
+      "text": "Otra cosa",
+      "src": "/speech/es-9c2206678601950d83183113a1827712ff54a3def271dbbb18649a289b12d2fa.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:relieving_factors",
+      "language": "es",
+      "text": "¿Qué lo hace mejor?",
+      "src": "/speech/es-b80c848dde4a7882a7b1084d7a4bd489e9ed3c5cdac0a1551f3f03ffd4f1ee2f.mp3"
+    },
+    {
+      "id": "option:relieving_factors:rest",
+      "language": "es",
+      "text": "Descanso",
+      "src": "/speech/es-8fa0cc6e9708a5d8760ea82281cda14f2df21f28a2e19f549b3734a2375dbddd.mp3"
+    },
+    {
+      "id": "option:relieving_factors:medicine",
+      "language": "es",
+      "text": "Medicina",
+      "src": "/speech/es-fa4cdd724e12d4700b905638816528b0d3fd37e8d2b8f2210ce236e360e13065.mp3"
+    },
+    {
+      "id": "option:relieving_factors:position",
+      "language": "es",
+      "text": "Cambio de posición",
+      "src": "/speech/es-cc1b3de022444ba96b6f48893f18d449176dfdd6c586fc3d3ac6673d7403989b.mp3"
+    },
+    {
+      "id": "option:relieving_factors:nothing",
+      "language": "es",
+      "text": "Nada",
+      "src": "/speech/es-00574cf82545e899c49f314852a24c6dbc79e6fc6cdc390b9cff3e5d9d9a8a65.mp3"
+    },
+    {
+      "id": "option:relieving_factors:other",
+      "language": "es",
+      "text": "Otra cosa",
+      "src": "/speech/es-9c2206678601950d83183113a1827712ff54a3def271dbbb18649a289b12d2fa.mp3"
+    },
+    {
+      "id": "option:relieving_factors:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:radiation",
+      "language": "es",
+      "text": "¿El dolor se mueve a otra parte de tu cuerpo?",
+      "src": "/speech/es-1ba666a6ff7fa770dea71d086e6d4c092ec722126298a55e658d54e05218c463.mp3"
+    },
+    {
+      "id": "option:radiation:stays",
+      "language": "es",
+      "text": "Se queda en un solo lugar",
+      "src": "/speech/es-5b17e9583dbde2e568e3a04e6a6a896db7b399729e4e131a5d5261ec39600183.mp3"
+    },
+    {
+      "id": "option:radiation:moves",
+      "language": "es",
+      "text": "Se muda a otro sitio",
+      "src": "/speech/es-3bc28c99ebd42c20ae7a11e8c1552608f2d06f105de26ed56e9e9af68bd7e6ca.mp3"
+    },
+    {
+      "id": "option:radiation:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:associated_symptoms",
+      "language": "es",
+      "text": "¿Tienes algo más relacionado con ella, como fiebre, vómitos o dificultad para respirar?",
+      "src": "/speech/es-1ed8d05702dd0dd4fd060d4e428d69b85648dff0a39477401bf95a5b684084b9.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:fever",
+      "language": "es",
+      "text": "Fiebre",
+      "src": "/speech/es-fac4b85cda26a2f647642726cbfdbb582b93cf609df247f922a63137072f8a74.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:vomiting",
+      "language": "es",
+      "text": "Vomitar",
+      "src": "/speech/es-32a70ec939c5ae2d2bc5d9751e76708771aa46ad73df75719f62b3d8ba1922ba.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:short_breath",
+      "language": "es",
+      "text": "Dificultad para respirar",
+      "src": "/speech/es-ac6e259f999438093a2b109f5ab02719a03c3477598e7ba665f66c08bbd218a9.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:none",
+      "language": "es",
+      "text": "Nada más",
+      "src": "/speech/es-792c9b0e8e8b8ab77a4d9b3059ae160920b1b9da3594b5d2e79f612ab8780d7d.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:other",
+      "language": "es",
+      "text": "Otra cosa",
+      "src": "/speech/es-9c2206678601950d83183113a1827712ff54a3def271dbbb18649a289b12d2fa.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:red_flags",
+      "language": "es",
+      "text": "¿Has tenido dolor en el pecho, dificultad para respirar, desmayos o debilidad en un lado del cuerpo?",
+      "src": "/speech/es-658880343de307de33d141ab52b4851ac3605491547704022d24ac59608c3278.mp3"
+    },
+    {
+      "id": "option:red_flags:chest_pain",
+      "language": "es",
+      "text": "Dolor en el pecho",
+      "src": "/speech/es-a50abf58ce84dc53d88b1f7bf2738835345486985ec8953d737ee9a7946ec061.mp3"
+    },
+    {
+      "id": "option:red_flags:short_breath",
+      "language": "es",
+      "text": "Dificultad para respirar",
+      "src": "/speech/es-ac6e259f999438093a2b109f5ab02719a03c3477598e7ba665f66c08bbd218a9.mp3"
+    },
+    {
+      "id": "option:red_flags:fainting",
+      "language": "es",
+      "text": "Desmayos",
+      "src": "/speech/es-1a9861452b4cea2bd2d0d6778e99e2975195ae212767e3c167fdc30327d558f8.mp3"
+    },
+    {
+      "id": "option:red_flags:one_sided_weakness",
+      "language": "es",
+      "text": "Debilidad en un lado",
+      "src": "/speech/es-63873eab87a4b08a2bcdf540b4e02a1f8dd7ade59f5cbf9aa8d30f50f299a9b2.mp3"
+    },
+    {
+      "id": "option:red_flags:none",
+      "language": "es",
+      "text": "Ninguna de estas",
+      "src": "/speech/es-36d6ca28aa60211bc689abfbce1e482c5041678b04562f47cec709f6a50535df.mp3"
+    },
+    {
+      "id": "option:red_flags:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:allergies",
+      "language": "es",
+      "text": "¿Eres alérgico a algún medicamento, comida o a cualquier otra cosa? ¿Qué ocurre cuando reaccionas?",
+      "src": "/speech/es-eaf27b3a9661fb73745021956484a8484046e9b7bad7b49e63f82650729c8a16.mp3"
+    },
+    {
+      "id": "option:allergies:medicine",
+      "language": "es",
+      "text": "Alergia a medicamentos",
+      "src": "/speech/es-99d58599448001a019ff3aa5d252694366141810f2217654dd5bc6a47acc729f.mp3"
+    },
+    {
+      "id": "option:allergies:food",
+      "language": "es",
+      "text": "Alergia alimentaria",
+      "src": "/speech/es-b48df0235b06a6dbdbfef3c54fc3e4cebfbad689bd2717f6bc86adebe5ac5146.mp3"
+    },
+    {
+      "id": "option:allergies:other",
+      "language": "es",
+      "text": "Otra alergia",
+      "src": "/speech/es-29061a74ea759a7f17ac22d57c0e9cc8f0f578da48d4e7e190044650d229a3c3.mp3"
+    },
+    {
+      "id": "option:allergies:none",
+      "language": "es",
+      "text": "No tengo alergias conocidas",
+      "src": "/speech/es-b02329f9bce23d5fa37531930fe8bcd0c356b6099d7cf64eceda3a7dc89397bf.mp3"
+    },
+    {
+      "id": "option:allergies:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:current_medications",
+      "language": "es",
+      "text": "¿Qué medicamentos tomas? Por favor, incluye vitaminas, productos herbales y cualquier cosa que compres sin receta.",
+      "src": "/speech/es-156d40e373f6b369af593c72b678441f9171f5cf56bcbe4262e24f1e44bbcc18.mp3"
+    },
+    {
+      "id": "option:current_medications:prescription",
+      "language": "es",
+      "text": "Medicamentos con receta",
+      "src": "/speech/es-bde58b114bcfad67fc1ff965e768d814bfd3e735ac93056d80e8ede15af07a59.mp3"
+    },
+    {
+      "id": "option:current_medications:nonprescription",
+      "language": "es",
+      "text": "Medicamentos comprados sin receta",
+      "src": "/speech/es-681c2280ff2fd4525b0137a963ae29d341383b3c11ef079931cbbc76bd1149d8.mp3"
+    },
+    {
+      "id": "option:current_medications:supplements",
+      "language": "es",
+      "text": "Vitaminas o productos herbales",
+      "src": "/speech/es-bbfe10d13aad05cfa63a4b408a1a6949c3b234dd54c47153a00028eb8feb3f23.mp3"
+    },
+    {
+      "id": "option:current_medications:none",
+      "language": "es",
+      "text": "Sin medicinas",
+      "src": "/speech/es-344e7b9fd3cbe796ff45f0fa2b3074782670805cf6803cfc8e2dcd8741ef266c.mp3"
+    },
+    {
+      "id": "option:current_medications:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:past_medical_history",
+      "language": "es",
+      "text": "¿Has tenido alguna enfermedad grave, cirugía o estancia hospitalaria?",
+      "src": "/speech/es-c64a45d40db059fd6cf14561f66a225471e7ef7ab130844d60034cf2b78c04ce.mp3"
+    },
+    {
+      "id": "option:past_medical_history:illness",
+      "language": "es",
+      "text": "Enfermedad grave",
+      "src": "/speech/es-3a15b254224cdfd0c649f344c6ce18f142f2895c449d081710dcd6ae4428dcd0.mp3"
+    },
+    {
+      "id": "option:past_medical_history:surgery",
+      "language": "es",
+      "text": "Cirugía",
+      "src": "/speech/es-72bbdb7fe9c1ec57a77a83e7038cb7f1df6513dacdd5125588958893920b48a0.mp3"
+    },
+    {
+      "id": "option:past_medical_history:hospital",
+      "language": "es",
+      "text": "Estancia hospitalaria",
+      "src": "/speech/es-38b6321bf6ed715ac0e577152ee9854f935aa7b8f20dc4e04deb0af61190a86a.mp3"
+    },
+    {
+      "id": "option:past_medical_history:none",
+      "language": "es",
+      "text": "Ninguna de estas",
+      "src": "/speech/es-36d6ca28aa60211bc689abfbce1e482c5041678b04562f47cec709f6a50535df.mp3"
+    },
+    {
+      "id": "option:past_medical_history:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:family_history",
+      "language": "es",
+      "text": "¿Alguien en tu familia ha tenido enfermedades cardíacas, diabetes, cáncer o ictus?",
+      "src": "/speech/es-8d0bf6b991d68fd181d79b53dddf60743b08d47dfa2cb8d4a9049cdddfbb953e.mp3"
+    },
+    {
+      "id": "option:family_history:heart_disease",
+      "language": "es",
+      "text": "Enfermedades cardíacas",
+      "src": "/speech/es-a7053175d96ee6709ae1ccd10c8c6f8ddbef0121af00486849240ea89bbdeae1.mp3"
+    },
+    {
+      "id": "option:family_history:diabetes",
+      "language": "es",
+      "text": "Diabetes",
+      "src": "/speech/es-3f2efa073aad5f147535eebba806d03b66c8023252aad29065553cf7cf42896a.mp3"
+    },
+    {
+      "id": "option:family_history:cancer",
+      "language": "es",
+      "text": "Cáncer",
+      "src": "/speech/es-4d33286504c91135b985df4653be019a4defedda96419968a5465f112ca87b1c.mp3"
+    },
+    {
+      "id": "option:family_history:stroke",
+      "language": "es",
+      "text": "Golpe",
+      "src": "/speech/es-121a01dddd51c8632340929b7a28b4d5e8dd8c0eeed43c42490bbf2b2fe7d094.mp3"
+    },
+    {
+      "id": "option:family_history:none",
+      "language": "es",
+      "text": "Ninguna de estas",
+      "src": "/speech/es-36d6ca28aa60211bc689abfbce1e482c5041678b04562f47cec709f6a50535df.mp3"
+    },
+    {
+      "id": "option:family_history:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "question:pregnancy",
+      "language": "es",
+      "text": "¿Podrías estar embarazada?",
+      "src": "/speech/es-3f24e42564802a5289ea4625e307a586afd0f2b57dd51e8b1c59788171e5270c.mp3"
+    },
+    {
+      "id": "option:pregnancy:yes",
+      "language": "es",
+      "text": "Sí",
+      "src": "/speech/es-4f36c5f469d3b465ccb46f5e75ad5f92718cd787add33b9f914c971f5c5924d5.mp3"
+    },
+    {
+      "id": "option:pregnancy:no",
+      "language": "es",
+      "text": "No",
+      "src": "/speech/es-b04eaa8fef7d785df87b6383f3bf510ff02374fa913add430b0bec0fae15ce6b.mp3"
+    },
+    {
+      "id": "option:pregnancy:unsure",
+      "language": "es",
+      "text": "No estoy seguro",
+      "src": "/speech/es-a272d94a45337a99edd740714632d3e3413ea2009ad3abb444edab062e0f1a10.mp3"
+    },
+    {
+      "id": "option:pregnancy:prefer_not_to_say",
+      "language": "es",
+      "text": "Prefiero no decirlo",
+      "src": "/speech/es-69888b98a37eea8a329c21d2dd2864d5055ef9ebae951f9dc227962370708a5d.mp3"
+    },
+    {
+      "id": "question:substance_use",
+      "language": "es",
+      "text": "¿Fumas, bebes alcohol o consumes alguna droga?",
+      "src": "/speech/es-0470e05a7c5d90d4989715c2aaf477e5f4ef67d588c158568391f99c53d3fe8b.mp3"
+    },
+    {
+      "id": "option:substance_use:smoking",
+      "language": "es",
+      "text": "Fumar",
+      "src": "/speech/es-0094b871a8b8a15183d885120e02df6fddf657883f9c104bec82680a241c0d32.mp3"
+    },
+    {
+      "id": "option:substance_use:alcohol",
+      "language": "es",
+      "text": "Alcohol",
+      "src": "/speech/es-3141aba031d33477b4dadda36e81aa9454d7d2a87660a88f553663c1da25dd5c.mp3"
+    },
+    {
+      "id": "option:substance_use:drugs",
+      "language": "es",
+      "text": "Otros fármacos",
+      "src": "/speech/es-56455520b8f696a7aaaef46df5616e753f04d4effdf03dd4b97f7371982c606f.mp3"
+    },
+    {
+      "id": "option:substance_use:none",
+      "language": "es",
+      "text": "Ninguna de estas",
+      "src": "/speech/es-36d6ca28aa60211bc689abfbce1e482c5041678b04562f47cec709f6a50535df.mp3"
+    },
+    {
+      "id": "option:substance_use:prefer_not_to_say",
+      "language": "es",
+      "text": "Prefiero no decirlo",
+      "src": "/speech/es-69888b98a37eea8a329c21d2dd2864d5055ef9ebae951f9dc227962370708a5d.mp3"
+    },
+    {
+      "id": "phrase:pain",
+      "language": "es",
+      "text": "Dolor",
+      "src": "/speech/es-964d03a2f3eebb63592ab3c74beec44962096889ee927b9daec1d4e1cfe1bc39.mp3"
+    },
+    {
+      "id": "phrase:chest",
+      "language": "es",
+      "text": "en el pecho",
+      "src": "/speech/es-9d670791e795a70d844c51f7f6a2c9137a211db422410cf5154767fc288f2c9f.mp3"
+    },
+    {
+      "id": "phrase:stomach",
+      "language": "es",
+      "text": "en el estómago",
+      "src": "/speech/es-92eec0ea4e9d33ce5d8cfea4407aef627807f86c5bd947b63b8f0171d7a2aa5e.mp3"
+    },
+    {
+      "id": "phrase:head",
+      "language": "es",
+      "text": "en la cabeza",
+      "src": "/speech/es-2b94adeddb2c3df2494b354ea625c1bff83f83279efd4e57f165064218270c32.mp3"
+    },
+    {
+      "id": "phrase:breathing",
+      "language": "es",
+      "text": "al respirar",
+      "src": "/speech/es-f06e05730455924a51f428056a21168440f5d041dfcd694ba91e0b138caae03a.mp3"
+    },
+    {
+      "id": "phrase:two_days",
+      "language": "es",
+      "text": "desde hace dos días",
+      "src": "/speech/es-d6c328dfee49461f41d556ee87ff296345923f79fe1236f248aadb66eca3fe3e.mp3"
+    },
+    {
+      "id": "phrase:dizzy",
+      "language": "es",
+      "text": "Mareo",
+      "src": "/speech/es-4354dfeda69c8d840d13401df5c219fb9ee6f03a47b9a3d13fdc2d59b936606e.mp3"
+    },
+    {
+      "id": "phrase:nausea",
+      "language": "es",
+      "text": "Náuseas",
+      "src": "/speech/es-50ee15aebebb95ad9f1b0a4ed94c175aa9e9ce46e8c95aba49085795df78fd2f.mp3"
+    },
+    {
+      "id": "phrase:help",
+      "language": "es",
+      "text": "Necesito ayuda",
+      "src": "/speech/es-d59007fede15f32c91a7ba00a8f77dda37125b7ddf84c93dda33d8bfb90f6e3e.mp3"
+    },
+    {
+      "id": "body:head",
+      "language": "es",
+      "text": "Cabeza",
+      "src": "/speech/es-d1b61c8ccf179764c9b63ea1fedccf7e3a290815ba0e3384804a2b9970beddfc.mp3"
+    },
+    {
+      "id": "body:neck",
+      "language": "es",
+      "text": "Cuello",
+      "src": "/speech/es-e5a55dae883d3111d9eb9556fcf1ff0e5761a0c896f3c4f6f5617c8e640b6697.mp3"
+    },
+    {
+      "id": "body:chest",
+      "language": "es",
+      "text": "Pecho",
+      "src": "/speech/es-e4ab55563a07373177598da0475c67c4abd87440ef695430c558b204edb95156.mp3"
+    },
+    {
+      "id": "body:abdomen",
+      "language": "es",
+      "text": "Estómago",
+      "src": "/speech/es-ad3d066ae9980bc14e3832f3d71d5882f3430a2851bc64a93edebe8d841b12b4.mp3"
+    },
+    {
+      "id": "body:groin",
+      "language": "es",
+      "text": "Ingle",
+      "src": "/speech/es-9a9ea17547de31e83e0248a2581c69c24bb995b44968368b1ae69ea9eebe65c8.mp3"
+    },
+    {
+      "id": "body:head_back",
+      "language": "es",
+      "text": "Parte de atrás de la cabeza",
+      "src": "/speech/es-291ac3c74f778b6fa9e583ba9cf845bd4305e645869fc47ee51c8fd37814d20d.mp3"
+    },
+    {
+      "id": "body:neck_back",
+      "language": "es",
+      "text": "Nuca",
+      "src": "/speech/es-695db78618c655bd74cbaea472fb199d652b58b4e1b115670bb8dcfd5e4e5ab5.mp3"
+    },
+    {
+      "id": "body:upper_back",
+      "language": "es",
+      "text": "Parte alta de la espalda",
+      "src": "/speech/es-1f63656213786bf4a1b9180ebe00c47a7d0896f5070ac325bebb47b5b0249966.mp3"
+    },
+    {
+      "id": "body:lower_back",
+      "language": "es",
+      "text": "Parte baja de la espalda",
+      "src": "/speech/es-834fe4e0ba105d4845d4decbb296c2180e09ebaea03ddcf2fd26391cd11202b5.mp3"
+    },
+    {
+      "id": "body:right_shoulder",
+      "language": "es",
+      "text": "Hombro derecho",
+      "src": "/speech/es-e9c9e1d74e7852312fcd4598d477ecdd01a9af32d863375e9e6f136358ffb9b0.mp3"
+    },
+    {
+      "id": "body:left_shoulder",
+      "language": "es",
+      "text": "Hombro izquierdo",
+      "src": "/speech/es-eb90f4840405076be57f09a9125d6cd4f94f5eed3633ca514d9824f6c200b773.mp3"
+    },
+    {
+      "id": "body:right_upper_arm",
+      "language": "es",
+      "text": "Parte superior del brazo derecho",
+      "src": "/speech/es-9164a7055b38ad5386c934077fb80ba87680dfce7f769342719c4846728de3d0.mp3"
+    },
+    {
+      "id": "body:right_upper_arm",
+      "language": "es",
+      "text": "Parte superior del brazo derecho",
+      "src": "/speech/es-9164a7055b38ad5386c934077fb80ba87680dfce7f769342719c4846728de3d0.mp3"
+    },
+    {
+      "id": "body:left_upper_arm",
+      "language": "es",
+      "text": "Parte superior del brazo izquierdo",
+      "src": "/speech/es-2a5cdeac633bdac6451e29398f7b24ae31092a84253fbed99e4e4cfce58af2f4.mp3"
+    },
+    {
+      "id": "body:left_upper_arm",
+      "language": "es",
+      "text": "Parte superior del brazo izquierdo",
+      "src": "/speech/es-2a5cdeac633bdac6451e29398f7b24ae31092a84253fbed99e4e4cfce58af2f4.mp3"
+    },
+    {
+      "id": "body:right_elbow",
+      "language": "es",
+      "text": "Codo derecho",
+      "src": "/speech/es-2290310082f7e8d3f61c29ad1d1a089e5996ecce30e41d7ae2eb88b78bd2edd6.mp3"
+    },
+    {
+      "id": "body:right_elbow",
+      "language": "es",
+      "text": "Codo derecho",
+      "src": "/speech/es-2290310082f7e8d3f61c29ad1d1a089e5996ecce30e41d7ae2eb88b78bd2edd6.mp3"
+    },
+    {
+      "id": "body:left_elbow",
+      "language": "es",
+      "text": "Codo izquierdo",
+      "src": "/speech/es-fb570c5cc2cad743efc774b5b870118bb0cb9c71f489e3b2781f0743893997ca.mp3"
+    },
+    {
+      "id": "body:left_elbow",
+      "language": "es",
+      "text": "Codo izquierdo",
+      "src": "/speech/es-fb570c5cc2cad743efc774b5b870118bb0cb9c71f489e3b2781f0743893997ca.mp3"
+    },
+    {
+      "id": "body:right_forearm",
+      "language": "es",
+      "text": "Antebrazo derecho",
+      "src": "/speech/es-07237fe5e1c5e7223320eed406da9f4ee7917cf02704a6e405ad0f52070f8591.mp3"
+    },
+    {
+      "id": "body:right_forearm",
+      "language": "es",
+      "text": "Antebrazo derecho",
+      "src": "/speech/es-07237fe5e1c5e7223320eed406da9f4ee7917cf02704a6e405ad0f52070f8591.mp3"
+    },
+    {
+      "id": "body:left_forearm",
+      "language": "es",
+      "text": "Antebrazo izquierdo",
+      "src": "/speech/es-d6db63f741705120263bc6405cc08910a2805170eb7fa1d6868b984f41cd6598.mp3"
+    },
+    {
+      "id": "body:left_forearm",
+      "language": "es",
+      "text": "Antebrazo izquierdo",
+      "src": "/speech/es-d6db63f741705120263bc6405cc08910a2805170eb7fa1d6868b984f41cd6598.mp3"
+    },
+    {
+      "id": "body:right_hand",
+      "language": "es",
+      "text": "Mano derecha",
+      "src": "/speech/es-a1933a1a55fa93d79cc6e7a4f36b274446e02c4904bac93ee4dbb72156e824a6.mp3"
+    },
+    {
+      "id": "body:right_hand",
+      "language": "es",
+      "text": "Mano derecha",
+      "src": "/speech/es-a1933a1a55fa93d79cc6e7a4f36b274446e02c4904bac93ee4dbb72156e824a6.mp3"
+    },
+    {
+      "id": "body:left_hand",
+      "language": "es",
+      "text": "Mano izquierda",
+      "src": "/speech/es-167d348fcace4a26aa9bd8f5f29d2a5ffd630ed88aa4870bc48c84b310f9fa80.mp3"
+    },
+    {
+      "id": "body:left_hand",
+      "language": "es",
+      "text": "Mano izquierda",
+      "src": "/speech/es-167d348fcace4a26aa9bd8f5f29d2a5ffd630ed88aa4870bc48c84b310f9fa80.mp3"
+    },
+    {
+      "id": "body:right_hip",
+      "language": "es",
+      "text": "Cadera derecha",
+      "src": "/speech/es-f9333195e5f6b400274467d6b95d5bc98a8cd42b1b6f7401af01217806e4cfcf.mp3"
+    },
+    {
+      "id": "body:left_hip",
+      "language": "es",
+      "text": "Cadera izquierda",
+      "src": "/speech/es-80ffa07e31160f91ea8a29ee0c708a3e63a3c2bc1221961a3e1c089de051ecf4.mp3"
+    },
+    {
+      "id": "body:right_thigh",
+      "language": "es",
+      "text": "Muslo derecho",
+      "src": "/speech/es-667eb29ccfc5907ccfaa2b90cd7c2768c5473107e55ec496c5d2ed15be836031.mp3"
+    },
+    {
+      "id": "body:left_thigh",
+      "language": "es",
+      "text": "Muslo izquierdo",
+      "src": "/speech/es-477a836981dc84d635489e97074eb3b6984ed19e6d58ad3db45ad8067529558d.mp3"
+    },
+    {
+      "id": "body:right_knee",
+      "language": "es",
+      "text": "Rodilla derecha",
+      "src": "/speech/es-80d22bb8b8547c59363b5584bb781f2beda4d3b406bd0360504673f77310ab63.mp3"
+    },
+    {
+      "id": "body:left_knee",
+      "language": "es",
+      "text": "Rodilla izquierda",
+      "src": "/speech/es-d92251076d3d238c1ff1d476e689b37ec0ba4ad6134be77d0b8cbdba05e8e1d6.mp3"
+    },
+    {
+      "id": "body:right_shin",
+      "language": "es",
+      "text": "Espinilla derecha",
+      "src": "/speech/es-b788045c9a5c7bb4884a2ee219e208cf9d6789dd8f83cc7da32942182698a58f.mp3"
+    },
+    {
+      "id": "body:left_shin",
+      "language": "es",
+      "text": "Espinilla izquierda",
+      "src": "/speech/es-90069aded5e78b82ba9eb4705d1493295985a151a709cb3c15537c5fe18ae8c9.mp3"
+    },
+    {
+      "id": "body:right_foot",
+      "language": "es",
+      "text": "Pie derecho",
+      "src": "/speech/es-de6d0aec7136a4324d9e1a41de0baeb2e1d45aa1a403d066d43047cc28d7b2b2.mp3"
+    },
+    {
+      "id": "body:left_foot",
+      "language": "es",
+      "text": "Pie izquierdo",
+      "src": "/speech/es-f0dc1521b00abed1c30a1398a94aa20511b1de80bab16770890f05dd98faf6e3.mp3"
+    },
+    {
+      "id": "body:right_shoulder_blade",
+      "language": "es",
+      "text": "Omóplato derecho",
+      "src": "/speech/es-86dda115ed6584d0fabc34356fd28fe46349d68d8e511234967424d9ba38143c.mp3"
+    },
+    {
+      "id": "body:left_shoulder_blade",
+      "language": "es",
+      "text": "Omóplato izquierdo",
+      "src": "/speech/es-8b5ee21caa1577d06cc85705e4c6056c2ae86069d74755e8e27724bf36bdf8c8.mp3"
+    },
+    {
+      "id": "body:right_buttock",
+      "language": "es",
+      "text": "Glúteo derecho",
+      "src": "/speech/es-452f83af919b28db9d031bc8536eb48baeca0be344e46f71def57f256089dd99.mp3"
+    },
+    {
+      "id": "body:left_buttock",
+      "language": "es",
+      "text": "Glúteo izquierdo",
+      "src": "/speech/es-eb3f1a4d9557d988531fe4fea7074075da43527eeac67aebe5aaec793584f772.mp3"
+    },
+    {
+      "id": "body:right_thigh_back",
+      "language": "es",
+      "text": "Parte de atrás del muslo derecho",
+      "src": "/speech/es-4ae44449b9132ebf83c0a1892b3d6a1a84a45a8fac9e4859a794433c09729718.mp3"
+    },
+    {
+      "id": "body:left_thigh_back",
+      "language": "es",
+      "text": "Parte de atrás del muslo izquierdo",
+      "src": "/speech/es-eddacc9283a2c2313fe067287b2bf4bcfebd274e3c956b3d18c06b2856280196.mp3"
+    },
+    {
+      "id": "body:right_knee_back",
+      "language": "es",
+      "text": "Parte de atrás de la rodilla derecha",
+      "src": "/speech/es-1cba3223f274ffd0dfc197f13848d3602f848af995088ac76e4c1c7c328a77e8.mp3"
+    },
+    {
+      "id": "body:left_knee_back",
+      "language": "es",
+      "text": "Parte de atrás de la rodilla izquierda",
+      "src": "/speech/es-0afd28384bc98236c1e1387a3d4de95db40c4858ba921a88165fe4e4787cc89c.mp3"
+    },
+    {
+      "id": "body:right_calf",
+      "language": "es",
+      "text": "Pantorrilla derecha",
+      "src": "/speech/es-111f376026e8a7ed39e8a86e29e0cdd384c6d0895a3cf15845b386a190a00e48.mp3"
+    },
+    {
+      "id": "body:left_calf",
+      "language": "es",
+      "text": "Pantorrilla izquierda",
+      "src": "/speech/es-d77f9dad377f4bcf987b415b561cf210cf436c93477b30909e551504a50f7d80.mp3"
+    },
+    {
+      "id": "body:right_heel",
+      "language": "es",
+      "text": "Talón derecho",
+      "src": "/speech/es-50ea6c87fd5cc7df52700fc58f0c9f215e6990ab691fba4ea41e0a4d3386635f.mp3"
+    },
+    {
+      "id": "body:left_heel",
+      "language": "es",
+      "text": "Talón izquierdo",
+      "src": "/speech/es-2b330de82ae309f8d4ddf64db5b97c6ec674df50e1c8506f8a0230b78449a8ff.mp3"
     }
   ]
 }
