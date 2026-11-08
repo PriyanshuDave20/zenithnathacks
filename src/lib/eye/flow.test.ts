@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { clearFrom, describeAnswers, describeRows, EMPTY_ANSWERS, nextStep, previousStep, speakableSummary, type FlowAnswers } from "./flow";
+import { eye, getEyeState } from "./session";
 
 const a = (extra: Partial<FlowAnswers> = {}): FlowAnswers => ({ ...EMPTY_ANSWERS, ...extra });
 
@@ -67,4 +68,104 @@ test("the clinician rows are labelled and only include what was answered", () =>
     { label: "How strong", value: "A little" },
   ]);
   assert.deepEqual(describeRows(EMPTY_ANSWERS), []);
+});
+
+// Speech lifecycle regressions: no camera, audio device or network is used.
+function withEyeSpeech(run: (speech: { utterances: SpeechSynthesisUtterance[]; cancelled: () => number }) => void) {
+  const oldWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+  const oldUtterance = Object.getOwnPropertyDescriptor(globalThis, "SpeechSynthesisUtterance");
+  const utterances: SpeechSynthesisUtterance[] = [];
+  let cancels = 0;
+  class Utterance {
+    constructor(public text: string) {}
+    lang = "";
+    rate = 1;
+    onstart: (() => void) | null = null;
+    onend: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+  }
+  Object.defineProperty(globalThis, "window", { configurable: true, value: {
+    speechSynthesis: { cancel: () => { cancels++; }, speak: (utterance: SpeechSynthesisUtterance) => utterances.push(utterance) },
+  } });
+  Object.defineProperty(globalThis, "SpeechSynthesisUtterance", { configurable: true, value: Utterance });
+  try {
+    eye.clear();
+    run({ utterances, cancelled: () => cancels });
+  } finally {
+    eye.clear();
+    if (oldWindow) Object.defineProperty(globalThis, "window", oldWindow);
+    else Reflect.deleteProperty(globalThis, "window");
+    if (oldUtterance) Object.defineProperty(globalThis, "SpeechSynthesisUtterance", oldUtterance);
+    else Reflect.deleteProperty(globalThis, "SpeechSynthesisUtterance");
+  }
+}
+
+function speechEvent(utterance: SpeechSynthesisUtterance, type: "start" | "end" | "error") {
+  const callback = utterance[`on${type}`];
+  if (callback) Reflect.apply(callback, utterance, [{}]);
+}
+
+test("Eye speech only reports completion after playback, and superseded callbacks cannot change the next choice", () => {
+  withEyeSpeech(({ utterances }) => {
+    eye.say("Yes.");
+    assert.equal(getEyeState().speechStatus, "queued");
+    speechEvent(utterances[0], "start");
+    assert.equal(getEyeState().speechStatus, "speaking");
+    eye.say("No.");
+    speechEvent(utterances[0], "end");
+    assert.equal(getEyeState().speechStatus, "queued");
+    assert.equal(getEyeState().lastSaid, "No.");
+    speechEvent(utterances[1], "start");
+    speechEvent(utterances[1], "end");
+    assert.equal(getEyeState().speechStatus, "spoken");
+  });
+});
+
+test("Eye muted, unavailable and failed speech retain the choice without claiming playback", () => {
+  withEyeSpeech(({ utterances }) => {
+    eye.setMuted(true);
+    eye.say("I need help.", true);
+    assert.equal(utterances.length, 0);
+    assert.equal(getEyeState().speechStatus, "muted");
+    assert.equal(getEyeState().log[0].help, true);
+    eye.setMuted(false);
+    assert.equal(getEyeState().speechStatus, "muted");
+    eye.say("Yes.");
+    speechEvent(utterances[0], "error");
+    assert.equal(getEyeState().speechStatus, "error");
+    window.speechSynthesis.speak = () => { throw new Error("Speech unavailable"); };
+    eye.say("No.");
+    assert.equal(getEyeState().speechStatus, "error");
+    Reflect.deleteProperty(window, "speechSynthesis");
+    eye.say("I would like water.");
+    assert.equal(getEyeState().speechStatus, "unavailable");
+    assert.equal(getEyeState().lastSaid, "I would like water.");
+  });
+});
+
+test("Leaving Eye Help cancels current speech; clearing removes all session content and ignores late callbacks", () => {
+  withEyeSpeech(({ utterances, cancelled }) => {
+    eye.start("conversation");
+    eye.go("help");
+    eye.say("I need help.", true);
+    speechEvent(utterances[0], "start");
+    const before = cancelled();
+    eye.go("home");
+    assert.ok(cancelled() > before);
+    assert.equal(getEyeState().speechStatus, "stopped");
+    speechEvent(utterances[0], "end");
+    assert.equal(getEyeState().speechStatus, "stopped");
+    eye.say("I would like water.");
+    eye.answers(a({ where: "head" }));
+    eye.finishIntake(a({ where: "head" }), "Head");
+    eye.clear();
+    speechEvent(utterances[1], "end");
+    assert.equal(getEyeState().lastSaid, null);
+    assert.equal(getEyeState().lastIntake, null);
+    assert.equal(getEyeState().intake, null);
+    assert.deepEqual(getEyeState().answers, EMPTY_ANSWERS);
+    assert.deepEqual(getEyeState().log, []);
+    assert.equal(getEyeState().mode, null);
+    assert.equal(getEyeState().speechStatus, "idle");
+  });
 });
