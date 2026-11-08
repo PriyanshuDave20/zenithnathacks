@@ -17,6 +17,7 @@ const tests = [
   "src/app/api/translate/route.test.ts",
   "src/lib/server/respond/respond.test.ts",
   "src/app/api/respond/route.test.ts",
+  "src/components/session/api.test.ts",
 ];
 
 try {

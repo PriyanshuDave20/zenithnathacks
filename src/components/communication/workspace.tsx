@@ -27,15 +27,13 @@ import {
   QUESTIONS,
   PHRASES,
   CLINICIAN_REPLIES,
-  TEACH_BACK,
-  mockCanTranslateReply,
   type Mode,
   type PatientLanguage,
   type TranslateInput,
   type TranslateResponse,
   type RespondResponse,
 } from "@/lib/mocks";
-import { translate, respond } from "@/components/session/api";
+import { translate, respond, isReplyUnavailable } from "@/components/session/api";
 import { STRINGS } from "@/components/session/strings";
 import { useRecognition, useSpeak } from "@/components/session/use-speech";
 import { useIdle } from "@/components/session/use-idle";
@@ -414,13 +412,13 @@ export function CommunicationWorkspace() {
             language,
             original: message,
             response,
-            unavailable: !mockCanTranslateReply(message, language),
+            unavailable: isReplyUnavailable(response),
           },
         ]);
         if (audio && canAudio)
           voice.speak(
             response.readAloudText,
-            mockCanTranslateReply(message, language) ? meta.speech : "en-US",
+            isReplyUnavailable(response) ? "en-US" : meta.speech,
           );
         setDraft("");
         speech.setFinalText("");
@@ -766,7 +764,9 @@ export function CommunicationWorkspace() {
               {setupMode === "icu"
                 ? "The eye-selection interface is ready to preview. Eye tracking is not connected."
                 : readyForReply
-                  ? `Your reply is ready in ${meta.english}.`
+                  ? lastReply?.unavailable
+                    ? "Translation is unavailable. Return to the clinician or ask for an interpreter."
+                    : `Your reply is ready in ${meta.english}.`
                   : `${meta.english} · ${MODES.find((m) => m.id === mode)?.label}. The patient will see one clear task at a time.`}
             </p>
             {setupMode === "icu" ? (
@@ -995,8 +995,8 @@ export function CommunicationWorkspace() {
                           <p className={s.translation}>
                             Demo only:{" "}
                             {t.role === "patient"
-                              ? "keyword summary, not a full translation."
-                              : "translation unavailable; shown in English."}
+                              ? "canned example or translation unavailable; check the communication summary."
+                              : "translation unavailable; ask an interpreter."}
                           </p>
                         ) : null}
                         {t.spots?.length ? (
@@ -1344,7 +1344,10 @@ export function CommunicationWorkspace() {
                             className={s.choices}
                             style={{ marginBottom: 20 }}
                           >
-                            {CLINICIAN_REPLIES.map((r) => (
+                            {[
+                              { en: "Please point to where it hurts." },
+                              ...CLINICIAN_REPLIES,
+                            ].map((r) => (
                               <button
                                 type="button"
                                 key={r.en}
@@ -1404,8 +1407,8 @@ export function CommunicationWorkspace() {
                         </button>
                         {role === "clinician" ? (
                           <p className={s.notice}>
-                            Suggested replies have demo translations. Other
-                            replies are shown in English.
+                            Offline demo: “Please point to where it hurts.” has
+                            a canned translated reply. Other replies are unavailable.
                           </p>
                         ) : null}
                       </>
@@ -1619,39 +1622,48 @@ export function CommunicationWorkspace() {
             <h1>{lastReply.response!.patientText}</h1>
             {lastReply.unavailable ? (
               <p>
-                Translation unavailable. This reply is in English; request an
-                interpreter if needed.
+                No translated reply is available. Ask a qualified interpreter to
+                help communicate the clinician’s original message.
               </p>
             ) : null}
-            <p style={{ marginBlock: 24 }}>{TEACH_BACK[lastReply.language]}</p>
-            {read(
-              lastReply.response!.readAloudText,
-              lastReply.unavailable
-                ? "en-US"
-                : PATIENT_LANGUAGES.find((l) => l.code === lastReply.language)!
-                    .speech,
+            {lastReply.unavailable ? (
+              <Action
+                label="Back to clinician"
+                onClick={() => {
+                  setRole("clinician");
+                  setStage("conversation");
+                }}
+              />
+            ) : (
+              <>
+                <p style={{ marginBlock: 24 }}>{lastReply.response!.teachBackPrompt}</p>
+                {read(
+                  lastReply.response!.readAloudText,
+                  PATIENT_LANGUAGES.find((l) => l.code === lastReply.language)!.speech,
+                )}
+                <div className={s.choices}>
+                  {(["yes", "no", "unsure"] as const).map((answer) => (
+                    <button
+                      type="button"
+                      key={answer}
+                      onClick={() => {
+                        setTurns((t) =>
+                          t.map((turn) =>
+                            turn.id === lastReply.id
+                              ? { ...turn, understood: answer }
+                              : turn,
+                          ),
+                        );
+                        setRole("patient");
+                        setStage("handoff");
+                      }}
+                    >
+                      {COPY[lastReply.language][answer]}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
-            <div className={s.choices}>
-              {(["yes", "no", "unsure"] as const).map((answer) => (
-                <button
-                  type="button"
-                  key={answer}
-                  onClick={() => {
-                    setTurns((t) =>
-                      t.map((turn) =>
-                        turn.id === lastReply.id
-                          ? { ...turn, understood: answer }
-                          : turn,
-                      ),
-                    );
-                    setRole("patient");
-                    setStage("handoff");
-                  }}
-                >
-                  {COPY[lastReply.language][answer]}
-                </button>
-              ))}
-            </div>
           </section>
         ) : null}
       </main>
