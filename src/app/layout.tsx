@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Figtree, Noto_Sans, Noto_Sans_Arabic, Noto_Sans_SC } from "next/font/google";
+import { GazeLayer } from "@/components/input/gaze/gaze-layer";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -39,7 +40,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${figtree.variable} ${notoSans.variable} ${notoArabic.variable} ${notoSC.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <GazeLayer />
+      </body>
     </html>
   );
 }
