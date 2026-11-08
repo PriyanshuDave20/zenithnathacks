@@ -42,18 +42,38 @@ return generic no-store errors. Password and Google accounts share the same
 clinician profile shape. Billing is not connected; the plan is read-only display
 metadata and cannot be elevated by a request.
 
-## Verification limits
+## Verification and remaining setup
 
-Offline fixtures and library integration tests establish transport/session behavior,
-not live PostgreSQL, Google consent or email deliverability. The configured database
-failed a read-only connection attempt with `ENOTFOUND` during implementation, even
-with approved network access. No schema was pushed and no real account was created.
-Prem subsequently supplied Neon URLs; a read-only check succeeded on the empty
-intended database. Additive schema activation and synthetic persistence checks
-are in progress. External-provider activation was explicitly deferred by Prem;
-Google/email end-to-end checks remain pending working configuration.
+The configured Neon direct connection passed a read-only check. The reviewed
+SQL was create-only: the existing scaffold Example plus four clinician/auth tables
+on an empty database. The coordinator applied it without reset/data-loss flags.
+Runtime uses the pooled connection. Real synthetic signup, password signin,
+profile editing/reload and signout/revocation passed against Neon. Read-only SQL
+verified the edited profile, a stored password hash, and omitted session IP/UA.
+The uniquely named synthetic clinician and cascading auth records were removed.
+
+Offline checks include actual Better Auth memory-adapter fixtures for cookie
+flags, hashing, expired/revoked sessions, reset expiry/single-use/session revocation,
+forged OAuth state and public-wrapper token omission. Browser checks at 390px and
+1440px cover clinician flow, real server authorization, cross-tab profile edits
+preserving conversations and cross-tab signout clearing patient screens. HTTP
+checks confirm unsigned provider POSTs401, cross-origin403, and unexposed native
+library endpoints404. Local development cookies are httpOnly/SameSite=Lax; HTTPS
+fixtures verify Secure production cookies.
+
+Prem explicitly deferred Google and reset-email activation. Neither real OAuth
+consent nor email delivery has been exercised. No emails, live model/translation/
+synthesis calls or audio regeneration ran. Library fixtures and mocked clinician
+replies establish behavior, not language or clinical accuracy.
+
+The auth limiter is bounded and **process-local** (global action and keyed account
+windows); multiple production instances need shared abuse limiting. Accounts do
+not verify clinician licensure or email ownership; email verification and account
+linking are disabled for this demo. Existing Eye header controls overflow at390px;
+this auth/metrics change preserves its layout and gaze/input behavior.
 
 Official references: [Next integration](https://better-auth.com/docs/integrations/next),
 [Prisma adapter](https://better-auth.com/docs/adapters/prisma),
 [email/password](https://better-auth.com/docs/authentication/email-password),
-[Google](https://better-auth.com/docs/authentication/google).
+[Google](https://better-auth.com/docs/authentication/google),
+[Neon Prisma connections](https://neon.com/docs/guides/prisma).

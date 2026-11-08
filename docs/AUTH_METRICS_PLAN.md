@@ -1,7 +1,10 @@
 # Resume plan: real clinician accounts and frontend metrics
 
-Status: **planning recorded; implementation has not started**. Prem asked to save
-this plan before starting because his session usage limit was running low.
+Status: **implementation completed on `prem/clinician-auth-metrics`; review PRs pending**.
+The original plan below is retained as planning history. See `docs/AUTH.md`,
+`docs/METRICS.md` and the newest handoff for delivered behavior and remaining setup.
+Clinician auth and profiles are live-tested against Neon; Google/reset-email activation
+was explicitly deferred. Prem originally saved this plan before implementation.
 
 ## Resume entry point
 
