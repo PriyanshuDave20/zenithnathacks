@@ -9,6 +9,8 @@ import { signOut, useClinician } from "@/components/auth/api";
 import { initials } from "@/components/auth/auth-ui";
 import { SESSION_TIMEOUT_OPTIONS, setSessionTimeout, useSessionTimeout } from "@/lib/session-timeout";
 import { COPY_OPTIONS, setSummaryPrefs, useSummaryPrefs } from "@/lib/summary-prefs";
+import { setA11yPrefs, useA11yPrefs, type ContrastPref, type ThemePref } from "@/lib/accessibility-prefs";
+import { HubTheme } from "@/components/accessibility/hub-theme";
 import { SetupCheck } from "./setup-check";
 
 const roles = { doctor: "Doctor", nurse: "Nurse", other: "Clinician" };
@@ -19,6 +21,7 @@ export function ClinicianDashboard() {
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const timeout = useSessionTimeout();
+  const a11y = useA11yPrefs();
   const prefs = useSummaryPrefs();
   const [prefsSaved, setPrefsSaved] = useState(false);
   const savePrefs = (patch: Parameters<typeof setSummaryPrefs>[0]) => {
@@ -42,6 +45,7 @@ export function ClinicianDashboard() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-ground-2 text-ink">
+      <HubTheme />
       <a href="#clinician-home" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded-full focus:bg-surface focus:px-6 focus:py-3 focus:text-ink">Skip to content</a>
       <header className="on-navy bg-navy pt-[env(safe-area-inset-top)] text-white">
         <div className="mx-auto flex min-h-20 w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-3 sm:px-8">
@@ -100,6 +104,46 @@ export function ClinicianDashboard() {
           </section>
         </div>
 
+        <section aria-labelledby="a11y-title" className="mt-6 min-w-0 rounded-sheet bg-surface p-7 sm:p-8">
+          <h2 id="a11y-title" className="font-display text-xl font-semibold">Accessibility</h2>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
+            Appearance and contrast change this clinician hub. Patients keep their own display controls inside a session. Colour-blind friendly colours apply across the app on this device. Saved on this device only.
+          </p>
+          <div className="mt-5 grid gap-6 lg:grid-cols-2">
+            <fieldset className="min-w-0">
+              <legend className="text-base font-semibold">Appearance</legend>
+              <div role="radiogroup" aria-label="Appearance" className="mt-2 flex flex-wrap gap-2">
+                {([["auto", "Automatic"], ["light", "Light"], ["dark", "Dark"]] as [ThemePref, string][]).map(([id, label]) => (
+                  <label key={id} className="press relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-5 text-base font-semibold ring-1 ring-line has-[:checked]:bg-ink has-[:checked]:text-ground has-[:checked]:ring-ink has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-deeper">
+                    <input type="radio" name="a11y-theme" value={id} checked={a11y.theme === id} onChange={() => setA11yPrefs({ theme: id })} className="absolute inset-0 size-full cursor-pointer opacity-0" />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <p className="mt-2 text-sm text-ink-soft">Automatic follows this device.</p>
+            </fieldset>
+            <fieldset className="min-w-0">
+              <legend className="text-base font-semibold">Contrast</legend>
+              <div role="radiogroup" aria-label="Contrast" className="mt-2 flex flex-wrap gap-2">
+                {([["auto", "Automatic"], ["standard", "Standard"], ["high", "High"]] as [ContrastPref, string][]).map(([id, label]) => (
+                  <label key={id} className="press relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-5 text-base font-semibold ring-1 ring-line has-[:checked]:bg-ink has-[:checked]:text-ground has-[:checked]:ring-ink has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-deeper">
+                    <input type="radio" name="a11y-contrast" value={id} checked={a11y.contrast === id} onChange={() => setA11yPrefs({ contrast: id })} className="absolute inset-0 size-full cursor-pointer opacity-0" />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <p className="mt-2 text-sm text-ink-soft">High uses stronger text, borders and focus outlines.</p>
+            </fieldset>
+          </div>
+          <label className="mt-6 flex min-h-11 max-w-xl cursor-pointer items-start gap-3 text-base">
+            <input type="checkbox" checked={a11y.colourBlind} onChange={(event) => setA11yPrefs({ colourBlind: event.target.checked })} className="mt-1 size-5 shrink-0" />
+            <span>
+              Colour-blind friendly colours
+              <span className="mt-1 block text-sm text-ink-soft">Red alerts become orange and chosen options get a tick, so nothing depends on colour alone.</span>
+            </span>
+          </label>
+        </section>
+
         <section aria-labelledby="timeout-title" className="mt-6 min-w-0 rounded-sheet bg-surface p-7 sm:p-8">
           <h2 id="timeout-title" className="font-display text-xl font-semibold">Session timeout</h2>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
@@ -107,7 +151,7 @@ export function ClinicianDashboard() {
           </p>
           <div role="radiogroup" aria-labelledby="timeout-title" className="mt-5 flex flex-wrap gap-2">
             {SESSION_TIMEOUT_OPTIONS.map((o) => (
-              <label key={o.id} className="press relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-5 text-base font-semibold ring-1 ring-line has-[:checked]:bg-navy has-[:checked]:text-white has-[:checked]:ring-navy has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-deeper">
+              <label key={o.id} className="press relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-5 text-base font-semibold ring-1 ring-line has-[:checked]:bg-ink has-[:checked]:text-ground has-[:checked]:ring-ink has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-deeper">
                 <input type="radio" name="session-timeout" value={o.id} checked={timeout === o.id} onChange={() => setSessionTimeout(o.id)} className="absolute inset-0 size-full cursor-pointer opacity-0" />
                 {o.label}{o.id === "6h" ? " (default)" : ""}
               </label>
@@ -125,7 +169,7 @@ export function ClinicianDashboard() {
               <legend className="text-base font-semibold">Detail</legend>
               <div role="radiogroup" aria-label="Summary detail" className="mt-2 flex flex-wrap gap-2">
                 {[{ id: "full", label: "Full" }, { id: "brief", label: "Brief" }].map((o) => (
-                  <label key={o.id} className="press relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-5 text-base font-semibold ring-1 ring-line has-[:checked]:bg-navy has-[:checked]:text-white has-[:checked]:ring-navy has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-deeper">
+                  <label key={o.id} className="press relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-5 text-base font-semibold ring-1 ring-line has-[:checked]:bg-ink has-[:checked]:text-ground has-[:checked]:ring-ink has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-deeper">
                     <input type="radio" name="summary-detail" value={o.id} checked={prefs.detail === o.id} onChange={() => savePrefs({ detail: o.id as "full" | "brief" })} className="absolute inset-0 size-full cursor-pointer opacity-0" />
                     {o.label}
                   </label>
@@ -141,7 +185,7 @@ export function ClinicianDashboard() {
               <legend className="text-base font-semibold">Copy puts this on the clipboard</legend>
               <div role="radiogroup" aria-label="What Copy copies" className="mt-2 flex flex-wrap gap-2">
                 {COPY_OPTIONS.map((o) => (
-                  <label key={o.id} className="press relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-5 text-base font-semibold ring-1 ring-line has-[:checked]:bg-navy has-[:checked]:text-white has-[:checked]:ring-navy has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-deeper">
+                  <label key={o.id} className="press relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-5 text-base font-semibold ring-1 ring-line has-[:checked]:bg-ink has-[:checked]:text-ground has-[:checked]:ring-ink has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-deeper">
                     <input type="radio" name="summary-copy" value={o.id} checked={prefs.copy === o.id} onChange={() => savePrefs({ copy: o.id })} className="absolute inset-0 size-full cursor-pointer opacity-0" />
                     {o.label}
                   </label>

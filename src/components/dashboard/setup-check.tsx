@@ -72,7 +72,7 @@ export function SetupCheck() {
           type="button"
           onClick={onCheck}
           disabled={state === "running"}
-          className="press inline-flex min-h-12 items-center rounded-full bg-navy px-6 text-base font-semibold text-white disabled:opacity-60"
+          className="press inline-flex min-h-12 items-center rounded-full bg-ink px-6 text-base font-semibold text-ground disabled:opacity-60"
         >
           {state === "running" ? "Checking…" : results ? "Check again" : "Check this device"}
         </button>
@@ -92,7 +92,7 @@ export function SetupCheck() {
             <ul className="mt-3 divide-y divide-line">
               {results.map((r) => (
                 <li key={r.id} className="flex items-start gap-3 py-3">
-                  <span aria-hidden="true" className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-sm font-bold ${r.ok ? "bg-blue-soft text-blue-deeper" : "bg-navy text-white"}`}>
+                  <span aria-hidden="true" className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-sm font-bold ${r.ok ? "bg-blue-soft text-blue-deeper" : "bg-ink text-ground"}`}>
                     {r.ok ? <Check size={14} /> : "!"}
                   </span>
                   <div className="min-w-0">

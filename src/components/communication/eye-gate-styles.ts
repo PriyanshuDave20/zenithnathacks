@@ -41,7 +41,7 @@ export const GATE_CSS = `
   border-radius: 16px;
   font-weight: 600;
   background: #fff;
-  color: #7a0a1a;
+  color: var(--alert-deep, #7a0a1a);
 }
 .sc-root .sf-icu-gate .sf-icu-gate-btn {
   display: grid;

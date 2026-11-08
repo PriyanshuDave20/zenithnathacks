@@ -63,7 +63,7 @@ export function ClinicianBar() {
           {recent.length ? (
             <ul style={{ margin: "8px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 4 }}>
               {recent.map((entry) => (
-                <li key={entry.at + entry.text} style={entry.help ? { color: "#9b1c1c", fontWeight: 800 } : undefined}>
+                <li key={entry.at + entry.text} style={entry.help ? { color: "var(--alert-deep, #9b1c1c)", fontWeight: 800 } : undefined}>
                   <span style={{ opacity: 0.7 }}>{time(entry.at)}</span> {entry.help ? "HELP · " : ""}
                   {entry.text}
                 </li>
