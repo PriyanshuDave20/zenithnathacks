@@ -61,8 +61,9 @@ checks confirm unsigned provider POSTs401, cross-origin403, and unexposed native
 library endpoints404. Local development cookies are httpOnly/SameSite=Lax; HTTPS
 fixtures verify Secure production cookies.
 
-Prem explicitly deferred Google and reset-email activation. Neither real OAuth
-consent nor email delivery has been exercised. No emails, live model/translation/
+Prem subsequently confirmed local Google sign-in works. Production OAuth still
+needs its exact HTTPS callback registered, and reset-email activation remains
+deferred; email delivery has not been exercised. No emails, live model/translation/
 synthesis calls or audio regeneration ran. Library fixtures and mocked clinician
 replies establish behavior, not language or clinical accuracy.
 
