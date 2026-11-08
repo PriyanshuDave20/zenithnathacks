@@ -9,6 +9,10 @@ import {
   fitGazeMapping,
   gazeFeatures,
   median,
+  LightMonitor,
+  OneEuroFilter,
+  PostureMonitor,
+  postureOf,
   medianFeatures,
   pickGazeTarget,
   recenterMapping,
@@ -404,4 +408,75 @@ test("FixationFilter steadies a long look and starts over at once when the eyes 
     if (landed < 0 && Math.hypot(out.x - 900, out.y - 500) < 60) landed = i;
   }
   assert.ok(landed >= 0 && landed <= 4, `a real move should be followed within a few frames (took ${landed})`);
+});
+
+test("PostureMonitor flags a head that has moved since calibration, once, and clears when it comes back", () => {
+  const ref = { cx: 0.5, cy: 0.45, scale: 0.2, yaw: 0, pitch: 0 };
+  const monitor = new PostureMonitor();
+  for (let i = 0; i < 40; i++) monitor.addReference({ ...ref, cx: ref.cx + Math.sin(i) * 0.002 });
+  assert.equal(monitor.lockReference(), true);
+  let t = 0;
+  const feed = (p: typeof ref, ms: number) => {
+    let v = monitor.next(p, t);
+    for (const end = t + ms; t < end; t += 33) v = monitor.next(p, t);
+    return v;
+  };
+  assert.equal(feed(ref, 2000), "ok", "sitting as calibrated is fine");
+  assert.equal(feed({ ...ref, cx: ref.cx + 0.09 }, 600), "ok", "a move that has not lasted is not flagged");
+  assert.equal(feed({ ...ref, cx: ref.cx + 0.09 }, 2000), "moved", "a lasting sideways move (0.45 eye-spans) is flagged");
+  assert.equal(feed({ ...ref, cx: ref.cx + 0.05 }, 2000), "moved", "still partly out: it stays flagged (hysteresis)");
+  assert.equal(feed(ref, 200), "ok", "back where it was: cleared");
+  assert.equal(feed({ ...ref, scale: 0.2 * 1.15 }, 2000), "distance", "leaning in is flagged");
+  assert.equal(feed(ref, 200), "ok");
+  assert.equal(feed({ ...ref, yaw: 0.14 }, 2000), "turned", "turning the head is flagged");
+  // No reference, nothing to compare with.
+  assert.equal(new PostureMonitor().next(ref, 0), "ok");
+  assert.equal(new PostureMonitor().lockReference(), false);
+  // Posture reads from landmarks and refuses an incomplete face.
+  assert.equal(postureOf(null), null);
+  assert.equal(postureOf([]), null);
+});
+
+test("LightMonitor flags a lasting change in face brightness and a face too dark to track", () => {
+  const monitor = new LightMonitor();
+  for (let i = 0; i < 30; i++) monitor.addReference(0.5);
+  assert.equal(monitor.lockReference(), 0.5);
+  let t = 0;
+  const feed = (level: number, ms: number) => {
+    let v = monitor.next(level, t);
+    for (const end = t + ms; t < end; t += 500) v = monitor.next(level, t);
+    return v;
+  };
+  assert.equal(feed(0.52, 4000), "ok", "ordinary variation is fine");
+  assert.equal(feed(0.25, 1000), "ok", "a brief change is ignored");
+  assert.equal(feed(0.25, 4000), "changed", "a lasting drop to half the level is flagged");
+  assert.equal(feed(0.5, 1000), "ok", "back to normal clears it");
+  const dim = new LightMonitor();
+  for (let i = 0; i < 10; i++) dim.addReference(0.1);
+  assert.equal(dim.isDark, true, "a dim calibration is reported as dark");
+  assert.equal(dim.lockReference(), 0.1);
+  let td = 0;
+  let v = dim.next(0.1, td);
+  for (; td < 4000; td += 500) v = dim.next(0.1, td);
+  assert.equal(v, "dark");
+});
+
+test("OneEuroFilter is steady at rest and follows a real jump without lag", () => {
+  const filter = new OneEuroFilter(0.3, 0.002, 0.5);
+  let n = 0;
+  const noise = () => Math.sin(++n * 12.9898) * 40;
+  let rest = 0;
+  let out = { x: 0, y: 0 };
+  for (let i = 0; i < 60; i++) {
+    out = filter.next({ x: 400 + noise(), y: 400 + noise() }, 33);
+    if (i >= 30) rest = Math.max(rest, Math.hypot(out.x - 400, out.y - 400));
+  }
+  assert.ok(rest < 40, `at rest the output should be steadier than the raw ±40 px (${rest.toFixed(1)})`);
+  let frames = -1;
+  for (let i = 0; i < 12; i++) {
+    out = filter.next({ x: 900 + noise(), y: 400 + noise() }, 33);
+    if (frames < 0 && Math.abs(out.x - 900) < 75) frames = i;
+  }
+  assert.ok(frames >= 0 && frames <= 3, `a 500 px jump should be followed within 3 frames (took ${frames})`);
+  assert.deepEqual(new OneEuroFilter().next({ x: 5, y: 6 }, 33), { x: 5, y: 6 });
 });

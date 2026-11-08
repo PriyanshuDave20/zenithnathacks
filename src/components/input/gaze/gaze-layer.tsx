@@ -17,15 +17,21 @@ import {
   FixationFilter,
   fitGazeCalibration,
   gazeFeatures,
+  LightMonitor,
   medianFeatures,
+  OneEuroFilter,
   pickGazeTarget,
+  PostureMonitor,
+  postureOf,
   recenterMapping,
-  SmoothedPoint,
+  type Posture,
   type CalibrationSample,
   type GazeBox,
   type GazeFeatures,
   type GazeFit,
   type GazeFitFailure,
+  type LightVerdict,
+  type PostureVerdict,
   type GazeMapping,
 } from "@/lib/input/gaze/gaze-math";
 import { GazeTracker } from "@/lib/input/gaze/tracker";
@@ -151,6 +157,16 @@ function gazeCandidates(): { el: Element; box: GazeBox }[] {
   return out;
 }
 
+const POSTURE_HINT: Record<Exclude<PostureVerdict, "ok">, string> = {
+  moved: "Your head has moved since you calibrated. Sit back where you were, or tap Recenter.",
+  distance: "You are nearer or further from the screen than when you calibrated. Sit back where you were, or tap Recenter.",
+  turned: "Your head has turned since you calibrated. Face the screen, or tap Recenter.",
+};
+const LIGHT_HINT: Record<Exclude<LightVerdict, "ok">, string> = {
+  changed: "The lighting has changed since you calibrated. Tap Recalibrate for the best accuracy.",
+  dark: "It is quite dark in front of the camera. Add light facing you.",
+};
+
 const percent = (fraction: number) => Math.round(fraction * 100);
 const fairMessage = (error: number) =>
   `Eye control is on, but accuracy is approximate (typical error about ${percent(error)}% of the screen). Brighter even light and a steady head help; tap Recalibrate to try again, or Recenter if the pointer sits to one side.`;
@@ -158,15 +174,16 @@ const goodMessage = (error: number) =>
   `Calibrated: typical error about ${percent(error)}% of the screen. If the pointer drifts to one side, tap Recenter and look at the dot.`;
 
 /** What to tell the person when calibration is refused: each reason has a different fix. */
-function calibrationFailureMessage(reason: GazeFitFailure, samples: number, error?: number) {
+function calibrationFailureMessage(reason: GazeFitFailure, samples: number, error?: number, dark = false) {
+  const darkNote = dark ? " It also looks quite dark in front of the camera: add light facing you." : "";
   switch (reason) {
     case "few-samples":
-      return `The camera only caught your face for part of the sweep (${samples} usable moments). Sit centred facing the camera, in even light, with your whole face in view.`;
+      return `The camera only caught your face for part of the sweep (${samples} usable moments). Sit centred facing the camera, in even light, with your whole face in view.${darkNote}`;
     case "coverage":
     case "no-spread":
       return "Your eyes barely moved across the screen. Follow the dot with your eyes, not your head, and try again.";
     case "too-noisy":
-      return `Tracking was too unsteady to trust${error ? ` (about ${Math.round(error * 100)}% off)` : ""}. Try brighter, even light from the front, sit about an arm's length away, and keep your head still.`;
+      return `Tracking was too unsteady to trust${error ? ` (about ${Math.round(error * 100)}% off)` : ""}. Try brighter, even light from the front, sit about an arm's length away, and keep your head still.${darkNote}`;
     default:
       return "Calibration needs another try. Keep your head steady, use even lighting, and follow the dot for the full sweep.";
   }
@@ -196,7 +213,8 @@ export function GazeLayer() {
   // swallows small tremor entirely. Max alphas are the fast end: held 2% below the previous
   // tuning (0.75/0.55) after "too rigid" -> revert -> "a little more rigid".
   const featureSmootherRef = useRef(new FeatureSmoother(0.3, 0.735, 0.06));
-  const smootherRef = useRef(new SmoothedPoint(0.2, 0.539, 0.02, 2));
+  // One-Euro: steady at rest, no lag on a jump. Tuned to this tracker's noise (the usual defaults jitter more here).
+  const smootherRef = useRef(new OneEuroFilter(0.3, 0.002, 0.5));
   // Drops the frames of a blink, so closing eyelids cannot drag the pointer.
   const blinkGuardRef = useRef(new BlinkGuard());
   // A steady look is averaged over a longer window, so tracking jitter does not decide which button is chosen.
@@ -204,8 +222,15 @@ export function GazeLayer() {
   const stickyTargetRef = useRef<Element | null>(null);
   const candidatesRef = useRef<{ at: number; items: { el: Element; box: GazeBox }[] }>({ at: 0, items: [] });
   // One-point drift correction in progress (null when not recentering).
-  const recenterRef = useRef<{ start: number; reads: GazeFeatures[] } | null>(null);
+  const recenterRef = useRef<{ start: number; reads: GazeFeatures[]; posture: Posture[] } | null>(null);
   const [recentering, setRecentering] = useState(false);
+  // The head moving away from where it was at calibration is the biggest cause of drift; so is the light changing.
+  const postureRef = useRef(new PostureMonitor());
+  const lightRef = useRef(new LightMonitor());
+  const lightVerdictRef = useRef<LightVerdict>("ok");
+  const lastLumaRef = useRef(0);
+  const hintRef = useRef<string | null>(null);
+  const [hint, setHint] = useState<string | null>(null);
   const mappingRef = useRef<GazeMapping | null>(null);
   const samplesRef = useRef<CalibrationSample[]>([]);
   const calibStartRef = useRef(0);
@@ -236,6 +261,11 @@ export function GazeLayer() {
     stickyTargetRef.current = null;
     recenterRef.current = null;
     setRecentering(false);
+    postureRef.current.reset();
+    lightRef.current.reset();
+    lightVerdictRef.current = "ok";
+    hintRef.current = null;
+    setHint(null);
     samplesRef.current = [];
     calibStartRef.current = performance.now();
     if (!trackerRef.current) trackerRef.current = new GazeTracker();
@@ -266,6 +296,11 @@ export function GazeLayer() {
     stickyTargetRef.current = null;
     recenterRef.current = null;
     setRecentering(false);
+    postureRef.current.reset();
+    lightRef.current.reset();
+    lightVerdictRef.current = "ok";
+    hintRef.current = null;
+    setHint(null);
     smootherRef.current.reset();
     mappingRef.current = null;
     setStatus(null);
@@ -327,6 +362,11 @@ export function GazeLayer() {
     stickyTargetRef.current = null;
     recenterRef.current = null;
     setRecentering(false);
+    postureRef.current.reset();
+    lightRef.current.reset();
+    lightVerdictRef.current = "ok";
+    hintRef.current = null;
+    setHint(null);
     setStatus(null);
     setPhase("calibrating");
   }, []);
@@ -335,7 +375,7 @@ export function GazeLayer() {
   // sits to one side. Looking at one dot for a couple of seconds removes that offset without a full calibration.
   const recenter = useCallback(() => {
     if (!mappingRef.current) return;
-    recenterRef.current = { start: performance.now(), reads: [] };
+    recenterRef.current = { start: performance.now(), reads: [], posture: [] };
     dwellRef.current = new DwellController();
     setStatus(null);
     setRecentering(true);
@@ -409,6 +449,32 @@ export function GazeLayer() {
         setUnstable(true);
       }
 
+      // Posture and light. During calibration collect the reference; afterwards notice when the head has
+      // moved or the room has changed, which is what makes the pointer drift to one side.
+      const posture = features && landmarks ? postureOf(landmarks) : null;
+      if (features && landmarks) {
+        const sampleLight = () => {
+          if (now - lastLumaRef.current <= 400) return null;
+          lastLumaRef.current = now;
+          return trackerRef.current?.faceLuma(landmarks) ?? null;
+        };
+        if (phase === "calibrating") {
+          if (posture) postureRef.current.addReference(posture);
+          const level = sampleLight();
+          if (level !== null) lightRef.current.addReference(level);
+        } else if (posture && !recenterRef.current) {
+          const pv = postureRef.current.next(posture, now);
+          const level = sampleLight();
+          if (level !== null) lightVerdictRef.current = lightRef.current.next(level, now);
+          const lv = lightVerdictRef.current;
+          const next = pv !== "ok" ? POSTURE_HINT[pv] : lv !== "ok" ? LIGHT_HINT[lv] : null;
+          if (next !== hintRef.current) {
+            hintRef.current = next;
+            setHint(next);
+          }
+        }
+      }
+
       const cursor = cursorRef.current;
       if (phase === "calibrating" && waypoints) {
         // Drive the moving dot along the eased waypoint path and record samples while it is
@@ -422,12 +488,16 @@ export function GazeLayer() {
           mappingRef.current = fit.mapping;
           if (!fit.mapping) {
             trackerRef.current?.stop();
-            setStatus(calibrationFailureMessage(fit.reason, samplesRef.current.length, fit.medianError));
+            setStatus(calibrationFailureMessage(fit.reason, samplesRef.current.length, fit.medianError, lightRef.current.isDark));
             setPhase("error");
             return;
           }
           featureSmoother.reset();
           smoother.reset();
+          // Remember how they are sitting and how bright their face is, to notice when either changes.
+          postureRef.current.lockReference();
+          lightRef.current.lockReference();
+          lightVerdictRef.current = "ok";
           // Usable but approximate: turn it on and say so, rather than sending the person round again.
           const note = fit.quality === "fair" ? fairMessage(fit.medianError) : goodMessage(fit.medianError);
           setStatus(note);
@@ -485,7 +555,10 @@ export function GazeLayer() {
       const rc = recenterRef.current;
       if (rc) {
         const spent = now - rc.start;
-        if (features && spent > RECENTER_SETTLE_MS) rc.reads.push(smoothed);
+        if (features && spent > RECENTER_SETTLE_MS) {
+          rc.reads.push(smoothed);
+          if (posture) rc.posture.push(posture);
+        }
         if (spent > RECENTER_MS) {
           recenterRef.current = null;
           const middle = medianFeatures(rc.reads);
@@ -494,6 +567,12 @@ export function GazeLayer() {
             featureSmoother.reset();
             smoother.reset();
             fixationRef.current.reset();
+            // The offset is now corrected for how they are sitting NOW: that is the new reference.
+            postureRef.current.reset();
+            for (const q of rc.posture) postureRef.current.addReference(q);
+            postureRef.current.lockReference();
+            hintRef.current = null;
+            setHint(null);
             setStatus("Recentered.");
             setTimeout(() => setStatus((current) => (current === "Recentered." ? null : current)), 4000);
           } else {
@@ -620,14 +699,14 @@ export function GazeLayer() {
         </dialog>
       ) : null}
 
-      {status || (phase === "on" && (noFace || unstable)) ? (
+      {status || (phase === "on" && (hint || noFace || unstable)) ? (
         <p
           role="status"
           aria-live="polite"
           className="pointer-events-none fixed end-2 z-[70] max-w-48 rounded-field bg-surface p-3 text-sm font-medium leading-snug text-ink shadow-soft ring-1 ring-line"
           style={{ top: "calc(50% + 8.4rem)" }}
         >
-          {status ?? (unstable ? "Tracking is struggling - try brighter, even lighting." : "No face seen - sit centred in front of the camera.")}
+          {status ?? (phase === "on" ? hint : null) ?? (unstable ? "Tracking is struggling - try brighter, even lighting." : "No face seen - sit centred in front of the camera.")}
         </p>
       ) : null}
 

@@ -104,6 +104,42 @@ export class GazeTracker {
     }
   }
 
+  private lumaCanvas: HTMLCanvasElement | null = null;
+
+  /**
+   * Brightness (0..1) of the face in the current camera frame, measured on a 16 x 16 canvas that is
+   * read straight away and discarded: nothing is stored, logged or sent. Used to notice that the room
+   * has got darker or brighter since calibration, which shifts the shadows around the eyes.
+   */
+  faceLuma(landmarks: NormalizedLandmark[]): number | null {
+    const v = this.video;
+    if (!v || v.readyState < 2 || v.videoWidth === 0 || typeof document === "undefined") return null;
+    const l = landmarks[234];
+    const r = landmarks[454];
+    const t = landmarks[10];
+    const b = landmarks[152];
+    if (!l || !r || !t || !b) return null;
+    const x0 = Math.max(0, Math.min(l.x, r.x) * v.videoWidth);
+    const y0 = Math.max(0, Math.min(t.y, b.y) * v.videoHeight);
+    const sw = Math.min(v.videoWidth - x0, Math.max(8, Math.abs(r.x - l.x) * v.videoWidth));
+    const sh = Math.min(v.videoHeight - y0, Math.max(8, Math.abs(b.y - t.y) * v.videoHeight));
+    if (sw < 8 || sh < 8) return null;
+    try {
+      const canvas = (this.lumaCanvas ??= document.createElement("canvas"));
+      canvas.width = 16;
+      canvas.height = 16;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) return null;
+      ctx.drawImage(v, x0, y0, sw, sh, 0, 0, 16, 16);
+      const d = ctx.getImageData(0, 0, 16, 16).data;
+      let sum = 0;
+      for (let i = 0; i < d.length; i += 4) sum += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+      return sum / ((d.length / 4) * 255);
+    } catch {
+      return null;
+    }
+  }
+
   /** True when inference keeps failing (bad lighting, unsupported camera) — the UI can say so. */
   get unhealthy() {
     return this.detectErrors > 60;

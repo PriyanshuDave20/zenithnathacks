@@ -332,6 +332,51 @@ export function median(values: number[]): number | null {
  * Exponential smoother with velocity-adaptive alpha: a steady gaze stays steady (so dwell can
  * accumulate), a quick jump still arrives fast. Works in viewport pixels.
  */
+/**
+ * One-Euro filter (Casiez, Roussel, Vogel 2012) for a 2D pointer in viewport pixels. A low-pass filter
+ * whose cutoff rises with how fast the point is moving: while the eyes rest, the cutoff is low and
+ * jitter is smoothed away; when they jump, the cutoff opens up and the pointer follows without lag.
+ * Unlike a fixed-step smoother it is tied to real time (the camera's frame rate varies), and its two
+ * knobs mean something: `minCutoff` (Hz) is the steadiness at rest, `beta` is how fast it opens up.
+ */
+export class OneEuroFilter {
+  private x: GazePoint | null = null;
+  private dx: GazePoint = { x: 0, y: 0 };
+
+  constructor(
+    private minCutoff = 1.0,
+    private beta = 0.01,
+    private derivCutoff = 1.0,
+  ) {}
+
+  private static alpha(cutoffHz: number, dtSec: number) {
+    const tau = 1 / (2 * Math.PI * cutoffHz);
+    return 1 / (1 + tau / dtSec);
+  }
+
+  next(p: GazePoint, dtMs: number): GazePoint {
+    if (!this.x || dtMs <= 0 || dtMs > 250) {
+      this.x = { ...p };
+      this.dx = { x: 0, y: 0 };
+      return { ...p };
+    }
+    const dt = dtMs / 1000;
+    const ad = OneEuroFilter.alpha(this.derivCutoff, dt);
+    // Speed estimate (px/s), itself smoothed.
+    const rawDx = { x: (p.x - this.x.x) / dt, y: (p.y - this.x.y) / dt };
+    this.dx = { x: this.dx.x + (rawDx.x - this.dx.x) * ad, y: this.dx.y + (rawDx.y - this.dx.y) * ad };
+    const speed = Math.hypot(this.dx.x, this.dx.y);
+    const a = OneEuroFilter.alpha(this.minCutoff + this.beta * speed, dt);
+    this.x = { x: this.x.x + (p.x - this.x.x) * a, y: this.x.y + (p.y - this.x.y) * a };
+    return { ...this.x };
+  }
+
+  reset() {
+    this.x = null;
+    this.dx = { x: 0, y: 0 };
+  }
+}
+
 export class SmoothedPoint {
   private pt: GazePoint | null = null;
 
@@ -516,6 +561,165 @@ export class FixationFilter {
   reset() {
     this.pts = [];
     this.away = 0;
+  }
+}
+
+/** How the person is sitting: where their face is in the camera image, how big it is, which way it points. */
+export type Posture = { cx: number; cy: number; scale: number; yaw: number; pitch: number };
+
+export function postureOf(landmarks: { x: number; y: number }[] | null | undefined): Posture | null {
+  if (!landmarks || landmarks.length <= R_IRIS + 4) return null;
+  const a = landmarks[L_OUTER];
+  const b = landmarks[R_OUTER];
+  const nose = landmarks[NOSE];
+  const cl = landmarks[CHEEK_L];
+  const cr = landmarks[CHEEK_R];
+  const brow = landmarks[BROW];
+  const chin = landmarks[CHIN];
+  if (![a, b, nose, cl, cr, brow, chin].every((q) => q && Number.isFinite(q.x) && Number.isFinite(q.y))) return null;
+  const scale = dist(a, b); // distance between the outer eye corners: a stand-in for how far from the camera
+  if (scale < 0.02) return null;
+  const faceW = Math.max(dist(cl, cr), 1e-6);
+  const faceH = Math.max(dist(brow, chin), 1e-6);
+  return {
+    cx: (a.x + b.x) / 2,
+    cy: (a.y + b.y) / 2,
+    scale,
+    yaw: (nose.x - mid(cl, cr).x) / faceW,
+    pitch: (nose.y - mid(brow, chin).y) / faceH,
+  };
+}
+
+export type PostureVerdict = "ok" | "moved" | "turned" | "distance";
+
+/**
+ * Watches for the head moving away from where it was at calibration, which is the biggest single
+ * cause of the pointer sitting to one side. The reference is the median posture over the calibration
+ * sweep; a change counts only once it has lasted `sustainMs`, and a flag clears only when the person is
+ * well back inside the limits (hysteresis), so the hint neither flickers nor nags.
+ */
+export class PostureMonitor {
+  private base: Posture | null = null;
+  private samples: Posture[] = [];
+  private badSince = -1;
+  private flagged: PostureVerdict = "ok";
+
+  constructor(
+    private shiftLimit = 0.3, // head sideways/up/down, in eye-spans (about 2.7 cm for an adult)
+    private scaleLimit = 0.09, // leaned in or out by this fraction of the face size (about 5 cm at arm's length)
+    private turnLimit = 0.09, // head turned or tilted (nose offset, as a fraction of the face)
+    private sustainMs = 1500,
+  ) {}
+
+  /** Collect postures while the person holds still for the reference (the calibration sweep, a recenter). */
+  addReference(p: Posture) {
+    if (this.samples.length < 600) this.samples.push(p);
+  }
+
+  /** Fix the reference to what was collected. False if too little was seen. */
+  lockReference(): boolean {
+    if (this.samples.length < 10) {
+      this.samples = [];
+      return false;
+    }
+    const m = (pick: (p: Posture) => number) => median(this.samples.map(pick)) as number;
+    this.base = { cx: m((p) => p.cx), cy: m((p) => p.cy), scale: m((p) => p.scale), yaw: m((p) => p.yaw), pitch: m((p) => p.pitch) };
+    this.samples = [];
+    this.badSince = -1;
+    this.flagged = "ok";
+    return true;
+  }
+
+  next(p: Posture, nowMs: number): PostureVerdict {
+    const b = this.base;
+    if (!b) return "ok";
+    const shift = Math.hypot(p.cx - b.cx, p.cy - b.cy) / b.scale;
+    const lean = Math.abs(p.scale / b.scale - 1);
+    const turn = Math.max(Math.abs(p.yaw - b.yaw), Math.abs(p.pitch - b.pitch));
+    const slack = this.flagged === "ok" ? 1 : 0.75; // once flagged, it has to come well back to clear
+    const now: PostureVerdict =
+      lean > this.scaleLimit * slack ? "distance" : shift > this.shiftLimit * slack ? "moved" : turn > this.turnLimit * slack ? "turned" : "ok";
+    if (now === "ok") {
+      this.badSince = -1;
+      this.flagged = "ok";
+    } else {
+      if (this.badSince < 0) this.badSince = nowMs;
+      if (nowMs - this.badSince >= this.sustainMs) this.flagged = now;
+    }
+    return this.flagged;
+  }
+
+  reset() {
+    this.base = null;
+    this.samples = [];
+    this.badSince = -1;
+    this.flagged = "ok";
+  }
+}
+
+export type LightVerdict = "ok" | "changed" | "dark";
+
+/**
+ * Watches the brightness of the face (0..1). Lighting shifts the shadows around the eyes and so the
+ * features the map was fitted on. Flags a change from the calibration level, or a face that is simply
+ * too dark to track, once it has lasted `sustainMs`. The limits are loose on purpose: the camera adjusts
+ * its own exposure, and a tighter limit would nag.
+ */
+export class LightMonitor {
+  private base: number | null = null;
+  private samples: number[] = [];
+  private badSince = -1;
+  private flagged: LightVerdict = "ok";
+
+  constructor(
+    private changeLimit = 0.3,
+    private darkLevel = 0.16,
+    private sustainMs = 3000,
+  ) {}
+
+  addReference(level: number) {
+    if (Number.isFinite(level) && this.samples.length < 400) this.samples.push(level);
+  }
+
+  /** The reference level, or null if too little was seen. */
+  lockReference(): number | null {
+    this.base = this.samples.length >= 3 ? (median(this.samples) as number) : null;
+    this.samples = [];
+    this.badSince = -1;
+    this.flagged = "ok";
+    return this.base;
+  }
+
+  /** Median level of what was collected so far (for explaining a failed calibration). */
+  referenceSoFar(): number | null {
+    return this.samples.length >= 3 ? (median(this.samples) as number) : this.base;
+  }
+
+  get isDark() {
+    const level = this.referenceSoFar();
+    return level !== null && level < this.darkLevel;
+  }
+
+  next(level: number, nowMs: number): LightVerdict {
+    if (!Number.isFinite(level)) return this.flagged;
+    const slack = this.flagged === "ok" ? 1 : 0.75;
+    const now: LightVerdict =
+      level < this.darkLevel / slack ? "dark" : this.base !== null && Math.abs(level / this.base - 1) > this.changeLimit * slack ? "changed" : "ok";
+    if (now === "ok") {
+      this.badSince = -1;
+      this.flagged = "ok";
+    } else {
+      if (this.badSince < 0) this.badSince = nowMs;
+      if (nowMs - this.badSince >= this.sustainMs) this.flagged = now;
+    }
+    return this.flagged;
+  }
+
+  reset() {
+    this.base = null;
+    this.samples = [];
+    this.badSince = -1;
+    this.flagged = "ok";
   }
 }
 
