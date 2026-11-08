@@ -4,6 +4,7 @@ import {
   applyGazeMapping,
   BlinkGuard,
   BlinkSafeBuffer,
+  calibrationFixation,
   defaultMapping,
   FeatureSmoother,
   fitGazeCalibration,
@@ -524,7 +525,7 @@ test("edgeSafePx keeps a margin that scales with the screen and widens on reques
 });
 
 
-test("calibration cannot learn a blink/head-motion shortcut, even with near-perfect correlation", () => {
+test("calibration prefers iris-only when extra cues do not materially improve held-out accuracy", () => {
   const samples = sweep(40, { kx: 0.25, ky: 0.09, ka: 0.12, noise: 0.003, outliers: 0 });
   for (const s of samples) s.features.p = (s.screen.y - 0.5) * 0.001;
   const fit = fitGazeCalibration(samples);
@@ -612,5 +613,43 @@ test("a minute of repeated blinks does not accumulate offset or stop the filtere
     }
     assert.ok(updates > fps * 40, "most open-eye frames must remain usable");
     assert.ok(finalAt > 59800, "tracking must still be updating at the end");
+  }
+});
+
+
+test("weak vertical iris signal can use aperture only when held-out accuracy improves", () => {
+  const samples = sweep(91, { kx: 0.25, ky: 0.002, ka: 0.14, noise: 0.008, outliers: 0.01 });
+  const fit = fitGazeCalibration(samples);
+  assert.ok(fit.mapping, "a useful aperture cue must not be rejected by mandatory iris-only fitting");
+  assert.notEqual(fit.mapping.y[1], 0);
+  assert.equal(fit.mapping.y[2], 0, "head pitch must never become an untrained gain");
+  assert.ok(medianError(fit.mapping, sweep(92, { kx: 0.25, ky: 0.002, ka: 0.14, noise: 0.008, outliers: 0.01 })) < 0.1);
+});
+
+test("stationary calibration excludes target transitions and pairs delayed frames correctly", () => {
+  assert.deepEqual(calibrationFixation(-100, 9, 30000), { index: 0, collect: false });
+  assert.equal(calibrationFixation(999, 9, 30000).collect, false);
+  assert.equal(calibrationFixation(1000, 9, 30000).collect, true);
+  const boundary = 30000 / 9;
+  assert.deepEqual(calibrationFixation(boundary, 9, 30000), { index: 1, collect: false });
+  assert.deepEqual(calibrationFixation(boundary - 100, 9, 30000), { index: 0, collect: true });
+  assert.deepEqual(calibrationFixation(29999, 9, 30000), { index: 8, collect: true });
+  assert.equal(calibrationFixation(30000, 9, 30000).collect, false);
+  // Capture timestamps, not release times, decide which target a buffered frame belongs to.
+  const buffer = new BlinkSafeBuffer();
+  const f = { x: 0, y: 0, a: 0.26, p: 0 };
+  buffer.next(f, boundary - 50);
+  const read = buffer.next(f, boundary + 50)!;
+  assert.equal(calibrationFixation(read.at, 9, 30000).index, 0);
+  assert.equal(calibrationFixation(boundary + 50, 9, 30000).collect, false);
+  for (const fps of [15, 30, 60]) {
+    let previous = -Infinity;
+    const counts = Array(9).fill(0);
+    for (let at = 0; at < 30000; at += 1000 / fps) {
+      const step = calibrationFixation(at, 9, 30000);
+      if (step.collect && at - previous >= 40) { counts[step.index]++; previous = at; }
+    }
+    assert.ok(counts.every(n => n >= 30), "every target must have enough settled samples");
+    assert.ok(counts.reduce((a, b) => a + b, 0) < 800, "no frame rate may fill the sample cap before the last target");
   }
 });

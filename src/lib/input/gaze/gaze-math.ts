@@ -11,8 +11,8 @@ export type GazePoint = { x: number; y: number };
  *   lids do, so this carries the vertical signal lid-based ratios lose.
  * - a: eye aperture (lid opening / eye width); looking down pulls the upper lid over the iris.
  * - p: head pitch proxy; lets the calibration tell "head nodded" from "eyes moved".
- * Only iris x/y position drives the fitted pointer. Aperture is for blink rejection; pitch is
- * retained for compatibility, never learned as gaze from a still-head calibration.
+ * Iris x/y drive the pointer. Aperture is optional only when held-out data shows it helps.
+ * Pitch is retained for compatibility, never learned as gaze from a still-head calibration.
  */
 export type GazeFeatures = { x: number; y: number; a: number; p: number };
 
@@ -87,10 +87,18 @@ export function gazeFeatures(landmarks: { x: number; y: number }[] | null | unde
   };
 }
 
+/** Stationary calibration targets: allow eye travel/settling before accepting any readings. */
+export function calibrationFixation(elapsedMs: number, count: number, durationMs: number) {
+  const slotMs = durationMs / Math.max(count, 1);
+  const index = Math.min(Math.floor(Math.max(elapsedMs, 0) / slotMs), Math.max(count - 1, 0));
+  const inSlot = elapsedMs - index * slotMs;
+  return { index, collect: count > 0 && elapsedMs >= 0 && elapsedMs < durationMs && inSlot >= 1000 };
+}
+
 /** One calibration sample: the features seen while the user looked at a known screen point. */
 export type CalibrationSample = { features: GazeFeatures; screen: ScreenPoint };
 
-/** Horizontal: [x, 1]. Vertical: [y, a, p, 1]; new fits keep aperture/pitch weights zero. */
+/** Horizontal: [x, 1]. Vertical: [y, a, p, 1]; new fits keep pitch weight zero. */
 export type GazeMapping = { x: [number, number]; y: [number, number, number, number] };
 
 /** Why a calibration was refused: each one maps to a different instruction for the person. */
@@ -104,7 +112,7 @@ export type GazeFit =
       /** Median distance between where the map says the person looked and where the dot was, held-out, as a fraction of the screen. */
       medianError: number;
     }
-  | { mapping: null; reason: GazeFitFailure; medianError?: number };
+  | { mapping: null; reason: GazeFitFailure; medianError?: number; axisError?: ScreenPoint };
 
 const MIN_SAMPLES = 4;
 const CV_MIN_SAMPLES = 40; // below this there is too little data to hold some back
@@ -154,13 +162,13 @@ function fitStandardised(rows: number[][], target: number[]): { coef: number[]; 
 type FitModel = { mapping: GazeMapping; z: number[] };
 
 /** Fit both axes, then drop the worst few percent (a blink mid-sweep, a head jerk) and fit again. */
-function fitRobust(samples: CalibrationSample[]): FitModel | null {
+function fitRobust(samples: CalibrationSample[], aperture = false): FitModel | null {
   const build = (set: CalibrationSample[]): FitModel | null => {
     const fx = fitStandardised(set.map((s) => [s.features.x]), set.map((s) => s.screen.x));
-    const fy = fitStandardised(set.map((s) => [s.features.y]), set.map((s) => s.screen.y));
+    const fy = fitStandardised(set.map((s) => aperture ? [s.features.y, s.features.a] : [s.features.y]), set.map((s) => s.screen.y));
     if (!fx || !fy) return null;
     return {
-      mapping: { x: [fx.coef[0], fx.intercept], y: [fy.coef[0], 0, 0, fy.intercept] },
+      mapping: { x: [fx.coef[0], fx.intercept], y: [fy.coef[0], aperture ? fy.coef[1] : 0, 0, fy.intercept] },
       z: [...fx.z, ...fy.z],
     };
   };
@@ -203,28 +211,46 @@ export function fitGazeCalibration(samples: CalibrationSample[]): GazeFit {
   if (spread((s) => s.features.x) < 1e-6) return { mapping: null, reason: "no-spread" };
   if (spread((s) => s.features.y) < 1e-6) return { mapping: null, reason: "no-spread" };
 
-  const model = fitRobust(samples);
-  if (!model) return { mapping: null, reason: "degenerate" };
-  // In standardised units a coefficient says "screens per feature spread"; anything this large is a fit chasing noise.
-  if (model.z.some((v) => Math.abs(v) > 2)) return { mapping: null, reason: "degenerate" };
-
-  const held: number[] = [];
-  if (samples.length >= CV_MIN_SAMPLES) {
-    // Time-ordered blocks, interleaved, so each fold covers the whole sweep and neighbours do not leak.
-    const chunk = Math.max(5, Math.floor(samples.length / 16));
-    for (let fold = 0; fold < CV_FOLDS; fold++) {
-      const train = samples.filter((_, i) => Math.floor(i / chunk) % CV_FOLDS !== fold);
-      const test = samples.filter((_, i) => Math.floor(i / chunk) % CV_FOLDS === fold);
-      const m = train.length >= MIN_SAMPLES ? fitRobust(train) : null;
-      if (!m) continue;
-      for (const s of test) held.push(errorOf(m.mapping, s));
+  // Compare iris-only with iris + aperture on held-out data. Some cameras have almost no
+  // usable vertical iris signal; forcing iris-only rejected every attempt on Zach's webcam.
+  // Never fit pitch from a still-head calibration. Prefer iris-only unless aperture gives a
+  // meaningful improvement, and keep the same refusal thresholds for both candidates.
+  const evaluate = (aperture: boolean): GazeFit => {
+    const model = fitRobust(samples, aperture);
+    if (!model || model.z.some((v) => Math.abs(v) > 2)) return { mapping: null, reason: "degenerate" };
+    const held: number[] = [];
+    const axisX: number[] = [];
+    const axisY: number[] = [];
+    const measure = (mapping: GazeMapping, sample: CalibrationSample) => {
+      const point = applyGazeMapping(mapping, sample.features);
+      axisX.push(Math.abs(point.x - sample.screen.x));
+      axisY.push(Math.abs(point.y - sample.screen.y));
+      return errorOf(mapping, sample);
+    };
+    if (samples.length >= CV_MIN_SAMPLES) {
+      const chunk = Math.max(5, Math.floor(samples.length / 16));
+      for (let fold = 0; fold < CV_FOLDS; fold++) {
+        const train = samples.filter((_, i) => Math.floor(i / chunk) % CV_FOLDS !== fold);
+        const test = samples.filter((_, i) => Math.floor(i / chunk) % CV_FOLDS === fold);
+        const m = train.length >= MIN_SAMPLES ? fitRobust(train, aperture) : null;
+        if (!m) return { mapping: null, reason: "degenerate" };
+        for (const sample of test) held.push(measure(m.mapping, sample));
+      }
     }
-  }
-  const errors = held.length ? held : samples.map((s) => errorOf(model.mapping, s));
-  const med = median(errors) ?? 1;
-  const p80 = [...errors].sort((a, b) => a - b)[Math.floor(errors.length * 0.8)] ?? 1;
-  if (med > FAIR_MEDIAN) return { mapping: null, reason: "too-noisy", medianError: med };
-  return { mapping: model.mapping, quality: med <= GOOD_MEDIAN && p80 <= GOOD_P80 ? "good" : "fair", medianError: med };
+    const errors = held.length ? held : samples.map((sample) => measure(model.mapping, sample));
+    const med = median(errors) ?? 1;
+    const p80 = [...errors].sort((a, b) => a - b)[Math.floor(errors.length * 0.8)] ?? 1;
+    if (med > FAIR_MEDIAN) return { mapping: null, reason: "too-noisy", medianError: med, axisError: { x: median(axisX) ?? 1, y: median(axisY) ?? 1 } };
+    return { mapping: model.mapping, quality: med <= GOOD_MEDIAN && p80 <= GOOD_P80 ? "good" : "fair", medianError: med };
+  };
+  const iris = evaluate(false);
+  // Four samples suffice for the compatibility wrapper, but not to justify an extra cue.
+  if (samples.length < CV_MIN_SAMPLES) return iris;
+  const mixed = evaluate(true);
+  if (mixed.mapping && (!iris.mapping || mixed.medianError + 0.02 < iris.medianError)) return mixed;
+  if (!iris.mapping && !mixed.mapping && (mixed.medianError ?? Infinity) < (iris.medianError ?? Infinity)) return mixed;
+  return iris;
+
 }
 
 /**
