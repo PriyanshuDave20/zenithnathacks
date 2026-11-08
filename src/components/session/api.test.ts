@@ -108,3 +108,23 @@ test("invalid selections are rejected by the route; undeclared request fields an
   track({ event: "session_started", mode: "standard" });
   assert.equal(requests.length, 3);
 });
+
+// Frontend recovery must show human-readable selections, never transport IDs.
+import { displayInputs } from "./input-display";
+test("pending and failed guided reports display localized labels instead of IDs", () => {
+  const inputs = [
+    { questionId: "where", kind: "option" as const, value: "chest" },
+    { questionId: "how_strong", kind: "option" as const, value: "s4" },
+  ];
+  const shown = displayInputs(inputs, "en");
+  assert.match(shown, /Chest/);
+  assert.match(shown, /4 out of 10/);
+  assert.doesNotMatch(shown, /\bs4\b/);
+  assert.match(displayInputs(inputs, "es"), /Pecho/);
+});
+test("fallback display resolves tap phrases and body parts while preserving typed text", () => {
+  assert.equal(displayInputs([{ questionId: "chief_complaint", kind: "option", value: "phrase:pain" }], "en"), "Pain");
+  assert.match(displayInputs([{ questionId: "where", kind: "option", value: "right_knee" }], "en"), /Right knee/);
+  assert.equal(displayInputs([{ kind: "text", value: "My knee hurts" }], "en"), "My knee hurts");
+  assert.equal(displayInputs([{ questionId: "where", kind: "option", value: "unknown-internal-id" }], "en"), "Answer unavailable");
+});

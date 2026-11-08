@@ -566,6 +566,18 @@
   color: var(--muted);
 }
 .sc-high {
+  --ink: #ffea00;
+  --ink-soft: #ffea00;
+  --blue: #ffea00;
+  --blue-deep: #ffea00;
+  --blue-deeper: #ffea00;
+  --blue-soft: #000;
+  --ground: #000;
+  --ground-2: #000;
+  --surface: #000;
+  --line: #ffea00;
+  --navy: #ffea00;
+  --navy-raised: #000;
   --paper: #000;
   --wash: #000;
   --text: #ffea00;
@@ -977,3 +989,8 @@
 .sc-headerActions button { white-space: nowrap; }
 .sc-high .sc-header .sc-confirmClear { background: #ffea00; color: #000; }
 .sc-header button:focus-visible { outline-color: #77a0c4; }
+
+.sc-high .sf-patient .text-white { color: #000; }
+.sc-high .sf-patient button { border: 1px solid #ffea00; box-shadow: none; }
+.sc-high .sf-patient button:disabled { background: #000; color: #ffea00; border-style: dashed; opacity: 0.75; }
+.sc-high .sf-patient .field-control { background: #000; color: #ffea00; border: 1px solid #ffea00; }

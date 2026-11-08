@@ -32,7 +32,14 @@ export function Workflow() {
     return () => io.disconnect();
   }, []);
 
-  const goTo = (i: number) => cards.current[i]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+  const goTo = (i: number) => {
+    const root = track.current, card = cards.current[i];
+    if (!root || !card) return;
+    root.scrollTo({
+      left: root.scrollLeft + card.getBoundingClientRect().left - root.getBoundingClientRect().left - 16,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+    });
+  };
   const mPass = steps.slice(0, mActive + 1).reduce((n, s, i) => (i > 0 && s.holder !== steps[i - 1].holder ? n + 1 : n), 0);
 
   useEffect(() => {
@@ -84,7 +91,7 @@ export function Workflow() {
                   onClick={() => goTo(i)}
                   aria-label={`Step ${i + 1}: ${s.title}`}
                   aria-current={mActive === i ? "step" : undefined}
-                  className="grid min-h-11 min-w-8 place-items-center"
+                  className="grid min-h-11 min-w-11 place-items-center"
                 >
                   <span
                     className={`h-1.5 rounded-full transition-all duration-500 ${

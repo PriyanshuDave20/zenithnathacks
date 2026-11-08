@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SynapseWordmark } from "@/components/brand/synapse-logo";
 import {
   Check,
@@ -13,6 +13,7 @@ import {
   Handoff,
   Shield,
 } from "@/components/home/icons";
+import { useIdle } from "@/components/session/use-idle";
 import type { SelectEvent } from "@/lib/contracts/input";
 import "./workspace.css";
 import { workspaceStyles as s } from "./styles";
@@ -45,6 +46,8 @@ export function IcuBoard({
 }: {
   onSelect?: (event: SelectEvent) => void;
 }) {
+  const main = useRef<HTMLElement>(null);
+  const [expired, setExpired] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [contrast, setContrast] = useState(false);
   const [handoff, setHandoff] = useState(false);
@@ -57,6 +60,23 @@ export function IcuBoard({
     },
     [],
   );
+  const idle = useIdle({
+    enabled: !expired,
+    idleMs: 270000,
+    graceMs: 30000,
+    onExpire: () => {
+      setSelected(null);
+      setHandoff(false);
+      setReviewed(false);
+      setExpired(true);
+      window.speechSynthesis?.cancel();
+      window.dispatchEvent(new Event("synapse:gaze-stop"));
+    },
+  });
+  useEffect(() => {
+    main.current?.focus({ preventScroll: true });
+    window.scrollTo({ top: 0 });
+  }, [handoff, reviewed, expired]);
   return (
     <div className={`${s.root} ${contrast ? s.high : ""}`}>
       <header className={s.header}>
@@ -76,8 +96,15 @@ export function IcuBoard({
           </div>
         </div>
       </header>
-      {handoff ? (
-        <main className={s.handoff}>
+      {expired ? (
+        <main ref={main} tabIndex={-1} className={s.handoff}>
+          <h1>Session cleared</h1>
+          <p>The selected phrase was removed after five minutes of inactivity.</p>
+          <button type="button" className="sf-handoff-choice" onClick={() => setExpired(false)}>Start a new conversation</button>
+          <Link href="/start" className={s.quiet}>Back to setup</Link>
+        </main>
+      ) : handoff ? (
+        <main ref={main} tabIndex={-1} className={s.handoff}>
           <Handoff size={48} />
           <h1>Pass the device to the clinician</h1>
           <p>The communication board is hidden while you pass the device.</p>
@@ -100,7 +127,7 @@ export function IcuBoard({
           </button>
         </main>
       ) : reviewed ? (
-        <main className={s.main}>
+        <main ref={main} tabIndex={-1} className={s.main}>
           <section className={s.sheet}>
             <h1>What the patient chose</h1>
             <p className="sf-icu-review-choice" role="status">
@@ -126,7 +153,7 @@ export function IcuBoard({
           </section>
         </main>
       ) : (
-        <main className={`${s.main} sf-icu-patient`}>
+        <main ref={main} tabIndex={-1} className={`${s.main} sf-icu-patient`}>
           <div className={s.intro}>
             <div>
               <h1>Let your eyes do the talking.</h1>
@@ -218,7 +245,14 @@ export function IcuBoard({
           </div>
         </main>
       )}
-      {!handoff && !reviewed ? (
+      {idle.warningLeft !== null ? (
+        <aside className={s.alert} role="alert">
+          <h2>Still there?</h2>
+          <p>To protect privacy, this session clears in {idle.warningLeft}s.</p>
+          <button type="button" className={s.primary} onClick={idle.keepAlive}>Keep session</button>
+        </aside>
+      ) : null}
+      {!expired && !handoff && !reviewed ? (
         <footer className={s.footer}>
           <div className={s.footerInner}>
             <p>

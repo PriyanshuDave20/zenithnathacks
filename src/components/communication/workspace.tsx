@@ -34,6 +34,7 @@ import {
 } from "@/lib/mocks";
 import { translate, respond, isReplyUnavailable } from "@/components/session/api";
 import { getGuidedQuestions } from "@/lib/questions/localization";
+import { displayInputs } from "@/components/session/input-display";
 import { STRINGS } from "@/components/session/strings";
 import { useRecognition, useSpeak } from "@/components/session/use-speech";
 import { useIdle } from "@/components/session/use-idle";
@@ -495,7 +496,7 @@ export function CommunicationWorkspace() {
         id: nextId.current++,
         role: "patient",
         language,
-        original: patientInputs.map((i) => i.value).join(" · "),
+        original: displayInputs(patientInputs, language),
         unavailable: true,
         spots: patientReport.spots,
       },
@@ -811,11 +812,14 @@ export function CommunicationWorkspace() {
                 lang={lang}
                 mode={mode}
                 figure={bodyFigure}
+                initialInputs={patientInputs}
+                initialSpots={patientReport.spots}
                 onSubmit={submitPatient}
                 onUnavailable={() => setPatientPath("free")}
               />
             ) : (
               <IntakeFree
+                initialPhrases={patientInputs.filter(i => i.kind === "option" && i.value.startsWith("phrase:")).map(i => i.value.slice(7))}
                 lang={lang}
                 mode={mode}
                 initialText={patientInputs
@@ -836,7 +840,7 @@ export function CommunicationWorkspace() {
               mode={mode}
               translation={pending?.translation}
               failed={!!error && !busy}
-              fallbackText={patientInputs.map((i) => i.value).join(" · ")}
+              fallbackText={displayInputs(patientInputs, language)}
               onYes={confirmPatient}
               onRetry={() =>
                 submitPatient(patientReport.inputs, patientReport.spots)
