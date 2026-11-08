@@ -14,7 +14,6 @@ import {
   FeatureSmoother,
   fitGazeMapping,
   gazeFeatures,
-  median,
   SmoothedPoint,
   type CalibrationSample,
   type GazeFeatures,
@@ -25,21 +24,18 @@ import { GazeTracker } from "@/lib/input/gaze/tracker";
 type Phase = "off" | "starting" | "calibrating" | "on" | "error";
 
 const RING_C = 2 * Math.PI * 22;
-/** Calibration targets as fractions of the viewport, in visiting order (a perimeter after the centre). */
-const CALIBRATION_POINTS: [number, number][] = [
-  [0.5, 0.5],
-  [0.12, 0.14],
-  [0.5, 0.14],
-  [0.88, 0.14],
-  [0.88, 0.5],
-  [0.88, 0.86],
-  [0.5, 0.86],
-  [0.12, 0.86],
-  [0.12, 0.5],
-];
-const CALIBRATION_HOLD_MS = 1300;
-const CALIBRATION_SETTLE_MS = 350; // the eye is still travelling to a fresh dot; sample only after this
-const CALIBRATION_MIN_SAMPLES = 6; // fewer inferences than this in a hold: skip the point
+/** The calibration sweep: the dot moves for this long while the eye follows it. */
+const CALIBRATION_MS = 30000;
+/** The dot rests at the centre first, so the eye can settle before the sweep starts. */
+const CALIBRATION_LEAD_MS = 800;
+/** Record only while the dot is slow (sin of the eased segment phase) - the eye tracks a
+ * moving target with lag, so fast-transit samples would teach a biased mapping. */
+const CALIBRATION_GATE = 0.6;
+/** Below this many usable samples the fit is not trusted; the default mapping stays. */
+const CALIBRATION_FIT_MIN = 60;
+const CALIBRATION_MAX_SAMPLES = 800;
+/** How many interactive-element centres the sweep additionally visits. */
+const HOTSPOT_LIMIT = 10;
 const EDGE_ZONE = 88; // px band at the top/bottom edge that scrolls the page
 const NO_FACE_MS = 2500;
 const BLINK_GRACE_MS = 350; // a dropped prediction shorter than this holds the last gaze point
@@ -64,6 +60,46 @@ const INTERACTIVE = [
   "[tabindex]:not([tabindex='-1'])",
   "[data-gaze-target]",
 ].join(", ");
+
+/**
+ * The sweep's route: centre first, then a pinwheel over the corners, edge midpoints and the
+ * centres of up to `HOTSPOT_LIMIT` visible interactive elements ("hotspots" - the places the
+ * patient will actually need to look). Angular order keeps consecutive legs long, so the path
+ * covers the whole viewport instead of wigglng in one corner.
+ */
+function buildCalibrationWaypoints(): { x: number; y: number }[] {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const inset = 0.12;
+  const pts = [
+    { x: 0.5 * w, y: 0.5 * h },
+    { x: inset * w, y: inset * h },
+    { x: 0.5 * w, y: inset * h },
+    { x: (1 - inset) * w, y: inset * h },
+    { x: (1 - inset) * w, y: 0.5 * h },
+    { x: (1 - inset) * w, y: (1 - inset) * h },
+    { x: 0.5 * w, y: (1 - inset) * h },
+    { x: inset * w, y: (1 - inset) * h },
+    { x: inset * w, y: 0.5 * h },
+  ];
+  const picked: { x: number; y: number }[] = [];
+  const minDist = 0.16 * Math.hypot(w, h);
+  for (const el of Array.from(document.querySelectorAll(INTERACTIVE))) {
+    if (picked.length >= HOTSPOT_LIMIT) break;
+    const r = el.getBoundingClientRect();
+    if (r.width < 8 || r.height < 8) continue;
+    if (r.bottom < 0 || r.top > h || r.right < 0 || r.left > w) continue;
+    const x = Math.min(Math.max(r.left + r.width / 2, 24), w - 24);
+    const y = Math.min(Math.max(r.top + r.height / 2, 24), h - 24);
+    if ([...pts, ...picked].some((p) => Math.hypot(p.x - x, p.y - y) < minDist)) continue;
+    picked.push({ x, y });
+  }
+  const c = pts[0];
+  const rest = [...pts.slice(1), ...picked].sort(
+    (a, b) => Math.atan2(a.y - c.y, a.x - c.x) - Math.atan2(b.y - c.y, b.x - c.x),
+  );
+  return [c, ...rest];
+}
 
 function selectableTarget(el: Element | null): Element | null {
   if (!el || el.closest("[data-gaze-ignore]")) return null;
@@ -91,7 +127,6 @@ export function GazeLayer() {
   const [status, setStatus] = useState<string | null>(null);
   const [noFace, setNoFace] = useState(false);
   const [unstable, setUnstable] = useState(false);
-  const [calibIndex, setCalibIndex] = useState(0);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const cursorRef = useRef<HTMLDivElement | null>(null);
@@ -105,9 +140,11 @@ export function GazeLayer() {
   const featureSmootherRef = useRef(new FeatureSmoother(0.3, 0.735, 0.06));
   const smootherRef = useRef(new SmoothedPoint(0.2, 0.539, 0.02, 2));
   const mappingRef = useRef<GazeMapping | null>(null);
-  const calibBufferRef = useRef<GazeFeatures[]>([]);
   const samplesRef = useRef<CalibrationSample[]>([]);
-  const calibHoldStartRef = useRef(0);
+  const calibStartRef = useRef(0);
+  const calibDotRef = useRef<HTMLDivElement | null>(null);
+  const calibBarRef = useRef<HTMLDivElement | null>(null);
+  const calibTimerRef = useRef<HTMLSpanElement | null>(null);
   const elementKeysRef = useRef(new WeakMap<Element, number>());
   const nextKeyRef = useRef(1);
   const noFaceRef = useRef(false);
@@ -119,10 +156,8 @@ export function GazeLayer() {
     setPhase("starting");
     setStatus("Gaze is starting - allow the camera and keep this tab visible.");
     setNoFace(false);
-    setCalibIndex(0);
     samplesRef.current = [];
-    calibBufferRef.current = [];
-    calibHoldStartRef.current = performance.now();
+    calibStartRef.current = performance.now();
     if (!trackerRef.current) trackerRef.current = new GazeTracker();
     try {
       await trackerRef.current.start(videoRef.current!);
@@ -157,44 +192,9 @@ export function GazeLayer() {
   // The camera must go out when the layer unmounts, whatever the phase.
   useEffect(() => () => trackerRef.current?.stop(), []);
 
-  // Calibration: visit each target, harvest the median features seen while looking at it.
-  // (Buffers and the target index reset in enable(); this effect only schedules the visits.)
-  useEffect(() => {
-    if (phase !== "calibrating") return;
-    const timers: number[] = [];
-    for (let i = 0; i <= CALIBRATION_POINTS.length; i++) {
-      timers.push(
-        window.setTimeout(() => {
-          if (i > 0) {
-            const buf = calibBufferRef.current;
-            if (buf.length >= CALIBRATION_MIN_SAMPLES) {
-              const mx = median(buf.map((f) => f.x));
-              const my = median(buf.map((f) => f.y));
-              const ma = median(buf.map((f) => f.a));
-              const mp = median(buf.map((f) => f.p));
-              if (mx !== null && my !== null && ma !== null && mp !== null) {
-                const [sx, sy] = CALIBRATION_POINTS[i - 1];
-                samplesRef.current.push({ features: { x: mx, y: my, a: ma, p: mp }, screen: { x: sx, y: sy } });
-              }
-            }
-          }
-          if (i === CALIBRATION_POINTS.length) {
-            mappingRef.current = fitGazeMapping(samplesRef.current); // null falls back to the default mapping
-            featureSmootherRef.current.reset();
-            smootherRef.current.reset();
-            setPhase("on");
-          } else {
-            calibBufferRef.current = [];
-            calibHoldStartRef.current = performance.now();
-            setCalibIndex(i);
-          }
-        }, 400 + i * CALIBRATION_HOLD_MS),
-      );
-    }
-    return () => timers.forEach((t) => clearTimeout(t));
-  }, [phase]);
-
   // The render loop: face landmarks -> gaze point -> cursor -> dwell -> activation.
+  // While calibrating, the same loop also drives the moving dot the user follows and records
+  // (smoothed features, dot position) samples for the fit.
   useEffect(() => {
     if (phase !== "calibrating" && phase !== "on") return;
     const dwell = dwellRef.current;
@@ -202,6 +202,9 @@ export function GazeLayer() {
     const smoother = smootherRef.current;
     smoother.reset();
     featureSmoother.reset();
+    const waypoints = phase === "calibrating" ? buildCalibrationWaypoints() : null;
+    const segCount = waypoints ? waypoints.length - 1 : 0;
+    const segMs = waypoints ? CALIBRATION_MS / segCount : 0;
     let raf = 0;
     let last = performance.now();
     let lastFeatureAt = last;
@@ -234,9 +237,37 @@ export function GazeLayer() {
       }
 
       const cursor = cursorRef.current;
-      if (phase === "calibrating") {
-        // Skip the settle window: right after a dot appears the eye is still travelling to it.
-        if (features && now - calibHoldStartRef.current >= CALIBRATION_SETTLE_MS) calibBufferRef.current.push(features);
+      if (phase === "calibrating" && waypoints) {
+        // Drive the moving dot along the eased waypoint path and record samples while it is
+        // slow enough for the eye to have settled on it (fast-transit samples carry lag).
+        const t = now - calibStartRef.current - CALIBRATION_LEAD_MS;
+        if (t >= CALIBRATION_MS) {
+          mappingRef.current = samplesRef.current.length >= CALIBRATION_FIT_MIN ? fitGazeMapping(samplesRef.current) : null;
+          featureSmoother.reset();
+          smoother.reset();
+          setPhase("on");
+          return;
+        }
+        const i = Math.min(Math.floor(Math.max(t, 0) / segMs), segCount - 1);
+        const u = t < 0 ? 0 : Math.min((t - i * segMs) / segMs, 1);
+        const eased = (1 - Math.cos(Math.PI * u)) / 2;
+        const a = waypoints[i];
+        const b = waypoints[i + 1];
+        const dx = a.x + (b.x - a.x) * eased;
+        const dy = a.y + (b.y - a.y) * eased;
+        const dot = calibDotRef.current;
+        if (dot) dot.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+        const bar = calibBarRef.current;
+        if (bar) bar.style.width = `${Math.min(Math.max(t / CALIBRATION_MS, 0), 1) * 100}%`;
+        const timer = calibTimerRef.current;
+        if (timer) {
+          const secs = Math.max(Math.ceil((CALIBRATION_MS - Math.max(t, 0)) / 1000), 0);
+          if (timer.textContent !== `${secs}s`) timer.textContent = `${secs}s`; // avoid a DOM write every frame
+        }
+        const sm = features ? featureSmoother.next(features, dt) : null;
+        if (sm && samplesRef.current.length < CALIBRATION_MAX_SAMPLES && t >= 0 && Math.sin(Math.PI * u) <= CALIBRATION_GATE) {
+          samplesRef.current.push({ features: sm, screen: { x: dx / window.innerWidth, y: dy / window.innerHeight } });
+        }
         return;
       }
       if (!cursor) return;
@@ -331,20 +362,23 @@ export function GazeLayer() {
 
       {phase === "calibrating" ? (
         <div role="dialog" aria-label="Gaze calibration" className="fixed inset-0 z-[70] bg-navy/90 text-white">
-          <p className="mx-auto mt-[max(6rem,14svh)] max-w-sm px-6 text-center text-lg font-semibold leading-snug">
-            Look at each dot until it moves on. Rest your head as you would while using the site.
+          <p className="mx-auto mt-[max(4rem,10svh)] max-w-md px-6 text-center text-lg font-semibold leading-snug">
+            Follow the dot with your eyes for 30 seconds. Keep your head still and let your eyes do the moving.
           </p>
-          {CALIBRATION_POINTS.map(([fx, fy], i) => (
-            <span
-              key={i}
-              aria-hidden="true"
-              className={`absolute grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full ${i === calibIndex ? "" : "invisible"}`}
-              style={{ left: `${fx * 100}%`, top: `${fy * 100}%` }}
-            >
-              <span className="absolute inset-0 animate-ping rounded-full bg-blue/40 motion-reduce:animate-none" />
-              <span className="size-5 rounded-full bg-blue ring-4 ring-white/80" />
-            </span>
-          ))}
+          <div aria-hidden="true" className="mx-auto mt-6 h-1.5 w-56 overflow-hidden rounded-full bg-white/15">
+            <div ref={calibBarRef} className="h-full w-0 rounded-full bg-blue" />
+          </div>
+          <p aria-hidden="true" className="mt-2 text-center text-base font-semibold text-white/80">
+            <span ref={calibTimerRef}>30s</span> left
+          </p>
+          <div
+            ref={calibDotRef}
+            aria-hidden="true"
+            className="pointer-events-none fixed left-0 top-0 will-change-transform"
+            style={{ transform: "translate3d(-100px, -100px, 0)" }}
+          >
+            <span className="block size-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue shadow-lift ring-4 ring-white/80" />
+          </div>
           <button
             type="button"
             onClick={skipCalibration}
