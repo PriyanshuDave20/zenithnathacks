@@ -9,6 +9,7 @@ In the Lane column below, "Backend" means Backend 1 unless it says Backend 2.
 
 | Task | Lane | Owner | Branch | Status |
 |------|------|-------|--------|--------|
+| Signed-in Home navigation | Frontend (Zach requested) | Zach / Codex | zach/clinician-home-route | Done: shared auth-aware Home links; signed-in / redirects to /start without landing flash; 150 tests/typecheck/lint and 390px signed-in/out browser checks pass |
 | Calibration dot countdown | Backend 2 | Zach / Codex | zach/edge-safe-margin | Done: small per-dot seconds countdown below target, resets at each position; typecheck/changed-file lint pass; desktop/390px visual fixture checked |
 | Eye dwell jitter tolerance and pixel-correct landmark anchoring | Backend 2 | Zach / Codex | zach/edge-safe-margin | Implemented: 250ms pause/resume grace without off-target credit, sustained-look rearm, hard interruption for invalid pose; pixel-correct eye axes; 150 tests/typecheck/lint pass; real-camera retest pending |
 | Eye tracking drift and blink regression | Backend 2 | Zach / Codex | zach/edge-safe-margin | Revised after live calibration refusal: stationary 9-dot calibration, optional aperture chosen by held-out error, no pitch gains; blink protection retained; 145 tests/typecheck/changed-file lint pass; real-webcam retest pending |

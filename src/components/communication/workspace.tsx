@@ -1,5 +1,7 @@
 "use client";
 
+import { HomeLink } from "@/components/auth/home-link";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
@@ -607,9 +609,9 @@ export function CommunicationWorkspace() {
     >
       <header className={s.header}>
         <div className={s.headerInner}>
-          <Link href="/" aria-label="Synapse home">
+          <HomeLink aria-label="Synapse home">
             <SynapseWordmark accent="#77a0c4" />
-          </Link>
+          </HomeLink>
           <span className={s.holder} aria-live="polite">
             {holder} has the device
           </span>

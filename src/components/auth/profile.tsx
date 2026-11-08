@@ -1,5 +1,7 @@
 "use client";
 
+import { HomeLink } from "@/components/auth/home-link";
+
 import { LoadingStatus } from "@/components/ui/spinner";
 
 import Link from "next/link";
@@ -84,9 +86,9 @@ function ProfileForm({ me }: { me: ClinicianProfile }) {
     <div className="flex min-h-dvh flex-col bg-ground">
       <header className="on-navy sticky top-0 z-30 border-b border-white/10 bg-navy/92 pt-[env(safe-area-inset-top)] text-white backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-4 sm:px-6">
-          <Link href="/" className="rounded-lg" aria-label="Synapse home">
+          <HomeLink className="rounded-lg" aria-label="Synapse home">
             <SynapseMark className="h-9 w-auto" />
-          </Link>
+          </HomeLink>
           <span className="font-display text-lg font-bold">Profile</span>
           <Link
             href="/start"
