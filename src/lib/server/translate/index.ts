@@ -10,23 +10,16 @@ import { redact } from "../redact";
 import { translatePrompt } from "./prompts";
 import { guidedPack, resolveGuided, summarizeGuided, type GuidedAnswer } from "./guided";
 import { InvalidTranslateInputError } from "./errors";
+import { translateTexts, type TextTranslator } from "../translation";
+import { EnglishSummarySchema, normalizeAbsentDuration, processingSignal } from "../translation/model-output";
 export { InvalidTranslateInputError } from "./errors";
-
-/** Providers sometimes use null for an absent optional duration. Keep the HTTP contract optional, never null. */
-function normalizeAbsentDuration(value: unknown): unknown {
-  if (value === null || typeof value !== "object" || Array.isArray(value) || !("summary" in value)) return value;
-  const summary = value.summary;
-  if (summary === null || typeof summary !== "object" || Array.isArray(summary)
-    || !("duration" in summary) || summary.duration !== null) return value;
-  const normalized: Record<string, unknown> = { ...summary };
-  delete normalized.duration;
-  return { ...value, summary: normalized };
-}
 
 /** Per-request processing only. The caller validates the HTTP request with the shared schema. */
 export async function translate(
   request: TranslateRequest,
   model: typeof callModel = callModel,
+  translator: TextTranslator = translateTexts,
+  signal?: AbortSignal,
 ): Promise<TranslateResponse> {
   if (!request.inputs.length || !request.context.language.trim()) throw new InvalidTranslateInputError();
   // Do not forward arbitrary strings masquerading as a language tag to the model.
@@ -65,15 +58,33 @@ export async function translate(
   let free: TranslateResponse | undefined;
   // No model/config/key/network access at all for pure guided communication.
   if (freeInputs.length) {
+    const deadline = processingSignal(signal);
+    const english = await translator({ texts: freeInputs.map((input) => input.value), from: request.context.language, to: "en", signal: deadline });
+    redactions += english.redactions;
+    const englishInputs = freeInputs.map((input, index) => ({ ...input, value: mask(english.texts[index]) }));
+    const translated = englishInputs.map((input) => input.value).join(" ");
     const questions = QUESTIONS.filter(({ id }) => freeInputs.some(({ questionId }) => questionId === id));
     const raw = await model({
       system: translatePrompt(questions),
-      user: JSON.stringify({ task: "translate", request: { context: request.context, inputs: freeInputs } }),
+      user: JSON.stringify({ task: "summarize", request: { context: { ...request.context, language: "en" }, inputs: englishInputs } }),
+      signal: deadline,
     });
-    free = TranslateResponseSchema.parse(normalizeAbsentDuration(JSON.parse(raw)));
-    if (![free.translated, free.backTranslation, free.summary.chiefComplaint].every((s) => s.trim())) {
+    const prepared = EnglishSummarySchema.parse(normalizeAbsentDuration(JSON.parse(raw)));
+    if (![prepared.summary.chiefComplaint, ...prepared.summary.symptoms, ...prepared.summary.redFlags,
+      ...(prepared.summary.duration === undefined ? [] : [prepared.summary.duration])].every((value) => value.trim())) {
       throw new Error("Translation returned an empty required field.");
     }
+    const back = await translator({ texts: [translated], from: "en", to: request.context.language, signal: deadline });
+    redactions += back.redactions;
+    free = {
+      original: freeInputs.map((input) => input.value).join(" "), translated, backTranslation: mask(back.texts[0]),
+      ...prepared,
+      lowConfidence: [...prepared.lowConfidence, ...(english.mock ? [{
+        phrase: freeInputs.map((input) => input.value).join(" "),
+        reason: "Mock provider: canned synthetic example, not a live translation.",
+      }] : [])],
+      redactions: 0,
+    };
   }
   const parts = [guided, free].filter((value): value is TranslateResponse => value !== undefined);
   const join = (values: (string | undefined)[]) => [...new Set(values.filter((s): s is string => s !== undefined))].join("\n");

@@ -92,3 +92,14 @@ test("NVIDIA accepts an explicit HTTPS API base and served model from server con
   });
   await callModel(request);
 });
+
+test("NVIDIA honors the caller's shared pipeline cancellation without exposing its reason", async (t) => {
+  configure(t);
+  const controller = new AbortController();
+  t.mock.method(globalThis, "fetch", (_url: URL, init: RequestInit) => new Promise((_resolve, reject) => {
+    assert.ok(init.signal);
+    init.signal.addEventListener("abort", () => reject(new Error("Synthetic private cancellation")), { once: true });
+    controller.abort("Synthetic private reason");
+  }));
+  await assert.rejects(callModel({ ...request, signal: controller.signal }), { message: "Translation provider is unavailable." });
+});

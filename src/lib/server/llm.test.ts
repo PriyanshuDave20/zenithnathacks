@@ -77,7 +77,7 @@ test("ordinary text prompts return deterministic canned text without echoing inp
 
 test("invalid tasks and unknown providers fail without exposing content", async (t) => {
   for (const user of [JSON.stringify({ task: "unknown", request: "secret" }), JSON.stringify({ task: "respond", request: {} })]) {
-    await assert.rejects(callModel({ system, user }), { message: "Mock provider expects a valid translate or respond task." });
+    await assert.rejects(callModel({ system, user }), { message: "Mock provider expects a valid synthetic task." });
   }
   const previousProvider = process.env.LLM_PROVIDER;
   process.env.LLM_PROVIDER = "secret-unconfigured-provider";
