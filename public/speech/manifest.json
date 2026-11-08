@@ -1068,6 +1068,1074 @@
       "language": "zh-Hans",
       "text": "左脚跟",
       "src": "/speech/zh-Hans-c3dd4145e86131992d9568feca96df4669ec06222e425870551f5f061351f904.mp3"
+    },
+    {
+      "id": "question:chief_complaint",
+      "language": "ar",
+      "text": "ما هي المشكلة الرئيسية التي أوصلتك إلى هنا اليوم؟",
+      "src": "/speech/ar-e77a5967116aaf375dfdbb580173a84bf0694a356b85ae44797629915aea7953.mp3"
+    },
+    {
+      "id": "option:chief_complaint:pain",
+      "language": "ar",
+      "text": "الألم",
+      "src": "/speech/ar-5d0f0e2cc8307e26b34b80741bbfa503f01a72e3a11c0ddc2e844a46423389e3.mp3"
+    },
+    {
+      "id": "option:chief_complaint:breathing",
+      "language": "ar",
+      "text": "صعوبة في التنفس",
+      "src": "/speech/ar-9ce82c903e8666c96ff803c6bf9d75b0b3658814454fe6fa366deace255e0eb5.mp3"
+    },
+    {
+      "id": "option:chief_complaint:fever",
+      "language": "ar",
+      "text": "الحمى",
+      "src": "/speech/ar-ef36d3489c7696b6ef0ed5c0fc4d8e30e1986fea84ab2f5e141715b4b0f64c0b.mp3"
+    },
+    {
+      "id": "option:chief_complaint:other",
+      "language": "ar",
+      "text": "شيء آخر",
+      "src": "/speech/ar-00fec30a3dd39acfb289b852152cfcfd1b6c3fd6eaa80ba4704f9c3de3260eca.mp3"
+    },
+    {
+      "id": "option:chief_complaint:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:onset",
+      "language": "ar",
+      "text": "متى بدأ ذلك؟ هل كان مفاجئا أم بطيئا؟",
+      "src": "/speech/ar-48408480ea10fbe861b229a93d9eab4f47d6f424aaed9a31eccd90e303a7af7e.mp3"
+    },
+    {
+      "id": "option:onset:sudden",
+      "language": "ar",
+      "text": "فجأة",
+      "src": "/speech/ar-7071efe5e113e74c8faf3191cfdac00b104f0f72d82b27ea092c01136f50e106.mp3"
+    },
+    {
+      "id": "option:onset:gradual",
+      "language": "ar",
+      "text": "ببطء",
+      "src": "/speech/ar-8e322d38b05a674305eba77d2b0cdbb5b0a21afadd61a5623a301b2dd9514426.mp3"
+    },
+    {
+      "id": "option:onset:today",
+      "language": "ar",
+      "text": "اليوم",
+      "src": "/speech/ar-4b8b4e9564c69d67507f45600ef7f0b6367855b51d22d2eb49776168a4206f00.mp3"
+    },
+    {
+      "id": "option:onset:days",
+      "language": "ar",
+      "text": "قبل عدة أيام",
+      "src": "/speech/ar-4ebfef9d8f962b64d042e9d4e2f14f7b2ec4b7656846f17a93c04556b99ac86e.mp3"
+    },
+    {
+      "id": "option:onset:longer",
+      "language": "ar",
+      "text": "منذ زمن بعيد",
+      "src": "/speech/ar-9bd61c78a5be6866c30a77ea8ba290c6f8d911f39bbfc3683227c5af6e0bcef7.mp3"
+    },
+    {
+      "id": "option:onset:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:where",
+      "language": "ar",
+      "text": "أين تشعر بها؟ يرجى الإشارة بإصبع واحد.",
+      "src": "/speech/ar-4fbb69b91010751895be7edafd70732dae3d3d2af947d2e498cc3c3bdf7038ec.mp3"
+    },
+    {
+      "id": "option:where:head",
+      "language": "ar",
+      "text": "رئيس",
+      "src": "/speech/ar-cb0cbed814999992ddb61d6283b508d9c97dac08e4b1206b9407d2442a0941b6.mp3"
+    },
+    {
+      "id": "option:where:neck",
+      "language": "ar",
+      "text": "الرقبة",
+      "src": "/speech/ar-1f36f8f6c1ad9e7bca589d2a88f218c10807e2b69bff76997e65d1204b08fb02.mp3"
+    },
+    {
+      "id": "option:where:chest",
+      "language": "ar",
+      "text": "الصدر",
+      "src": "/speech/ar-d1d7528f36c2a16f744be238ed5cf91295c33f3245808934d3a99f3e238a0d83.mp3"
+    },
+    {
+      "id": "option:where:abdomen",
+      "language": "ar",
+      "text": "المعدة",
+      "src": "/speech/ar-a571da9596733a0b3bd2c885492660a1b10866e0edb9ba7c84a36926c57708f4.mp3"
+    },
+    {
+      "id": "option:where:back",
+      "language": "ar",
+      "text": "العودة",
+      "src": "/speech/ar-5817d87100f36c7946ee8473fd45664e08f9bc551b9aa07e117903fc344004fc.mp3"
+    },
+    {
+      "id": "option:where:left_arm",
+      "language": "ar",
+      "text": "الذراع اليسرى",
+      "src": "/speech/ar-6643788f16886340f46af6185d9397963acd0b058e50c333b37fd331dffae7e7.mp3"
+    },
+    {
+      "id": "option:where:right_arm",
+      "language": "ar",
+      "text": "الذراع اليمنى",
+      "src": "/speech/ar-815834a761c2168953b5363a9a193458983eb25872fa8e4bbb1956641e39504a.mp3"
+    },
+    {
+      "id": "option:where:left_leg",
+      "language": "ar",
+      "text": "الساق اليسرى",
+      "src": "/speech/ar-6c0b4fc73fd45acc59b910acc8c82d2939f856a66e2f1007b1293cb6ee8a1f8e.mp3"
+    },
+    {
+      "id": "option:where:right_leg",
+      "language": "ar",
+      "text": "الساق اليمنى",
+      "src": "/speech/ar-ae695b6c1243b9df5840a5a054db5dcccd94da348748085dec7bd638b2837065.mp3"
+    },
+    {
+      "id": "option:where:elsewhere",
+      "language": "ar",
+      "text": "في مكان آخر",
+      "src": "/speech/ar-2e24b501934880599c70848019c51d434bda9415d6c2eb84feab7be64d6dee94.mp3"
+    },
+    {
+      "id": "option:where:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:how_long",
+      "language": "ar",
+      "text": "كم من الوقت تستمر؟ هل هي موجودة طوال الوقت، أم أنها تأتي وتذهب؟",
+      "src": "/speech/ar-02ece4e5a4fff4698144e47f48056be0d8887170e9e03a60d53e12e4082f1949.mp3"
+    },
+    {
+      "id": "option:how_long:minutes",
+      "language": "ar",
+      "text": "المحاضر",
+      "src": "/speech/ar-f8ec3139cd0bbaa1af5c8f83223808bfe3a78f215a99a924ee3971389dfb0619.mp3"
+    },
+    {
+      "id": "option:how_long:hours",
+      "language": "ar",
+      "text": "ساعات العمل",
+      "src": "/speech/ar-b6f8ded158f8bee34acea206d88eb326edc76c10ebfccb126c87620dddeb0aac.mp3"
+    },
+    {
+      "id": "option:how_long:days",
+      "language": "ar",
+      "text": "الأيام",
+      "src": "/speech/ar-cadee8e9fba43ef8ef0b2d5a7ce794d56173c6c30c10580d287c00cd32d0fc6f.mp3"
+    },
+    {
+      "id": "option:how_long:constant",
+      "language": "ar",
+      "text": "طوال الوقت",
+      "src": "/speech/ar-4aed412015c423d2fbf013071eec9be71df199fccbbda44f282ea93a9b9970f3.mp3"
+    },
+    {
+      "id": "option:how_long:intermittent",
+      "language": "ar",
+      "text": "يأتي ويذهب",
+      "src": "/speech/ar-563662042c0179c3d3ee17e1530ea254012c44e1a1ab730b4039dce30f68e812.mp3"
+    },
+    {
+      "id": "option:how_long:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:how_strong",
+      "language": "ar",
+      "text": "من 0 (بدون ألم) إلى 10 (أسوأ ألم يمكن تخيله)، ما مدى سوء الأمر؟",
+      "src": "/speech/ar-f527f1b318b2b9a56f6945e430dbf80bafba68fb3323d9ee949d4cb888fafd62.mp3"
+    },
+    {
+      "id": "option:how_strong:s0",
+      "language": "ar",
+      "text": "0/10",
+      "src": "/speech/ar-dfb2d34a3bf9e90edbc0561a0ae9e791828a8fbc8cd9eacbcd4c53af55e6cf13.mp3"
+    },
+    {
+      "id": "option:how_strong:s1",
+      "language": "ar",
+      "text": "1/10",
+      "src": "/speech/ar-9f7003d496ada7fd6c7a6c6a9812c70fe88f99fc83a9268d52c5bb5a9960ff53.mp3"
+    },
+    {
+      "id": "option:how_strong:s2",
+      "language": "ar",
+      "text": "2/10",
+      "src": "/speech/ar-8ccf22523a878c03eac931cb1eef6df1b3c9a9556a40a1081c2217ffa356c8a0.mp3"
+    },
+    {
+      "id": "option:how_strong:s3",
+      "language": "ar",
+      "text": "3/10",
+      "src": "/speech/ar-b852956f598ac57fd8c986bcbc901ce5ea78d8427169f22b581270d6789096e2.mp3"
+    },
+    {
+      "id": "option:how_strong:s4",
+      "language": "ar",
+      "text": "4/10",
+      "src": "/speech/ar-f2141ee138746f613e5697dd3179de4f7b2e7057554103c081596a5299a81f90.mp3"
+    },
+    {
+      "id": "option:how_strong:s5",
+      "language": "ar",
+      "text": "5/10",
+      "src": "/speech/ar-7bbcba97fd6adfb2cf6ebc3d8e3d48dc53373add34222d69f2313c0999c331f2.mp3"
+    },
+    {
+      "id": "option:how_strong:s6",
+      "language": "ar",
+      "text": "6/10",
+      "src": "/speech/ar-41fb91218af0133a055ffdb358a5a7119549763eadf9f423fc2c72f8b600c0ab.mp3"
+    },
+    {
+      "id": "option:how_strong:s7",
+      "language": "ar",
+      "text": "7/10",
+      "src": "/speech/ar-891dfc5c501583cfba59e2be1a1bb455781b3620213f1d2d275e75472484f881.mp3"
+    },
+    {
+      "id": "option:how_strong:s8",
+      "language": "ar",
+      "text": "8/10",
+      "src": "/speech/ar-cc8fed2391b90b8f256a1f6194a2a7d68b1b7daf875395fcad4b4cce729ebf52.mp3"
+    },
+    {
+      "id": "option:how_strong:s9",
+      "language": "ar",
+      "text": "9/10",
+      "src": "/speech/ar-3083454d79427295c6946d00f59703254ca09ab8693721039824aba0117c984c.mp3"
+    },
+    {
+      "id": "option:how_strong:s10",
+      "language": "ar",
+      "text": "10/10",
+      "src": "/speech/ar-832feb9f1746e055adc839765a8ef8002335a673e06ab4c2b90963073c644106.mp3"
+    },
+    {
+      "id": "option:how_strong:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:character",
+      "language": "ar",
+      "text": "كيف يشعر ذلك؟ حاد، باهت، حارق، ضغط، أم شيء آخر؟",
+      "src": "/speech/ar-42fc395d0cc706220d2d6a6dbd7c0357423c480bcdf03968398ef048fafb107b.mp3"
+    },
+    {
+      "id": "option:character:sharp",
+      "language": "ar",
+      "text": "شارب",
+      "src": "/speech/ar-dd86380fdbc2e570705fa7f092a5a168c88a9f9219034b0eafefae7c82fd06b0.mp3"
+    },
+    {
+      "id": "option:character:dull",
+      "language": "ar",
+      "text": "ممل",
+      "src": "/speech/ar-b1a87ed5dbaa7ef481d477366ff13bc195e63c14f3fb07007c74dc4321cc2a84.mp3"
+    },
+    {
+      "id": "option:character:burning",
+      "language": "ar",
+      "text": "الحرق",
+      "src": "/speech/ar-15ebd1626b907142d0b1e3734d93636a6cf608d203171cf5f67da797646ad24c.mp3"
+    },
+    {
+      "id": "option:character:squeezing",
+      "language": "ar",
+      "text": "الضغط",
+      "src": "/speech/ar-530a9b93b2169da87fdec82360f7f9f887643c1c34984749e315ad28b754e511.mp3"
+    },
+    {
+      "id": "option:character:other",
+      "language": "ar",
+      "text": "شيء آخر",
+      "src": "/speech/ar-00fec30a3dd39acfb289b852152cfcfd1b6c3fd6eaa80ba4704f9c3de3260eca.mp3"
+    },
+    {
+      "id": "option:character:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:aggravating_factors",
+      "language": "ar",
+      "text": "ما الذي يجعل الأمر أسوأ؟",
+      "src": "/speech/ar-4a0ab3fd91519ab9598d8ed63ac34a4dc9b7fd3583a0314b2854bfb214fce979.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:moving",
+      "language": "ar",
+      "text": "الانتقال",
+      "src": "/speech/ar-fd01981d476a33220e5c8d271fcb3cb8f3e4a3505cc157ad439c452c1498778d.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:breathing",
+      "language": "ar",
+      "text": "التنفس",
+      "src": "/speech/ar-d0c191d84cfe4f417201ccbec57b04e29b001daf3dd4cdafcb84363a0cee3958.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:eating",
+      "language": "ar",
+      "text": "الأكل",
+      "src": "/speech/ar-88cd66815ccdb8e70db89161862bccc86f65da4e46be9e5a731da0c4974ff7cc.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:nothing",
+      "language": "ar",
+      "text": "لا شيء محدد",
+      "src": "/speech/ar-cb76db37d3b0990a25cad49b814590b271cb2033c8b8ef32b661e3622569d357.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:other",
+      "language": "ar",
+      "text": "شيء آخر",
+      "src": "/speech/ar-00fec30a3dd39acfb289b852152cfcfd1b6c3fd6eaa80ba4704f9c3de3260eca.mp3"
+    },
+    {
+      "id": "option:aggravating_factors:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:relieving_factors",
+      "language": "ar",
+      "text": "ما الذي يجعله أفضل؟",
+      "src": "/speech/ar-e57cca393c4fefe81364dd40915978384456e4aaee535c8d2056a3862031bbc9.mp3"
+    },
+    {
+      "id": "option:relieving_factors:rest",
+      "language": "ar",
+      "text": "الراحة",
+      "src": "/speech/ar-3cfcfa3a437cb0efe2d2cc73104ec4fde032baffefefb098273af41312b16a68.mp3"
+    },
+    {
+      "id": "option:relieving_factors:medicine",
+      "language": "ar",
+      "text": "الطب",
+      "src": "/speech/ar-f403fb9cda144993134c8dd1d9de10ab84a73df8707cf571df9271ab2cf17c25.mp3"
+    },
+    {
+      "id": "option:relieving_factors:position",
+      "language": "ar",
+      "text": "تغيير الموقع",
+      "src": "/speech/ar-8e987c56ea17114cdccb676d6f17a8ea66c9d71b3059d5f4d81057c8abca196d.mp3"
+    },
+    {
+      "id": "option:relieving_factors:nothing",
+      "language": "ar",
+      "text": "لا شيء",
+      "src": "/speech/ar-492be199047868fa82981032cbaf2f9b8ef091f03f30a694b9e153863dcd083c.mp3"
+    },
+    {
+      "id": "option:relieving_factors:other",
+      "language": "ar",
+      "text": "شيء آخر",
+      "src": "/speech/ar-00fec30a3dd39acfb289b852152cfcfd1b6c3fd6eaa80ba4704f9c3de3260eca.mp3"
+    },
+    {
+      "id": "option:relieving_factors:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:radiation",
+      "language": "ar",
+      "text": "هل يتحرك الألم في أي مكان آخر في جسمك؟",
+      "src": "/speech/ar-6a01e28536d806e11658c01fe3c9d6c47052ebd0cdc73a56a389de5c5b9f88db.mp3"
+    },
+    {
+      "id": "option:radiation:stays",
+      "language": "ar",
+      "text": "يبقى في مكان واحد",
+      "src": "/speech/ar-e12c39f8e9aac55772bf6139adb5b13eaf74f489e07af6f498a34dac070f4dba.mp3"
+    },
+    {
+      "id": "option:radiation:moves",
+      "language": "ar",
+      "text": "ينتقل إلى مكان آخر",
+      "src": "/speech/ar-990058c32c4a4b1d24e054817b2f6df06c3f3d85734f312e34f18c394e879027.mp3"
+    },
+    {
+      "id": "option:radiation:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:associated_symptoms",
+      "language": "ar",
+      "text": "هل لديك أي شيء آخر معه مثل الحمى، أو التقيؤ، أو صعوبة في التنفس؟",
+      "src": "/speech/ar-c9dce6954a32aaea4c65d9a35fbbb9b357e68ca330549307e2ef28814ba08ee6.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:fever",
+      "language": "ar",
+      "text": "الحمى",
+      "src": "/speech/ar-ef36d3489c7696b6ef0ed5c0fc4d8e30e1986fea84ab2f5e141715b4b0f64c0b.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:vomiting",
+      "language": "ar",
+      "text": "التقيؤ",
+      "src": "/speech/ar-44245cbfe9e94e336844d09da96e2e820a0cd613dc81685ce4f400da0a1768b8.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:short_breath",
+      "language": "ar",
+      "text": "صعوبة في التنفس",
+      "src": "/speech/ar-9ce82c903e8666c96ff803c6bf9d75b0b3658814454fe6fa366deace255e0eb5.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:none",
+      "language": "ar",
+      "text": "لا شيء آخر",
+      "src": "/speech/ar-551fb639797a8e69d9dcd857677eadc068243cd6d81f852134b5ba9d8a898eed.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:other",
+      "language": "ar",
+      "text": "شيء آخر",
+      "src": "/speech/ar-00fec30a3dd39acfb289b852152cfcfd1b6c3fd6eaa80ba4704f9c3de3260eca.mp3"
+    },
+    {
+      "id": "option:associated_symptoms:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:red_flags",
+      "language": "ar",
+      "text": "هل عانيت من ألم في الصدر، أو صعوبة في التنفس، أو إغماء، أو ضعف في جانب واحد من جسمك؟",
+      "src": "/speech/ar-c08d16d56489cc88c3978a713efbe905602394418dd9d66884ce32244784aa3c.mp3"
+    },
+    {
+      "id": "option:red_flags:chest_pain",
+      "language": "ar",
+      "text": "ألم في الصدر",
+      "src": "/speech/ar-36f4abfb53d375ab77491ae3d0f051c5aac641ad6dd857cd0caa0f61a65d8161.mp3"
+    },
+    {
+      "id": "option:red_flags:short_breath",
+      "language": "ar",
+      "text": "صعوبة في التنفس",
+      "src": "/speech/ar-9ce82c903e8666c96ff803c6bf9d75b0b3658814454fe6fa366deace255e0eb5.mp3"
+    },
+    {
+      "id": "option:red_flags:fainting",
+      "language": "ar",
+      "text": "الإغماء",
+      "src": "/speech/ar-96491f97a486ddf257bed8449734ea984aebb5fdbf784d8b15193c199e2e65d0.mp3"
+    },
+    {
+      "id": "option:red_flags:one_sided_weakness",
+      "language": "ar",
+      "text": "ضعف من جهة واحدة",
+      "src": "/speech/ar-ce6108b281f283a3c5ce75d879524543e703aee8e70a180b054634015d632f24.mp3"
+    },
+    {
+      "id": "option:red_flags:none",
+      "language": "ar",
+      "text": "لا شيء من هذه",
+      "src": "/speech/ar-8c60663b359a9fd8557b1a4ae7ae1041c1c814fe319b16b21f84d406f54dd232.mp3"
+    },
+    {
+      "id": "option:red_flags:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:allergies",
+      "language": "ar",
+      "text": "هل لديك حساسية تجاه أي دواء أو طعام أو أي شيء آخر؟ ماذا يحدث عندما تتفاعل؟",
+      "src": "/speech/ar-013552318d246c44001400c461527322f091f06ce26a28d2c551727485b1864a.mp3"
+    },
+    {
+      "id": "option:allergies:medicine",
+      "language": "ar",
+      "text": "حساسية الأدوية",
+      "src": "/speech/ar-83feb1d0bd194ba0ab2789400f9c61168c1574c76c538f74599667b4f360bf44.mp3"
+    },
+    {
+      "id": "option:allergies:food",
+      "language": "ar",
+      "text": "حساسية الطعام",
+      "src": "/speech/ar-0bc6895f36a139bd7d6fd288ff361e388c484455424d5f709c1c16a5fcfd339d.mp3"
+    },
+    {
+      "id": "option:allergies:other",
+      "language": "ar",
+      "text": "حساسية أخرى",
+      "src": "/speech/ar-3a283d6b8a6aa2f5ba918edbe0cbb7ed8925a0c451a166cd665bc859c7c0f15c.mp3"
+    },
+    {
+      "id": "option:allergies:none",
+      "language": "ar",
+      "text": "لا توجد حساسية معروفة",
+      "src": "/speech/ar-b0a2cbdf0536b57295a7d3e53e915161beea968c3d22d2869ca508933eeba9a6.mp3"
+    },
+    {
+      "id": "option:allergies:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:current_medications",
+      "language": "ar",
+      "text": "ما هي الأدوية التي تتناولها؟ يرجى تضمين الفيتامينات، والمنتجات العشبية، وأي شيء تشتريه بدون وصفة طبية.",
+      "src": "/speech/ar-f25c34b6f3265c49ee344b8dbbea33b5f56d443c52ecd50a1f5b6e6f13da95a4.mp3"
+    },
+    {
+      "id": "option:current_medications:prescription",
+      "language": "ar",
+      "text": "الأدوية الموصوفة",
+      "src": "/speech/ar-c851ba2171c8e0feb308c315b3b136e59adc6551ee82c66c4dbe68ca60ca0d2e.mp3"
+    },
+    {
+      "id": "option:current_medications:nonprescription",
+      "language": "ar",
+      "text": "دواء تم شراؤه بدون وصفة طبية",
+      "src": "/speech/ar-68297496759f07696255d41511dc4ad6f1913c697ec766befece6dbf3bfa34b8.mp3"
+    },
+    {
+      "id": "option:current_medications:supplements",
+      "language": "ar",
+      "text": "الفيتامينات أو المنتجات العشبية",
+      "src": "/speech/ar-5420eaf36fd3c22a2bc3c05e560bb5473ff53f95cfcc3a939793ea984a05a48f.mp3"
+    },
+    {
+      "id": "option:current_medications:none",
+      "language": "ar",
+      "text": "لا أدوية",
+      "src": "/speech/ar-d0b91ce605f54378c5784a2abe465c037b1ad12810ed5e547426ec7c0eb24349.mp3"
+    },
+    {
+      "id": "option:current_medications:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:past_medical_history",
+      "language": "ar",
+      "text": "هل تعرضت لأي مرض خطير أو جراحة أو إقامة في المستشفى؟",
+      "src": "/speech/ar-cd0d077cece3e747bf00df69316cef86a96552be3744bd5e56b75a31db17308e.mp3"
+    },
+    {
+      "id": "option:past_medical_history:illness",
+      "language": "ar",
+      "text": "مرض خطير",
+      "src": "/speech/ar-3aec629fb9b2681f87137300985d82d45b7e46e0c4b94d56ea926ca793918ae9.mp3"
+    },
+    {
+      "id": "option:past_medical_history:surgery",
+      "language": "ar",
+      "text": "الجراحة",
+      "src": "/speech/ar-bb5fd89639cea5735d2348595df11c86b95ce1536be7c74a35886383e6ac635a.mp3"
+    },
+    {
+      "id": "option:past_medical_history:hospital",
+      "language": "ar",
+      "text": "الإقامة في المستشفى",
+      "src": "/speech/ar-2371b742888629292c54d55b5aba02a88f41208734808d7787ed57cc3903612b.mp3"
+    },
+    {
+      "id": "option:past_medical_history:none",
+      "language": "ar",
+      "text": "لا شيء من هذه",
+      "src": "/speech/ar-8c60663b359a9fd8557b1a4ae7ae1041c1c814fe319b16b21f84d406f54dd232.mp3"
+    },
+    {
+      "id": "option:past_medical_history:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:family_history",
+      "language": "ar",
+      "text": "هل أصيب أحد في عائلتك بأمراض قلبية، أو سكري، أو سرطان، أو سكتة دماغية؟",
+      "src": "/speech/ar-0f012775987659123c3c2724d718956072faf6c5938607989e5ed3cf1c17c3bb.mp3"
+    },
+    {
+      "id": "option:family_history:heart_disease",
+      "language": "ar",
+      "text": "أمراض القلب",
+      "src": "/speech/ar-ee335c31585a0f80e614d99d2de5083929b54f368e700bc892a08f6f7dfd343c.mp3"
+    },
+    {
+      "id": "option:family_history:diabetes",
+      "language": "ar",
+      "text": "السكري",
+      "src": "/speech/ar-896807fd19f4742458d5194c13094c2db7d91cc5de86f0176505f71f9e7cb7a2.mp3"
+    },
+    {
+      "id": "option:family_history:cancer",
+      "language": "ar",
+      "text": "السرطان",
+      "src": "/speech/ar-c3154676faedf2205f521b0e23787b500e9f9e7601ed8133ac14f2fe42ce023b.mp3"
+    },
+    {
+      "id": "option:family_history:stroke",
+      "language": "ar",
+      "text": "السكتة الدماغية",
+      "src": "/speech/ar-0e2b05a55053d437a51ecc4fde4c6dab96a0789e7cb6988a96c14edcc4d9d7aa.mp3"
+    },
+    {
+      "id": "option:family_history:none",
+      "language": "ar",
+      "text": "لا شيء من هذه",
+      "src": "/speech/ar-8c60663b359a9fd8557b1a4ae7ae1041c1c814fe319b16b21f84d406f54dd232.mp3"
+    },
+    {
+      "id": "option:family_history:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "question:pregnancy",
+      "language": "ar",
+      "text": "هل يمكن أن تكوني حامل؟",
+      "src": "/speech/ar-994e2f9e9d1bc0dbe81baf1da11c7f6f5103cf1a007edc6eac0c00793c56e515.mp3"
+    },
+    {
+      "id": "option:pregnancy:yes",
+      "language": "ar",
+      "text": "نعم",
+      "src": "/speech/ar-be1d4f8ce9b079c298f7bca6106c112c2fc1a2ade37faa7345f774aa43d70cf3.mp3"
+    },
+    {
+      "id": "option:pregnancy:no",
+      "language": "ar",
+      "text": "لا",
+      "src": "/speech/ar-9355e37ddb4926bc17a433e10fc9b979a7d9bf1d708503548135a59fac974fa0.mp3"
+    },
+    {
+      "id": "option:pregnancy:unsure",
+      "language": "ar",
+      "text": "لست متأكدا",
+      "src": "/speech/ar-e8511a0ea05dcc1b049a430054ce99f1660a2c4331fe248e0175643981ef237a.mp3"
+    },
+    {
+      "id": "option:pregnancy:prefer_not_to_say",
+      "language": "ar",
+      "text": "أفضل ألا أقول",
+      "src": "/speech/ar-990ab51edbe0b2009f33663fb163a4096e0699061ddb0024c1c1ac9f7758cfcd.mp3"
+    },
+    {
+      "id": "question:substance_use",
+      "language": "ar",
+      "text": "هل تدخن أو تشرب الكحول أو تستخدم أي مخدرات؟",
+      "src": "/speech/ar-04cddcf7ab74fa2e66d6b1dea64664808c376e7a018907492109b5f0846ecf93.mp3"
+    },
+    {
+      "id": "option:substance_use:smoking",
+      "language": "ar",
+      "text": "التدخين",
+      "src": "/speech/ar-2e6081ec17ff22fa657f1e5850091945ec134aecf16413e5b3df79de60bdcdc4.mp3"
+    },
+    {
+      "id": "option:substance_use:alcohol",
+      "language": "ar",
+      "text": "الكحول",
+      "src": "/speech/ar-e161485de6fe7f7897dde269a07565e96afcb4b7ebb687769c2685106a650671.mp3"
+    },
+    {
+      "id": "option:substance_use:drugs",
+      "language": "ar",
+      "text": "أدوية أخرى",
+      "src": "/speech/ar-413c9fd58f0b45ec028b8722dc02c7f5001df8588052f1e090356dde39915bd3.mp3"
+    },
+    {
+      "id": "option:substance_use:none",
+      "language": "ar",
+      "text": "لا شيء من هذه",
+      "src": "/speech/ar-8c60663b359a9fd8557b1a4ae7ae1041c1c814fe319b16b21f84d406f54dd232.mp3"
+    },
+    {
+      "id": "option:substance_use:prefer_not_to_say",
+      "language": "ar",
+      "text": "أفضل ألا أقول",
+      "src": "/speech/ar-990ab51edbe0b2009f33663fb163a4096e0699061ddb0024c1c1ac9f7758cfcd.mp3"
+    },
+    {
+      "id": "phrase:pain",
+      "language": "ar",
+      "text": "ألم",
+      "src": "/speech/ar-f7e857d33aab1ebd20fb3c26ac7f8f2d2a03a414dcfed62595e0665aee4ae245.mp3"
+    },
+    {
+      "id": "phrase:chest",
+      "language": "ar",
+      "text": "في الصدر",
+      "src": "/speech/ar-8fe97a435bf669c3ae008d6713e8b3fa5563a2611af3b2da88c72dc2c45d9057.mp3"
+    },
+    {
+      "id": "phrase:stomach",
+      "language": "ar",
+      "text": "في البطن",
+      "src": "/speech/ar-c3f1f2f1ab36fa86149ac582f299147007cb79cc2e47d8884c7c0b4a9de68ae0.mp3"
+    },
+    {
+      "id": "phrase:head",
+      "language": "ar",
+      "text": "في الرأس",
+      "src": "/speech/ar-2ebc536ff67ed124254ec6695eb8ec465d14b344ac53ed2643d07c9e77f204cd.mp3"
+    },
+    {
+      "id": "phrase:breathing",
+      "language": "ar",
+      "text": "عند التنفس",
+      "src": "/speech/ar-4b21c19e7c8939b01449287f174c0683a9ecefd0b26b948ea95f89b34a48c128.mp3"
+    },
+    {
+      "id": "phrase:two_days",
+      "language": "ar",
+      "text": "منذ يومين",
+      "src": "/speech/ar-cb40fe0e54b21cab43d6924c865d28ef0af710b7fe4c3ac2610966135e446aa8.mp3"
+    },
+    {
+      "id": "phrase:dizzy",
+      "language": "ar",
+      "text": "دوخة",
+      "src": "/speech/ar-5f925e1b060e84644956e1e0b1e6763d766dee179ca1b253949c8e25e8b727dd.mp3"
+    },
+    {
+      "id": "phrase:nausea",
+      "language": "ar",
+      "text": "غثيان",
+      "src": "/speech/ar-5cb3b57ed77a086048c6c5b3badceedf84adf3abe230480069b93e53cbbcfd3f.mp3"
+    },
+    {
+      "id": "phrase:help",
+      "language": "ar",
+      "text": "أحتاج مساعدة",
+      "src": "/speech/ar-0f72b5986f6c56481ec8523c7e4b87d7e33f2ab0d5b020b84d403912511fb0c6.mp3"
+    },
+    {
+      "id": "body:head",
+      "language": "ar",
+      "text": "الرأس",
+      "src": "/speech/ar-9546ac6b92c7a32ad7647602f3d3ffaba769d3fce7a51290eb9d6650c0c75b48.mp3"
+    },
+    {
+      "id": "body:neck",
+      "language": "ar",
+      "text": "الرقبة",
+      "src": "/speech/ar-1f36f8f6c1ad9e7bca589d2a88f218c10807e2b69bff76997e65d1204b08fb02.mp3"
+    },
+    {
+      "id": "body:chest",
+      "language": "ar",
+      "text": "الصدر",
+      "src": "/speech/ar-d1d7528f36c2a16f744be238ed5cf91295c33f3245808934d3a99f3e238a0d83.mp3"
+    },
+    {
+      "id": "body:abdomen",
+      "language": "ar",
+      "text": "البطن",
+      "src": "/speech/ar-72fa5d4f9eda59b47d2b658e653ba880aec3ebe6a305acf0d4a2203da7bfb10d.mp3"
+    },
+    {
+      "id": "body:groin",
+      "language": "ar",
+      "text": "منطقة الأربية",
+      "src": "/speech/ar-fed61131b43e71599e339e25722aba1720c15a026ae67759b42cf44a5ebe5963.mp3"
+    },
+    {
+      "id": "body:head_back",
+      "language": "ar",
+      "text": "مؤخرة الرأس",
+      "src": "/speech/ar-06fd0ec120b2776de3e92bba6b22b409a21b43a83dbcb2e2592f9851e789a05d.mp3"
+    },
+    {
+      "id": "body:neck_back",
+      "language": "ar",
+      "text": "مؤخرة الرقبة",
+      "src": "/speech/ar-79b6ca33eb9072986515950155f5d6df3f16236125906eae54a375660e48f78b.mp3"
+    },
+    {
+      "id": "body:upper_back",
+      "language": "ar",
+      "text": "أعلى الظهر",
+      "src": "/speech/ar-503bb5b3d49379a84afd7ff4b02948e0f4e9ee7c7d41acdd0e1784811287e4e9.mp3"
+    },
+    {
+      "id": "body:lower_back",
+      "language": "ar",
+      "text": "أسفل الظهر",
+      "src": "/speech/ar-f409cc6bb4437ceff67a786fabfdfa119e340ec516659f7103efe2df1d4ba99d.mp3"
+    },
+    {
+      "id": "body:right_shoulder",
+      "language": "ar",
+      "text": "الكتف الأيمن",
+      "src": "/speech/ar-aa57408da7b42af20cfc2fcfce1f6a2be15c2864c3cf20d4e6ab0c07e2b517f8.mp3"
+    },
+    {
+      "id": "body:left_shoulder",
+      "language": "ar",
+      "text": "الكتف الأيسر",
+      "src": "/speech/ar-dc8e1087d0a0bea8c37667097c4577ccd95932c670ba7412e107b2da4bd54964.mp3"
+    },
+    {
+      "id": "body:right_upper_arm",
+      "language": "ar",
+      "text": "أعلى الذراع اليمنى",
+      "src": "/speech/ar-d4bfd557dba5503651638915a0043513e793cc8955adf52cb3739aecb6648ca1.mp3"
+    },
+    {
+      "id": "body:right_upper_arm",
+      "language": "ar",
+      "text": "أعلى الذراع اليمنى",
+      "src": "/speech/ar-d4bfd557dba5503651638915a0043513e793cc8955adf52cb3739aecb6648ca1.mp3"
+    },
+    {
+      "id": "body:left_upper_arm",
+      "language": "ar",
+      "text": "أعلى الذراع اليسرى",
+      "src": "/speech/ar-4ae2c3a2aa3e90ff46fbdb16dea440519b553a167d8c8f9945d3ebfd24bae0dc.mp3"
+    },
+    {
+      "id": "body:left_upper_arm",
+      "language": "ar",
+      "text": "أعلى الذراع اليسرى",
+      "src": "/speech/ar-4ae2c3a2aa3e90ff46fbdb16dea440519b553a167d8c8f9945d3ebfd24bae0dc.mp3"
+    },
+    {
+      "id": "body:right_elbow",
+      "language": "ar",
+      "text": "المرفق الأيمن",
+      "src": "/speech/ar-63c14c6651beda3ebb4ddc66d01c7f62955599b3162ffae2d17b4418f602223b.mp3"
+    },
+    {
+      "id": "body:right_elbow",
+      "language": "ar",
+      "text": "المرفق الأيمن",
+      "src": "/speech/ar-63c14c6651beda3ebb4ddc66d01c7f62955599b3162ffae2d17b4418f602223b.mp3"
+    },
+    {
+      "id": "body:left_elbow",
+      "language": "ar",
+      "text": "المرفق الأيسر",
+      "src": "/speech/ar-86f8d1a6a48fd2c44033d85a64ee40f8ad2e83c5873334d2e61e38c59e9a79a9.mp3"
+    },
+    {
+      "id": "body:left_elbow",
+      "language": "ar",
+      "text": "المرفق الأيسر",
+      "src": "/speech/ar-86f8d1a6a48fd2c44033d85a64ee40f8ad2e83c5873334d2e61e38c59e9a79a9.mp3"
+    },
+    {
+      "id": "body:right_forearm",
+      "language": "ar",
+      "text": "الساعد الأيمن",
+      "src": "/speech/ar-49beb7ac5512e790dbd7bc67faf4955b0fef78c8df70a3af6cfa756ff3814639.mp3"
+    },
+    {
+      "id": "body:right_forearm",
+      "language": "ar",
+      "text": "الساعد الأيمن",
+      "src": "/speech/ar-49beb7ac5512e790dbd7bc67faf4955b0fef78c8df70a3af6cfa756ff3814639.mp3"
+    },
+    {
+      "id": "body:left_forearm",
+      "language": "ar",
+      "text": "الساعد الأيسر",
+      "src": "/speech/ar-c40c44d77ddb3cbfcd1bca56e2c7e39fd665edbce4d611b01abc8816ba0394e1.mp3"
+    },
+    {
+      "id": "body:left_forearm",
+      "language": "ar",
+      "text": "الساعد الأيسر",
+      "src": "/speech/ar-c40c44d77ddb3cbfcd1bca56e2c7e39fd665edbce4d611b01abc8816ba0394e1.mp3"
+    },
+    {
+      "id": "body:right_hand",
+      "language": "ar",
+      "text": "اليد اليمنى",
+      "src": "/speech/ar-37ab7548c6a838a440341e8d5ba3b581d3a2543e0060ba2a4da9c93b6bc8f601.mp3"
+    },
+    {
+      "id": "body:right_hand",
+      "language": "ar",
+      "text": "اليد اليمنى",
+      "src": "/speech/ar-37ab7548c6a838a440341e8d5ba3b581d3a2543e0060ba2a4da9c93b6bc8f601.mp3"
+    },
+    {
+      "id": "body:left_hand",
+      "language": "ar",
+      "text": "اليد اليسرى",
+      "src": "/speech/ar-759c3b1264f071ec34b992654e95e16ed837cdec3b7f9b35d0a932d7664c66fc.mp3"
+    },
+    {
+      "id": "body:left_hand",
+      "language": "ar",
+      "text": "اليد اليسرى",
+      "src": "/speech/ar-759c3b1264f071ec34b992654e95e16ed837cdec3b7f9b35d0a932d7664c66fc.mp3"
+    },
+    {
+      "id": "body:right_hip",
+      "language": "ar",
+      "text": "الورك الأيمن",
+      "src": "/speech/ar-0016a61ef2e309d5f26a19bb1a73525287c365a4403aa58d6db365f6556322b5.mp3"
+    },
+    {
+      "id": "body:left_hip",
+      "language": "ar",
+      "text": "الورك الأيسر",
+      "src": "/speech/ar-e1c532951075ceef32a3f319e2ea1fb35b9289afb1561d352b97927496a6da29.mp3"
+    },
+    {
+      "id": "body:right_thigh",
+      "language": "ar",
+      "text": "الفخذ الأيمن",
+      "src": "/speech/ar-0bb801c8c4d666220ae266a839e8514abe1fe140bc17fa40d7fba7ec89eac8b1.mp3"
+    },
+    {
+      "id": "body:left_thigh",
+      "language": "ar",
+      "text": "الفخذ الأيسر",
+      "src": "/speech/ar-883db2ba1f8593520199c73049f285575d46c74fcbfce6f4e9ef97bd46931059.mp3"
+    },
+    {
+      "id": "body:right_knee",
+      "language": "ar",
+      "text": "الركبة اليمنى",
+      "src": "/speech/ar-7df318de2c6761da0c4e0c4982ac9cc5315de58061dc09d07ebc8cb2f7f8c7ef.mp3"
+    },
+    {
+      "id": "body:left_knee",
+      "language": "ar",
+      "text": "الركبة اليسرى",
+      "src": "/speech/ar-b81ed9d36c0f5340856dcb5b3cfa1c55121c5330c2f66c7c16eefe38bce28b1a.mp3"
+    },
+    {
+      "id": "body:right_shin",
+      "language": "ar",
+      "text": "مقدمة الساق اليمنى",
+      "src": "/speech/ar-b4e53614a87876dd7f4039923285523940a45336e9d7eb7d9c34b7fb7bfb408f.mp3"
+    },
+    {
+      "id": "body:left_shin",
+      "language": "ar",
+      "text": "مقدمة الساق اليسرى",
+      "src": "/speech/ar-05d4b13b7e089a4343bc519e5c64d234db0fb600a52b83f673b59b38b5295ef8.mp3"
+    },
+    {
+      "id": "body:right_foot",
+      "language": "ar",
+      "text": "القدم اليمنى",
+      "src": "/speech/ar-94011255a7349a7afa16f2421586baf94a5250bfae93cc4f962663989b28a096.mp3"
+    },
+    {
+      "id": "body:left_foot",
+      "language": "ar",
+      "text": "القدم اليسرى",
+      "src": "/speech/ar-5f4134ee9044a502a229667b1fb06c6134d41427aa44e7f8bbb5f135fc8fe498.mp3"
+    },
+    {
+      "id": "body:right_shoulder_blade",
+      "language": "ar",
+      "text": "لوح الكتف الأيمن",
+      "src": "/speech/ar-66a933fef5aa89853c01d2e750b7e52e9dd1c60a0c7d5a1b06177c6e19c4b3f7.mp3"
+    },
+    {
+      "id": "body:left_shoulder_blade",
+      "language": "ar",
+      "text": "لوح الكتف الأيسر",
+      "src": "/speech/ar-0d6a1414168821f0e508ca0ee24ac8dd5941da1c4bfa16bd3ff9065df7635501.mp3"
+    },
+    {
+      "id": "body:right_buttock",
+      "language": "ar",
+      "text": "الردف الأيمن",
+      "src": "/speech/ar-a375c2e601009155b56f71d23ee22bddb468b6a93db168ffeddcba4ee7fc681c.mp3"
+    },
+    {
+      "id": "body:left_buttock",
+      "language": "ar",
+      "text": "الردف الأيسر",
+      "src": "/speech/ar-97cc66f516255e2a218d80287a5a39d2691d4fa7c2aae4339861987d976f1108.mp3"
+    },
+    {
+      "id": "body:right_thigh_back",
+      "language": "ar",
+      "text": "خلف الفخذ الأيمن",
+      "src": "/speech/ar-e5f271018a18924f14ec1151d670ec9f9b987bc49f822a1b75c9b83b1aecf66f.mp3"
+    },
+    {
+      "id": "body:left_thigh_back",
+      "language": "ar",
+      "text": "خلف الفخذ الأيسر",
+      "src": "/speech/ar-0929fc8a7adaf47b89571f59934f993577ac95b9fd24e1ae0457a2831419f1e7.mp3"
+    },
+    {
+      "id": "body:right_knee_back",
+      "language": "ar",
+      "text": "خلف الركبة اليمنى",
+      "src": "/speech/ar-e82fc347ccce4dc0c82d83763466f9212e1c550b3e1950e57147606bc9ade0f3.mp3"
+    },
+    {
+      "id": "body:left_knee_back",
+      "language": "ar",
+      "text": "خلف الركبة اليسرى",
+      "src": "/speech/ar-2801fa038c5893a67c82debb338026a4a1400717cd55d1701aed77231fc35352.mp3"
+    },
+    {
+      "id": "body:right_calf",
+      "language": "ar",
+      "text": "ربلة الساق اليمنى",
+      "src": "/speech/ar-5c06d66ae8f8d6b7cc5e938bd6bb6633c27b41c417ea84a5d883009d1c602482.mp3"
+    },
+    {
+      "id": "body:left_calf",
+      "language": "ar",
+      "text": "ربلة الساق اليسرى",
+      "src": "/speech/ar-e2cb432136a0bc446e08c714bb25fd5be2aece68f2b7fb15fd44828466ca69b0.mp3"
+    },
+    {
+      "id": "body:right_heel",
+      "language": "ar",
+      "text": "الكعب الأيمن",
+      "src": "/speech/ar-55b6c9417b9ae768e51593ccc64fa77e533c04946471f6a76329cde64db3d1bc.mp3"
+    },
+    {
+      "id": "body:left_heel",
+      "language": "ar",
+      "text": "الكعب الأيسر",
+      "src": "/speech/ar-ab64b3857335cf4123e73a45985a30fb3f82b7928b5fd42c6ef244cfb5f3678b.mp3"
     }
   ]
 }
