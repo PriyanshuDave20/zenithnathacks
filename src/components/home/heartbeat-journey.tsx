@@ -93,7 +93,9 @@ export function HeartbeatJourney() {
       const dockY = header!.getBoundingClientRect().bottom - 1;
       const hasEmblem = rect.width > 8 && rect.height > 8;
       // The monitor begins exactly where the snake arrives. Progress only continues clockwise.
-      const entryX = hasEmblem ? origin.x : width * 0.72;
+      // On phones the monitor starts at the top left instead of under the centred emblem; desktop is unchanged.
+      const compact = width < 768;
+      const entryX = compact ? 16 : hasEmblem ? origin.x : width * 0.72;
       const startX = 16;
       const pathLength = width - 12 - 18 - startX + Math.PI * 18 / 2 + Math.max(0, height - 24 - dockY - 18);
       const entryProgress = clamp((entryX - startX) / pathLength);
