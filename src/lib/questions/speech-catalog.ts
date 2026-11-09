@@ -1,3 +1,4 @@
+import { eyePublicSpeechCatalog, eyeSpeechSegments } from "./eye-localization";
 import { BODY_PARTS } from "../input/body-parts";
 import { PHRASES } from "../mocks/data";
 import { getLanguagePack, GUIDED_LANGUAGES } from "./localization";
@@ -6,7 +7,7 @@ export type PublicSpeechEntry = { id: string; language: string; text: string };
 
 /** The only texts eligible for persisted speech assets: checked-in public UI wording. */
 export function publicSpeechCatalog(): PublicSpeechEntry[] {
-  return GUIDED_LANGUAGES.flatMap(language => {
+  return [...eyePublicSpeechCatalog(), ...GUIDED_LANGUAGES.flatMap(language => {
     const pack = getLanguagePack(language);
     if (!pack) return [];
     return [
@@ -17,11 +18,13 @@ export function publicSpeechCatalog(): PublicSpeechEntry[] {
       ...PHRASES.map(phrase => ({ id: `phrase:${phrase.id}`, language, text: phrase.text[language] })),
       ...BODY_PARTS.map(part => ({ id: `body:${part.id}`, language, text: part.text[language] })),
     ];
-  });
+  })];
 }
 
 /** Resolve a deterministic guided read-back into public wording, without caching session selections. */
 export function guidedSpeechSegments(text: string, language: string): string[] | undefined {
+  const eye = eyeSpeechSegments(text, language);
+  if (eye) return eye;
   const pack = getLanguagePack(language);
   if (!pack) return undefined;
   const segments: string[] = [];

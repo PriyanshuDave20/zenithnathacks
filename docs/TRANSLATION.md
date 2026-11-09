@@ -69,6 +69,25 @@ clinical sign-off.
 
 ## Reports and failure behavior
 
+### Eye mode
+
+Eye intake and conversation use a separate fixed four-language catalog in
+`src/lib/questions/eye-localization.ts` (`en`, `es`, `ar`, `zh-Hans`). Patient setup
+passes the language to the Eye memory store; direct entry has a clinician-only
+language selector. Changing language clears the previous Eye flow. Patient text
+and spoken clauses are localized deterministically; the clinician's structured
+summary and choice log retain their English meaning. This catalog is a draft and
+still requires fluent-speaker and clinical review.
+
+Eye speech resolves complete registered clauses into public Azure MP3 playlists.
+No selected answers are sent to a model, Translator or runtime synthesis endpoint.
+Only the fixed public source wording is supplied to the explicit speech-generation
+maintenance tool. Missing/failed audio offers an explicit device-voice fallback;
+autoplay blocking offers a fresh-tap replay. Replay does not record another choice
+or metric. Mute, Clear, language/account changes, Help cancellation, handoff and
+navigation stop playback and invalidate pending callbacks. Session content and
+audio selection remain in memory.
+
 Guided reports preserve selected labels and explicit negative/uncertain answers.
 They do not infer diagnoses or symptoms from a selected body region. Only selected
 positive answers to the explicit red-flags question populate its red-flags array;
