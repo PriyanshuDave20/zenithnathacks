@@ -13,6 +13,7 @@ const tests = [
   "src/lib/questions/localization.test.ts",
   "src/lib/input/body-parts.test.ts",
   "src/lib/input/gaze/gaze-math.test.ts",
+  "src/lib/input/gaze/stabilizer.test.ts",
   "src/lib/input/gaze/dwell.test.ts",
   "src/lib/server/redact.test.ts",
   "src/lib/server/clinician-api.test.ts",

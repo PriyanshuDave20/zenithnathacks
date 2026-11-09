@@ -22,7 +22,6 @@ import {
   gazeFeatures,
   LightMonitor,
   medianFeatures,
-  OneEuroFilter,
   pickGazeTarget,
   PostureMonitor,
   postureOf,
@@ -37,6 +36,7 @@ import {
   type PostureVerdict,
   type GazeMapping,
 } from "@/lib/input/gaze/gaze-math";
+import { GazeStabilizer, STABILIZER_DEFAULTS, type GazeStabilizerConfig } from "@/lib/input/gaze/stabilizer";
 import { GazeTracker } from "@/lib/input/gaze/tracker";
 
 type Phase = "off" | "starting" | "calibrating" | "on" | "error";
@@ -75,8 +75,10 @@ const INTERACTIVE = [
 ].join(", ");
 
 /**
- * Nine fixed targets, centre first, then the corners and edge midpoints. No moving pursuit:
- * each target stays put for ~3.3 seconds, with the first second ignored for eye travel.
+ * Fixed calibration targets: centre first, then corners and edge midpoints, then the centres of
+ * up to eight on-screen controls ("hotspots" - the buttons the patient will actually select).
+ * Calibrating on the selectable options ties the map to the places that matter. No moving pursuit:
+ * each target stays put, with the first second ignored for eye travel.
  */
 function buildCalibrationWaypoints(cancelButton?: HTMLElement | null): { x: number; y: number }[] {
   const w = window.innerWidth;
@@ -102,7 +104,19 @@ function buildCalibrationWaypoints(cancelButton?: HTMLElement | null): { x: numb
     { x: insetX * w, y: bottomY },
     { x: insetX * w, y: 0.5 * h },
   ];
-  return pts;
+  // Hotspots: centres of the visible, selectable controls, kept inside the safe margin and spread
+  // out (a hotspot a few pixels from a grid point adds nothing but duplicate samples).
+  const cap = 8;
+  const minDist = 0.09 * Math.hypot(w, h);
+  const seen = [...pts];
+  for (const c of gazeCandidates()) {
+    if (seen.length >= pts.length + cap) break;
+    const x = clampNum(c.box.left + (c.box.right - c.box.left) / 2, safe, w - safe);
+    const y = clampNum(c.box.top + (c.box.bottom - c.box.top) / 2, safe, h - safe);
+    if (seen.some((p) => Math.hypot(p.x - x, p.y - y) < minDist)) continue;
+    seen.push({ x, y });
+  }
+  return seen;
 }
 
 function selectableTarget(el: Element | null): Element | null {
@@ -197,17 +211,16 @@ export function GazeLayer() {
   const trackerRef = useRef<GazeTracker | null>(null);
   const dwellRef = useRef(new DwellController());
   // Two smoothing stages: the raw features wobble most (and the mapping magnifies it), so they
-  // get the steadier filter; the pixel filter takes the residual edge off, and its deadzone
-  // swallows small tremor entirely. Max alphas are the fast end: held 2% below the previous
-  // tuning (0.75/0.55) after "too rigid" -> revert -> "a little more rigid".
+  // get the steadier filter; the stabilizer then owns the final screen-space point: outlier gate,
+  // per-axis One-Euro (configurable, see stabilizer.ts) and the dead zone.
   const featureSmootherRef = useRef(new FeatureSmoother(0.3, 0.735, 0.06));
-  // One-Euro: steady at rest, no lag on a jump. Tuned to this tracker's noise (the usual defaults jitter more here).
-  const smootherRef = useRef(new OneEuroFilter(0.3, 0.002, 0.5));
+  const stabilizerRef = useRef(new GazeStabilizer());
   // Drops the frames of a blink, so closing eyelids cannot drag the pointer.
   const blinkGuardRef = useRef(new BlinkGuard());
   const blinkBufferRef = useRef(new BlinkSafeBuffer());
-  // A steady look is averaged over a longer window, so tracking jitter does not decide which button is chosen.
-  const fixationRef = useRef(new FixationFilter());
+  // A steady look is averaged over a short window (the stabilizer handles the rest),
+  // so tracking jitter does not decide which button is chosen.
+  const fixationRef = useRef(new FixationFilter(500, 4));
   const stickyTargetRef = useRef<Element | null>(null);
   const candidatesRef = useRef<{ at: number; items: { el: Element; box: GazeBox }[] }>({ at: 0, items: [] });
   // One-point drift correction in progress (null when not recentering).
@@ -232,6 +245,21 @@ export function GazeLayer() {
   const noFaceRef = useRef(false);
   const unstableRef = useRef(false);
   const generationRef = useRef(0);
+
+  // Live diagnostics (?gazeDebug in the URL): raw vs stabilized cursors, fps, processing latency,
+  // filter parameters and outlier counters, with sliders that tune the stabilizer at runtime.
+  const debugMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("gazeDebug");
+  const [stabCfg, setStabCfg] = useState<GazeStabilizerConfig>({ ...STABILIZER_DEFAULTS });
+  const debugRawRef = useRef<HTMLDivElement | null>(null);
+  const debugFpsRef = useRef<HTMLSpanElement | null>(null);
+  const debugLatRef = useRef<HTMLSpanElement | null>(null);
+  const debugStatusRef = useRef<HTMLSpanElement | null>(null);
+  const debugOutRef = useRef<HTMLSpanElement | null>(null);
+
+  const applyStabilizerConfig = useCallback((patch: Partial<GazeStabilizerConfig>) => {
+    stabilizerRef.current.configure(patch);
+    setStabCfg({ ...stabilizerRef.current.config });
+  }, []);
 
   const calibrationDialog = useRef<HTMLDialogElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
@@ -294,7 +322,7 @@ export function GazeLayer() {
     lightVerdictRef.current = "ok";
     hintRef.current = null;
     setHint(null);
-    smootherRef.current.reset();
+    stabilizerRef.current.reset();
     mappingRef.current = null;
     setStatus(null);
     setNoFace(false);
@@ -390,8 +418,8 @@ export function GazeLayer() {
     if (phase !== "calibrating" && phase !== "on") return;
     const dwell = dwellRef.current;
     const featureSmoother = featureSmootherRef.current;
-    const smoother = smootherRef.current;
-    smoother.reset();
+    const stabilizer = stabilizerRef.current;
+    stabilizer.reset();
     featureSmoother.reset();
     const waypoints = phase === "calibrating" ? buildCalibrationWaypoints(cancelButtonRef.current) : null;
     let raf = 0;
@@ -399,6 +427,11 @@ export function GazeLayer() {
     let lastFeatureAt = last;
     let lastCalibrationSampleAt = -Infinity;
     let lastSmoothed: GazeFeatures | null = null;
+    let detectMs = 0; // processing latency of the newest frame (diagnostics)
+    let fpsFrames = 0;
+    let fpsWindowStart = last;
+    let fps = 0;
+    let lastDebugUiAt = 0;
     blinkBufferRef.current.reset();
 
     const tick = (now: number) => {
@@ -406,6 +439,12 @@ export function GazeLayer() {
       const elapsed = now - last;
       const dt = Math.min(elapsed, 250);
       last = now;
+      fpsFrames++;
+      if (now - fpsWindowStart >= 1000) {
+        fps = Math.round((fpsFrames * 1000) / (now - fpsWindowStart));
+        fpsFrames = 0;
+        fpsWindowStart = now;
+      }
 
       if (phase === "calibrating" && (document.hidden || elapsed > 250)) calibStartRef.current += elapsed;
       if (document.hidden) {
@@ -414,6 +453,7 @@ export function GazeLayer() {
         return;
       }
       const featureDt = now - lastFeatureAt;
+      const t0 = performance.now();
       const landmarks = trackerRef.current?.detect(now);
       if (landmarks === undefined) {
         if (now - lastFeatureAt > BLINK_GRACE_MS) {
@@ -422,6 +462,7 @@ export function GazeLayer() {
         }
         return;
       }
+      detectMs = performance.now() - t0;
       const observed = blinkGuardRef.current.next(gazeFeatures(landmarks, trackerRef.current?.frameAspectRatio ?? 1), now);
       const reading = blinkBufferRef.current.next(observed, now);
       const features = reading?.features ?? null;
@@ -429,7 +470,7 @@ export function GazeLayer() {
       // pre-blink offset keep pulling the recovered pointer back for up to 700 ms.
       if (!observed) {
         featureSmoother.reset();
-        smoother.reset();
+        stabilizer.reset();
         fixationRef.current.reset();
         stickyTargetRef.current = null;
       }
@@ -500,7 +541,7 @@ export function GazeLayer() {
             return;
           }
           featureSmoother.reset();
-          smoother.reset();
+          stabilizer.reset();
           // Remember how they are sitting and how bright their face is, to notice when either changes.
           postureRef.current.lockReference();
           lightRef.current.lockReference();
@@ -557,9 +598,33 @@ export function GazeLayer() {
       const point = applyGazeMapping(mappingRef.current, smoothed);
       const x = point.x * window.innerWidth;
       const y = point.y * window.innerHeight;
-      const p0 = smoother.next({ x, y }, featureDt);
+
+      // Stabilization stage (see src/lib/input/gaze/stabilizer.ts): outlier gate -> per-axis
+      // One-Euro -> dead zone. The raw mapped point is shown in diagnostics for comparison.
+      const st = stabilizer.next({ x, y }, now);
+      if (debugMode) {
+        const raw = debugRawRef.current;
+        if (raw) raw.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      }
+      if (st.status === "lost" || !Number.isFinite(st.x)) {
+        // Nothing usable (long tracking loss): hold the pointer, pause the dwell.
+        dwell.update(now, null, false);
+        ringRef.current?.style.setProperty("stroke-dashoffset", String(RING_C));
+        cursor.style.opacity = "0.25";
+        return;
+      }
+      const p0 = { x: st.x, y: st.y };
       const jump = clampNum(Math.min(window.innerWidth, window.innerHeight) * 0.12, 60, 140);
       const p = fixationRef.current.next(p0, now, jump);
+
+      // Diagnostics text, updated at 4 Hz so the panel never costs a layout per frame.
+      if (debugMode && now - lastDebugUiAt > 250) {
+        lastDebugUiAt = now;
+        if (debugFpsRef.current) debugFpsRef.current.textContent = String(fps);
+        if (debugLatRef.current) debugLatRef.current.textContent = detectMs.toFixed(1);
+        if (debugStatusRef.current) debugStatusRef.current.textContent = st.status;
+        if (debugOutRef.current) debugOutRef.current.textContent = `${stabilizer.rejectedCount} (${st.outlierRejected ? "this frame" : "none"})`;
+      }
 
       // Which control is meant: the one under the pointer, else the nearest within reach, and it sticks
       // unless another is clearly closer. Webcam tracking is only good to a fraction of a screen.
@@ -603,7 +668,7 @@ export function GazeLayer() {
           if (middle && rc.reads.length >= RECENTER_MIN_READS && mappingRef.current) {
             mappingRef.current = recenterMapping(mappingRef.current, middle);
             featureSmoother.reset();
-            smoother.reset();
+            stabilizer.reset();
             fixationRef.current.reset();
             // The offset is now corrected for how they are sitting NOW: that is the new reference.
             postureRef.current.reset();
@@ -708,6 +773,93 @@ export function GazeLayer() {
             <circle cx="36" cy="36" r="7" className="fill-blue-deep stroke-white" strokeWidth="2.5" />
           </svg>
         </div>
+      ) : null}
+
+      {debugMode && active ? (
+        <>
+          {/* Raw (pre-stabilization) mapped point: the grey dot shows what the stabilizer is smoothing. */}
+          <div
+            ref={debugRawRef}
+            aria-hidden="true"
+            className="pointer-events-none fixed left-0 top-0 z-[71] will-change-transform"
+            style={{ opacity: 0, transition: "opacity 300ms" }}
+          >
+            <span className="block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400/80 ring-2 ring-white/60" />
+          </div>
+          {/* Developer diagnostics; never shown in the patient-facing interface (only with ?gazeDebug). */}
+          <div data-gaze-ignore className="pointer-events-auto fixed left-3 top-3 z-[72] w-72 rounded-field bg-surface/95 p-4 text-sm text-ink shadow-soft ring-1 ring-line">
+            <p className="mb-2 text-base font-semibold">Gaze diagnostics</p>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 tabular-nums">
+              <dt className="text-ink-soft">FPS</dt>
+              <dd>
+                <span ref={debugFpsRef}>0</span>
+              </dd>
+              <dt className="text-ink-soft">Processing</dt>
+              <dd>
+                <span ref={debugLatRef}>0</span> ms/frame
+              </dd>
+              <dt className="text-ink-soft">Tracking</dt>
+              <dd>
+                <span ref={debugStatusRef}>ok</span>
+              </dd>
+              <dt className="text-ink-soft">Outliers</dt>
+              <dd>
+                <span ref={debugOutRef}>0 (none)</span>
+              </dd>
+            </dl>
+            <p className="mt-2 text-xs text-ink-soft">
+              Grey dot = raw gaze. Blue ring = stabilized cursor.
+            </p>
+            <label className="mt-3 block text-xs font-semibold text-ink-soft">
+              minCutoff {stabCfg.oneEuro.minCutoff.toFixed(2)} Hz
+              <input
+                type="range"
+                min={0.2}
+                max={3}
+                step={0.05}
+                value={stabCfg.oneEuro.minCutoff}
+                onChange={(e) => applyStabilizerConfig({ oneEuro: { ...stabCfg.oneEuro, minCutoff: Number(e.target.value) } })}
+                className="mt-1 w-full"
+              />
+            </label>
+            <label className="mt-2 block text-xs font-semibold text-ink-soft">
+              beta {stabCfg.oneEuro.beta.toFixed(3)}
+              <input
+                type="range"
+                min={0}
+                max={0.06}
+                step={0.002}
+                value={stabCfg.oneEuro.beta}
+                onChange={(e) => applyStabilizerConfig({ oneEuro: { ...stabCfg.oneEuro, beta: Number(e.target.value) } })}
+                className="mt-1 w-full"
+              />
+            </label>
+            <label className="mt-2 block text-xs font-semibold text-ink-soft">
+              derivativeCutoff {stabCfg.oneEuro.derivativeCutoff.toFixed(2)} Hz
+              <input
+                type="range"
+                min={0.2}
+                max={3}
+                step={0.05}
+                value={stabCfg.oneEuro.derivativeCutoff}
+                onChange={(e) => applyStabilizerConfig({ oneEuro: { ...stabCfg.oneEuro, derivativeCutoff: Number(e.target.value) } })}
+                className="mt-1 w-full"
+              />
+            </label>
+            <label className="mt-2 block text-xs font-semibold text-ink-soft">
+              dead zone {stabCfg.deadzonePx} px
+              <input
+                type="range"
+                min={0}
+                max={20}
+                step={1}
+                value={stabCfg.deadzonePx}
+                onChange={(e) => applyStabilizerConfig({ deadzonePx: Number(e.target.value) })}
+                className="mt-1 w-full"
+              />
+            </label>
+          </div>
+        </>
       ) : null}
 
       {phase === "calibrating" ? (
