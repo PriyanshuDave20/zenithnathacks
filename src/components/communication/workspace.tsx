@@ -1,5 +1,7 @@
 "use client";
 
+import { eye } from "@/lib/eye/session";
+
 import { HomeLink } from "@/components/auth/home-link";
 
 import Image from "next/image";
@@ -855,7 +857,7 @@ export function CommunicationWorkspace() {
                   : `${meta.english} · ${MODES.find((m) => m.id === mode)?.label}. The patient will see one clear task at a time.`}
             </p>
             {setupMode === "icu" ? (
-              <Link className="sf-handoff-choice" href="/icu">
+              <Link className="sf-handoff-choice" href="/icu" onClick={() => eye.setLanguage(language)}>
                 Open patient’s Eye mode board
               </Link>
             ) : (

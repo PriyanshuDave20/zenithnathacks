@@ -61,6 +61,7 @@ export function createCloudSpeech(
     createUrl: (blob: Blob) => string;
     revokeUrl: (url: string) => void;
     metadata: () => SpeechMetadata;
+    onComplete?: () => void;
   },
 ) {
   let audio: AudioPlayback | undefined;
@@ -111,6 +112,7 @@ export function createCloudSpeech(
       releaseAudio();
       if (stopActive === stop) stopActive = undefined;
       emit(null);
+      dependencies.onComplete?.();
     };
     current.onerror = () => { if (version === token) fallback(); };
     emit(null, true);

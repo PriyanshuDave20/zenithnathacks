@@ -4272,6 +4272,942 @@
       "language": "es",
       "text": "Talón izquierdo",
       "src": "/speech/es-2b330de82ae309f8d4ddf64db5b97c6ec674df50e1c8506f8a0230b78449a8ff.mp3"
+    },
+    {
+      "id": "eye:yes",
+      "language": "en",
+      "text": "Yes.",
+      "src": "/speech/en-0017c813b2111b8846c724351bae810d155f23cec05b8064337a11030825e919.mp3"
+    },
+    {
+      "id": "eye:yes",
+      "language": "es",
+      "text": "Sí.",
+      "src": "/speech/es-0369ce89c61d49e6afa5b0d82ac55f7eeffd3ffdbde87f63c33e82369fc837aa.mp3"
+    },
+    {
+      "id": "eye:yes",
+      "language": "ar",
+      "text": "نعم.",
+      "src": "/speech/ar-8d7d192bfd50821156a94e140171c9304eaeb94c959ea88199ca46d378e80774.mp3"
+    },
+    {
+      "id": "eye:yes",
+      "language": "zh-Hans",
+      "text": "是的。",
+      "src": "/speech/zh-Hans-55a2d59003a184461188ef306dd2a960f8f1a6a3e1fd46dc4d644464492fb90f.mp3"
+    },
+    {
+      "id": "eye:no",
+      "language": "en",
+      "text": "No.",
+      "src": "/speech/en-6b2223668c1a9e4541003f6120d805f0a3efc101ea310b52a52071f1ccb180fa.mp3"
+    },
+    {
+      "id": "eye:no",
+      "language": "es",
+      "text": "No.",
+      "src": "/speech/es-673b3363e2fb2357a95818f8ff1102a3af3aee30de913f940780a55c28f0ac6e.mp3"
+    },
+    {
+      "id": "eye:no",
+      "language": "ar",
+      "text": "لا.",
+      "src": "/speech/ar-1074b3cf41e831f0b7697584fdb4bb9af7dafe562258d9b9f186ccabc92bae08.mp3"
+    },
+    {
+      "id": "eye:no",
+      "language": "zh-Hans",
+      "text": "不是。",
+      "src": "/speech/zh-Hans-b704518007660c31225b8e3b66bb7e79b602e93bb94e247251372279a39a2c15.mp3"
+    },
+    {
+      "id": "eye:i-need-help-please-come-now",
+      "language": "en",
+      "text": "I need help. Please come now.",
+      "src": "/speech/en-eb4c39d9fd35c31eacdda2f4aeeda8148295b1305aa3d8070807705d0ed2dd57.mp3"
+    },
+    {
+      "id": "eye:i-need-help-please-come-now",
+      "language": "es",
+      "text": "Necesito ayuda. Por favor, venga ahora.",
+      "src": "/speech/es-393ddfc6ffaed259fbd76dbc5d04941d07c88ca65bf3cd1e9baee0a3bcab01e5.mp3"
+    },
+    {
+      "id": "eye:i-need-help-please-come-now",
+      "language": "ar",
+      "text": "أحتاج إلى مساعدة. من فضلك، تعال الآن.",
+      "src": "/speech/ar-df2070d34d5793a82e2fba96b9ac432ca31c2df7c9d61e7bb11e74895d46d962.mp3"
+    },
+    {
+      "id": "eye:i-need-help-please-come-now",
+      "language": "zh-Hans",
+      "text": "我需要帮助。请马上过来。",
+      "src": "/speech/zh-Hans-4a59c22a9449ad3a7707a85d09e2d04ac5fa59ca8cbf114f2b9a413679e4e71e.mp3"
+    },
+    {
+      "id": "eye:i-would-like-to-rest",
+      "language": "en",
+      "text": "I would like to rest.",
+      "src": "/speech/en-97bd5fbc08114c3974c49ad614ed82c4555577f499fe8b8ee7900d943f923cc8.mp3"
+    },
+    {
+      "id": "eye:i-would-like-to-rest",
+      "language": "es",
+      "text": "Quiero descansar.",
+      "src": "/speech/es-8a12b570253aa9f44885a657cab3ddc6a6990973ffbfd65789dcb49499dab860.mp3"
+    },
+    {
+      "id": "eye:i-would-like-to-rest",
+      "language": "ar",
+      "text": "أريد أن أستريح.",
+      "src": "/speech/ar-195927848011cbb60b355e8767bea58316875bad8cc577b9a37da145c818d8b2.mp3"
+    },
+    {
+      "id": "eye:i-would-like-to-rest",
+      "language": "zh-Hans",
+      "text": "我想休息。",
+      "src": "/speech/zh-Hans-97672d45b50557b28268dfee081486cd2b9953806f58ecd902ce74eb91e15f98.mp3"
+    },
+    {
+      "id": "eye:please-help-me-change-position",
+      "language": "en",
+      "text": "Please help me change position.",
+      "src": "/speech/en-5db00d7f907a2e4db60ac5654ac06797a06b22d45a80339d93caff4e1ea81c46.mp3"
+    },
+    {
+      "id": "eye:please-help-me-change-position",
+      "language": "es",
+      "text": "Por favor, ayúdeme a cambiar de posición.",
+      "src": "/speech/es-1532ee0b689ddbbd5d45adb0a30a6bfa2e87f7d7d9fb04245c855762d0242122.mp3"
+    },
+    {
+      "id": "eye:please-help-me-change-position",
+      "language": "ar",
+      "text": "من فضلك، ساعدني على تغيير وضعيتي.",
+      "src": "/speech/ar-40450511d1b1fa85c0f57390556402da63b2429278cf04f9d88fad6f59e0cc0e.mp3"
+    },
+    {
+      "id": "eye:please-help-me-change-position",
+      "language": "zh-Hans",
+      "text": "请帮我换个姿势。",
+      "src": "/speech/zh-Hans-cd8a2cf62783b33a417a68b5093a6bb900c68abaa90803db48130f92f678857a.mp3"
+    },
+    {
+      "id": "eye:i-would-like-some-water",
+      "language": "en",
+      "text": "I would like some water.",
+      "src": "/speech/en-18deeda1ab15bc84e49ae424a4b6e19df43e4b19ceadad9a16125e6e8193b9d7.mp3"
+    },
+    {
+      "id": "eye:i-would-like-some-water",
+      "language": "es",
+      "text": "Quiero un poco de agua.",
+      "src": "/speech/es-7ff204c4e3a10cc94b092b7ee3bc62dc01106ec3d55e1a40b704bd21e6645cf2.mp3"
+    },
+    {
+      "id": "eye:i-would-like-some-water",
+      "language": "ar",
+      "text": "أريد بعض الماء.",
+      "src": "/speech/ar-c2c2202df63b7108ba50e94c39ca0170e2afdd88fc12d2959cadd5b7ac920b43.mp3"
+    },
+    {
+      "id": "eye:i-would-like-some-water",
+      "language": "zh-Hans",
+      "text": "我想喝点水。",
+      "src": "/speech/zh-Hans-21d5d7edb4f45e3051aa8cbb080403daa8c51219b27b3ad26d595acb2a92022a.mp3"
+    },
+    {
+      "id": "eye:i-need-the-toilet",
+      "language": "en",
+      "text": "I need the toilet.",
+      "src": "/speech/en-5d99243eeede65543e409fa83d1e976abdf18cc19899e206b200c78b8fcea84e.mp3"
+    },
+    {
+      "id": "eye:i-need-the-toilet",
+      "language": "es",
+      "text": "Necesito ir al baño.",
+      "src": "/speech/es-c02ebf39d986744cacd9621f11d1dc89bc187eb3ca1a9cca5b3337cc53bcf073.mp3"
+    },
+    {
+      "id": "eye:i-need-the-toilet",
+      "language": "ar",
+      "text": "أحتاج إلى استخدام الحمام.",
+      "src": "/speech/ar-acc751b82d29a2bee8edf2b677e5f33b49a903f428fcedcfd1e71b62e3c0fc87.mp3"
+    },
+    {
+      "id": "eye:i-need-the-toilet",
+      "language": "zh-Hans",
+      "text": "我需要上厕所。",
+      "src": "/speech/zh-Hans-4fdfcbc64e1bf7e1f569ef765d38c285633ab54c51b1eb50517339e63b1020a2.mp3"
+    },
+    {
+      "id": "eye:i-am-having-trouble-breathing",
+      "language": "en",
+      "text": "I am having trouble breathing.",
+      "src": "/speech/en-cc2b8b90b88b063856c659a5d866413e32b8a543851765d4a16860c3b17758ac.mp3"
+    },
+    {
+      "id": "eye:i-am-having-trouble-breathing",
+      "language": "es",
+      "text": "Me cuesta respirar.",
+      "src": "/speech/es-e4b37dcd527c0348b609716eac08ffe3e3d49f07e8a4282dd94e8150acb177ca.mp3"
+    },
+    {
+      "id": "eye:i-am-having-trouble-breathing",
+      "language": "ar",
+      "text": "أجد صعوبة في التنفس.",
+      "src": "/speech/ar-597da82145ea595a2ee503c0d041156da199561efe15bf91244d8846eec7400f.mp3"
+    },
+    {
+      "id": "eye:i-am-having-trouble-breathing",
+      "language": "zh-Hans",
+      "text": "我呼吸困难。",
+      "src": "/speech/zh-Hans-aa30e19a0ed61b50ea59af1707b41716cc3938153d98f6f326182abfddf3fec9.mp3"
+    },
+    {
+      "id": "eye:i-am-too-hot",
+      "language": "en",
+      "text": "I am too hot.",
+      "src": "/speech/en-9bbe1568e6493013e58a902ca511c635f9b970d2186ebcfc1f8191f1ca4ccd56.mp3"
+    },
+    {
+      "id": "eye:i-am-too-hot",
+      "language": "es",
+      "text": "Tengo demasiado calor.",
+      "src": "/speech/es-45542422a56472b4655bf67b9d1b066dc43670fbca8b3d28e04050b16ebeee1a.mp3"
+    },
+    {
+      "id": "eye:i-am-too-hot",
+      "language": "ar",
+      "text": "أشعر بحر شديد.",
+      "src": "/speech/ar-40814e945d4e0f9fe5f7ed25533a62941168b79328ac5da3573d82c2aa4f0e92.mp3"
+    },
+    {
+      "id": "eye:i-am-too-hot",
+      "language": "zh-Hans",
+      "text": "我太热了。",
+      "src": "/speech/zh-Hans-70e07e96a3b270ec44e7a6f6e49bf2ae0cb9bae85b1497a625646efbae80e489.mp3"
+    },
+    {
+      "id": "eye:i-am-too-cold",
+      "language": "en",
+      "text": "I am too cold.",
+      "src": "/speech/en-ff4ca317ca083739018c8335fb7fd1522d3586f31caba4a9e5d72ffc2befaf13.mp3"
+    },
+    {
+      "id": "eye:i-am-too-cold",
+      "language": "es",
+      "text": "Tengo demasiado frío.",
+      "src": "/speech/es-a65c6f63a3819a138ab134ecc2f1a600dda5853cfe4798d80833452937f541f7.mp3"
+    },
+    {
+      "id": "eye:i-am-too-cold",
+      "language": "ar",
+      "text": "أشعر ببرد شديد.",
+      "src": "/speech/ar-28d49a4bdfde12349f0311ee8fb11aecb193787725c611a861cfbf38c40e1489.mp3"
+    },
+    {
+      "id": "eye:i-am-too-cold",
+      "language": "zh-Hans",
+      "text": "我太冷了。",
+      "src": "/speech/zh-Hans-5ffa25e6389cfa2d4494a3feb5e2a098363266eda4da5bb78ad652c2e2cdff4c.mp3"
+    },
+    {
+      "id": "eye:i-do-not-have-pain",
+      "language": "en",
+      "text": "I do not have pain.",
+      "src": "/speech/en-dc6253071b1937e6ce7586c2947d69dee300b188b735b80391e0e6294a100912.mp3"
+    },
+    {
+      "id": "eye:i-do-not-have-pain",
+      "language": "es",
+      "text": "No tengo dolor.",
+      "src": "/speech/es-997bdb201810ba173e908b9a77d8685abb32896e6aa606373744aca7c4d7e99a.mp3"
+    },
+    {
+      "id": "eye:i-do-not-have-pain",
+      "language": "ar",
+      "text": "لا أشعر بألم.",
+      "src": "/speech/ar-4e6866a5b87111900f36b6259662d8e18fbb052450c8e4851f3229f3f6d50ef6.mp3"
+    },
+    {
+      "id": "eye:i-do-not-have-pain",
+      "language": "zh-Hans",
+      "text": "我没有疼痛。",
+      "src": "/speech/zh-Hans-ce6bddf39df099f0ba4a454d569164cd2a6e208b1110885abb65e2e29eec6bc9.mp3"
+    },
+    {
+      "id": "eye:i-have-pain",
+      "language": "en",
+      "text": "I have pain.",
+      "src": "/speech/en-6f7b178cd96956716a1268a6484befcfada95c4f50ae85b6eb78a92fc052a35e.mp3"
+    },
+    {
+      "id": "eye:i-have-pain",
+      "language": "es",
+      "text": "Tengo dolor.",
+      "src": "/speech/es-5353eaf0695ec0a1e09f44c093b130d9f9c0bea143884f25ce6542e3ef8a3ebd.mp3"
+    },
+    {
+      "id": "eye:i-have-pain",
+      "language": "ar",
+      "text": "أشعر بألم.",
+      "src": "/speech/ar-0e9b8aaab013a818ca1af9531bcfc274d9a6b15eca67899bee3382696470cf8b.mp3"
+    },
+    {
+      "id": "eye:i-have-pain",
+      "language": "zh-Hans",
+      "text": "我感到疼痛。",
+      "src": "/speech/zh-Hans-768e63d4552fb44b5b6e4f215da10aa59c21a292665b54925d965cda49c9d1a6.mp3"
+    },
+    {
+      "id": "eye:it-is-mild",
+      "language": "en",
+      "text": "It is mild.",
+      "src": "/speech/en-8c68362cebb4e69dfdad2cbb582d99d1aa1922c6240c9eb22e0c7ffc5d2e078f.mp3"
+    },
+    {
+      "id": "eye:it-is-mild",
+      "language": "es",
+      "text": "Es leve.",
+      "src": "/speech/es-2c34b6bc0e04c56d96970915b6a7d8784ad32fca6fa21c3a831d8163be30e4fa.mp3"
+    },
+    {
+      "id": "eye:it-is-mild",
+      "language": "ar",
+      "text": "الألم خفيف.",
+      "src": "/speech/ar-269cdf061fb4bbb3233d1ce25b2a6c816c81fe506da54ca15d4efc1462038e3e.mp3"
+    },
+    {
+      "id": "eye:it-is-mild",
+      "language": "zh-Hans",
+      "text": "疼痛轻微。",
+      "src": "/speech/zh-Hans-c64d9f14f425c48feb669ac9b3e1c4076101fa8a68e2f82e44a15db71c5d6e39.mp3"
+    },
+    {
+      "id": "eye:it-is-moderate",
+      "language": "en",
+      "text": "It is moderate.",
+      "src": "/speech/en-308c3717a68707e0b2de2108fef96d415b0bdb37be9aa2945a71d1be859215f6.mp3"
+    },
+    {
+      "id": "eye:it-is-moderate",
+      "language": "es",
+      "text": "Es moderado.",
+      "src": "/speech/es-416a29792f0aaade0003a12802b5e0dc91a65f5786fb090e430810f505bb21b1.mp3"
+    },
+    {
+      "id": "eye:it-is-moderate",
+      "language": "ar",
+      "text": "الألم متوسط.",
+      "src": "/speech/ar-0964f6a52f2ad30a0123ee599582cea1b3e1a33464a0ca937f2b0cddea9588cf.mp3"
+    },
+    {
+      "id": "eye:it-is-moderate",
+      "language": "zh-Hans",
+      "text": "疼痛中等。",
+      "src": "/speech/zh-Hans-58bb6eae78b023dedda7cc7b0098a2b214b93d3d360d7390d011dfe5da3eb23a.mp3"
+    },
+    {
+      "id": "eye:it-is-severe",
+      "language": "en",
+      "text": "It is severe.",
+      "src": "/speech/en-5507097637218004d59ed6c4f1d3eb4fce6a8ef44261c16a0dabbdf6136c63eb.mp3"
+    },
+    {
+      "id": "eye:it-is-severe",
+      "language": "es",
+      "text": "Es intenso.",
+      "src": "/speech/es-23ac5c28fa077a66e6a982b8e132fb62741ea2d1b280bce7522ad1ec14cfb7ca.mp3"
+    },
+    {
+      "id": "eye:it-is-severe",
+      "language": "ar",
+      "text": "الألم شديد.",
+      "src": "/speech/ar-65f1579f7a56120089a73bfe9c00fa4def94cda9e4589797d209d770866f21fd.mp3"
+    },
+    {
+      "id": "eye:it-is-severe",
+      "language": "zh-Hans",
+      "text": "疼痛严重。",
+      "src": "/speech/zh-Hans-f80f3fefbe16ae64b8e580cd9e16859a486ab429b259b275615e882c31304633.mp3"
+    },
+    {
+      "id": "eye:it-is-the-worst-pain",
+      "language": "en",
+      "text": "It is the worst pain.",
+      "src": "/speech/en-e89cdaa136ae4d2620a20f4b2f967fdeeb5d43286e7ea7d1ebecccc1610d89fb.mp3"
+    },
+    {
+      "id": "eye:it-is-the-worst-pain",
+      "language": "es",
+      "text": "Es el peor dolor.",
+      "src": "/speech/es-88e98cb15b396947aaaffe0d352d8be03fb8b7125a715a04c2224c3c8d5f22ca.mp3"
+    },
+    {
+      "id": "eye:it-is-the-worst-pain",
+      "language": "ar",
+      "text": "إنه أسوأ ألم.",
+      "src": "/speech/ar-ca148b39efd70cfcba1f1f3142075a8d180ea78b7fe8d497e3b131989fb51b6a.mp3"
+    },
+    {
+      "id": "eye:it-is-the-worst-pain",
+      "language": "zh-Hans",
+      "text": "这是最剧烈的疼痛。",
+      "src": "/speech/zh-Hans-7882dbe201be0d67706d95e1f837ce187634b06921aa615b464fb8b0d6a1cee4.mp3"
+    },
+    {
+      "id": "eye:it-started-today",
+      "language": "en",
+      "text": "It started today.",
+      "src": "/speech/en-93193588b2241930e35490b359ffd64076809f8e00b41bf2e4fba324c6fd55c5.mp3"
+    },
+    {
+      "id": "eye:it-started-today",
+      "language": "es",
+      "text": "Empezó hoy.",
+      "src": "/speech/es-d4df8de5f78a78aab6f14d25c4bf39e41713fe28139fd833bc94f744c529ced7.mp3"
+    },
+    {
+      "id": "eye:it-started-today",
+      "language": "ar",
+      "text": "بدأ اليوم.",
+      "src": "/speech/ar-1f09b92c0d0735edfbafc2285c5b8c8ed301adda27be5eba7a61c3d1c5a1b3a2.mp3"
+    },
+    {
+      "id": "eye:it-started-today",
+      "language": "zh-Hans",
+      "text": "今天开始的。",
+      "src": "/speech/zh-Hans-a6fd420b169134151399cdc9306ddcb673ec11455c9b5f22bc49d34f7b6d8cc6.mp3"
+    },
+    {
+      "id": "eye:it-has-been-one-to-two-days",
+      "language": "en",
+      "text": "It has been one to two days.",
+      "src": "/speech/en-23ce7cecf525ad39409d8ad7c8664426fa4a5c06ecb68cc6829a39cf0506a4d0.mp3"
+    },
+    {
+      "id": "eye:it-has-been-one-to-two-days",
+      "language": "es",
+      "text": "Lleva uno o dos días.",
+      "src": "/speech/es-680c4562fe21532c163f71e77a8f0dd0ed9dc6dd06683e9398b559db9073d5d7.mp3"
+    },
+    {
+      "id": "eye:it-has-been-one-to-two-days",
+      "language": "ar",
+      "text": "استمر منذ يوم إلى يومين.",
+      "src": "/speech/ar-57ce48728232c0fe302a67541835158cc500ddca7652d41bb982cadddabfc790.mp3"
+    },
+    {
+      "id": "eye:it-has-been-one-to-two-days",
+      "language": "zh-Hans",
+      "text": "已经一到两天了。",
+      "src": "/speech/zh-Hans-5515a8e2a33f098f34f39ba33ea221c5f6d57da8c244d83f1cf34baac68ed837.mp3"
+    },
+    {
+      "id": "eye:it-has-been-about-a-week",
+      "language": "en",
+      "text": "It has been about a week.",
+      "src": "/speech/en-d5bb48c4a9a7950bb944d7bac7d3304b846fbc68a7fc8590b4b2f0727e536c8f.mp3"
+    },
+    {
+      "id": "eye:it-has-been-about-a-week",
+      "language": "es",
+      "text": "Lleva aproximadamente una semana.",
+      "src": "/speech/es-63f07116d277cf5deea7c674389ca6c402d5f960c609a0a71f40658b807acb25.mp3"
+    },
+    {
+      "id": "eye:it-has-been-about-a-week",
+      "language": "ar",
+      "text": "استمر منذ حوالي أسبوع.",
+      "src": "/speech/ar-fa7f0c62414f95a8d948f3033e384ef63774a59bdb231f666208237f465f8084.mp3"
+    },
+    {
+      "id": "eye:it-has-been-about-a-week",
+      "language": "zh-Hans",
+      "text": "已经大约一周了。",
+      "src": "/speech/zh-Hans-960609c70913771d48eea716e8c714edf644cf67ac46ddd5b4b9c2186724b849.mp3"
+    },
+    {
+      "id": "eye:it-has-been-longer-than-a-week",
+      "language": "en",
+      "text": "It has been longer than a week.",
+      "src": "/speech/en-3b87786d24ad0ef919a7e519d8ca3334ea3962204b782b96c29fc2d93f49af3c.mp3"
+    },
+    {
+      "id": "eye:it-has-been-longer-than-a-week",
+      "language": "es",
+      "text": "Lleva más de una semana.",
+      "src": "/speech/es-4bc83553902209f5e616afe901e934573cd8c8ae371455b3731238bf979b4ac6.mp3"
+    },
+    {
+      "id": "eye:it-has-been-longer-than-a-week",
+      "language": "ar",
+      "text": "استمر منذ أكثر من أسبوع.",
+      "src": "/speech/ar-3ab4bd87f31a33783375cebaf9131000dd2659a48846e6caaa6548b70e0e7eaa.mp3"
+    },
+    {
+      "id": "eye:it-has-been-longer-than-a-week",
+      "language": "zh-Hans",
+      "text": "已经超过一周了。",
+      "src": "/speech/zh-Hans-41177014e509e115d166e01a7f0e334aa913eb6d75ea6fff3a0ad9d4a631fb1e.mp3"
+    },
+    {
+      "id": "eye:it-is-worse-when-i-breathe",
+      "language": "en",
+      "text": "It is worse when I breathe.",
+      "src": "/speech/en-3d2fb29d58493b8ea3f8c1b27a51ca2f45427dff5437e95bc82af6b519bea139.mp3"
+    },
+    {
+      "id": "eye:it-is-worse-when-i-breathe",
+      "language": "es",
+      "text": "Empeora cuando respiro.",
+      "src": "/speech/es-5e37d55d47ec15e73ce92cc25d5fafdd26ab9cbc9124ca203400521c2ea8dd34.mp3"
+    },
+    {
+      "id": "eye:it-is-worse-when-i-breathe",
+      "language": "ar",
+      "text": "يزداد الألم عندما أتنفس.",
+      "src": "/speech/ar-3dce6727e440969dd66f3adb027ce355aff819b3d4167e23c42ebf0e0ae0c615.mp3"
+    },
+    {
+      "id": "eye:it-is-worse-when-i-breathe",
+      "language": "zh-Hans",
+      "text": "呼吸时疼痛加重。",
+      "src": "/speech/zh-Hans-55740716021c139deda19b6cceba75b1ff466a034230de9b3d18115def166eaf.mp3"
+    },
+    {
+      "id": "eye:it-is-worse-when-i-move",
+      "language": "en",
+      "text": "It is worse when I move.",
+      "src": "/speech/en-35243958f33852b8bbe07789421d67f594c8769b34b0205180106a904cb27380.mp3"
+    },
+    {
+      "id": "eye:it-is-worse-when-i-move",
+      "language": "es",
+      "text": "Empeora cuando me muevo.",
+      "src": "/speech/es-0ec6b37cf65c6d4f20edda0c3c644be8bb9e3d219474371a119087e68ec096d4.mp3"
+    },
+    {
+      "id": "eye:it-is-worse-when-i-move",
+      "language": "ar",
+      "text": "يزداد الألم عندما أتحرك.",
+      "src": "/speech/ar-32a2a994467c4be2fd197b8da94a470b06264aa66be148c5b41dc39671c85eb0.mp3"
+    },
+    {
+      "id": "eye:it-is-worse-when-i-move",
+      "language": "zh-Hans",
+      "text": "活动时疼痛加重。",
+      "src": "/speech/zh-Hans-03908ee2b022d4c791b1f11fb5832f4eb938df846273b5a7a6743187e8ac864f.mp3"
+    },
+    {
+      "id": "eye:it-is-worse-when-i-eat",
+      "language": "en",
+      "text": "It is worse when I eat.",
+      "src": "/speech/en-32f7193ee1c90de449377ba971cc91a615ef1e80c2ff7922203e69cff95fcb53.mp3"
+    },
+    {
+      "id": "eye:it-is-worse-when-i-eat",
+      "language": "es",
+      "text": "Empeora cuando como.",
+      "src": "/speech/es-a91eb5b52ad841ac76bc633a2ca5450d5776d6be022b8c2f2efdb388565977db.mp3"
+    },
+    {
+      "id": "eye:it-is-worse-when-i-eat",
+      "language": "ar",
+      "text": "يزداد الألم عندما آكل.",
+      "src": "/speech/ar-60642d8c8fd6e67e1e1e74f2a8e1282e92aafe2cd91307b99b9aecdce7545ebf.mp3"
+    },
+    {
+      "id": "eye:it-is-worse-when-i-eat",
+      "language": "zh-Hans",
+      "text": "进食时疼痛加重。",
+      "src": "/speech/zh-Hans-dfc79088bd186b9315d1be6b7911a0c064bf62b51e65b0794f74dd83ccac99fd.mp3"
+    },
+    {
+      "id": "eye:i-also-have-a-fever",
+      "language": "en",
+      "text": "I also have a fever.",
+      "src": "/speech/en-05a475b38f8c19b1c24079154f4b63fdb57e95921626aaa5e5f244cbf0af90e4.mp3"
+    },
+    {
+      "id": "eye:i-also-have-a-fever",
+      "language": "es",
+      "text": "También tengo fiebre.",
+      "src": "/speech/es-e54b32eb2cd1ade0592d7a39f3712bc9b588ae29493555fbee3f809b5221b6b4.mp3"
+    },
+    {
+      "id": "eye:i-also-have-a-fever",
+      "language": "ar",
+      "text": "لدي حمى أيضًا.",
+      "src": "/speech/ar-1625826c10bd83cf461b861e7f5f9443eb6ed67e8f490aa71b4d606ce4a422d7.mp3"
+    },
+    {
+      "id": "eye:i-also-have-a-fever",
+      "language": "zh-Hans",
+      "text": "我还发烧。",
+      "src": "/speech/zh-Hans-bb5cc76e5c7b75c790508982395badd74b3249ec8c51bfff4591edcbb286fd77.mp3"
+    },
+    {
+      "id": "eye:i-also-feel-sick-to-my-stomach",
+      "language": "en",
+      "text": "I also feel sick to my stomach.",
+      "src": "/speech/en-1f4fd97bfb229bc47fdd48395b8d14c7f524483bd31337fdb353719c2a66f831.mp3"
+    },
+    {
+      "id": "eye:i-also-feel-sick-to-my-stomach",
+      "language": "es",
+      "text": "También tengo náuseas.",
+      "src": "/speech/es-5899e48be0f3963d46707eb907d4878b3c6d4ef0a62ef8a9fa8b66a4608ba30d.mp3"
+    },
+    {
+      "id": "eye:i-also-feel-sick-to-my-stomach",
+      "language": "ar",
+      "text": "أشعر بالغثيان أيضًا.",
+      "src": "/speech/ar-45023533c458d73011d8c0eff571e47157a78e5776955106b2f73dce7b53cd32.mp3"
+    },
+    {
+      "id": "eye:i-also-feel-sick-to-my-stomach",
+      "language": "zh-Hans",
+      "text": "我还感到恶心。",
+      "src": "/speech/zh-Hans-afa5524c56f1eb0ace4c0091d080f3e517eb20ba919b8b8b4846ccdde506bdc9.mp3"
+    },
+    {
+      "id": "eye:i-also-feel-dizzy",
+      "language": "en",
+      "text": "I also feel dizzy.",
+      "src": "/speech/en-c5e04a771136abc4bfd3371de234dd8957f4f2bba8256ea2516d76454e07bacd.mp3"
+    },
+    {
+      "id": "eye:i-also-feel-dizzy",
+      "language": "es",
+      "text": "También me siento mareado.",
+      "src": "/speech/es-876a4922be30094448afc421d35bb0443cd29380e09b3716447e022ff1f3beae.mp3"
+    },
+    {
+      "id": "eye:i-also-feel-dizzy",
+      "language": "ar",
+      "text": "أشعر بالدوار أيضًا.",
+      "src": "/speech/ar-250a7059a91a3dbfce044dac1ef76d0c4b0c7ee6c3d2b6c578bbefb5f16306eb.mp3"
+    },
+    {
+      "id": "eye:i-also-feel-dizzy",
+      "language": "zh-Hans",
+      "text": "我还感到头晕。",
+      "src": "/speech/zh-Hans-ea8ae9feeba4fa52075a0975f1c17c59bebc374f33a8bad80da5eaa8c3478513.mp3"
+    },
+    {
+      "id": "eye:i-also-feel-short-of-breath",
+      "language": "en",
+      "text": "I also feel short of breath.",
+      "src": "/speech/en-65724c4d8a993caa84e4dbcfcaf8fc664a8dd346b7dd69341faf8094fa84931a.mp3"
+    },
+    {
+      "id": "eye:i-also-feel-short-of-breath",
+      "language": "es",
+      "text": "También me falta el aire.",
+      "src": "/speech/es-fe9ce25a4091b8ff3a9633d1bde00f11346e8dbbfd0d4800a627bbfb1d8a969d.mp3"
+    },
+    {
+      "id": "eye:i-also-feel-short-of-breath",
+      "language": "ar",
+      "text": "أشعر بضيق في التنفس أيضًا.",
+      "src": "/speech/ar-f39470fab74b56d78cc170a18ef8b0eee4c8a885e40c5831255cf3e3a1a5a9ff.mp3"
+    },
+    {
+      "id": "eye:i-also-feel-short-of-breath",
+      "language": "zh-Hans",
+      "text": "我还感到气短。",
+      "src": "/speech/zh-Hans-208381ce3a822577730d36a79c3eb18d3b9feae02532e1e8f379960b8c93ecf4.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-head",
+      "language": "en",
+      "text": "I have pain in my head.",
+      "src": "/speech/en-f6af38e1c79fd78e8bee5bf026c57fb991d1f97b1b48b1d3d601f4e474197613.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-head",
+      "language": "es",
+      "text": "Tengo dolor en la cabeza.",
+      "src": "/speech/es-6ac193fa22c7449fcb17a048a6cc2e347831dcb6a552bf2b86217928fa67a19f.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-head",
+      "language": "ar",
+      "text": "أشعر بألم في رأسي.",
+      "src": "/speech/ar-0e98266ca9bdb2f2a326ffc5ac92fecb4871d83531b7759ee9bf94ce10e863d7.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-head",
+      "language": "zh-Hans",
+      "text": "我的头部疼痛。",
+      "src": "/speech/zh-Hans-f3fc25cac6a6368ebc371641575eea4add55504b6ba0062fc5c6a8cb29dda744.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-chest",
+      "language": "en",
+      "text": "I have pain in my chest.",
+      "src": "/speech/en-e820e340225af87f1867d6c0508f5961f2e34c183fa26283064dd01075dd9043.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-chest",
+      "language": "es",
+      "text": "Tengo dolor en el pecho.",
+      "src": "/speech/es-2ba1b0f07ea843a554a1dd3da616332e0e9f58143f98c129fb3c2d9911e10f30.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-chest",
+      "language": "ar",
+      "text": "أشعر بألم في صدري.",
+      "src": "/speech/ar-25c23751591fd20bbf3d973e06a7b16b651bc615902b4a1e701f7d9bb35fa29c.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-chest",
+      "language": "zh-Hans",
+      "text": "我的胸部疼痛。",
+      "src": "/speech/zh-Hans-7380c1d96c9f3cf1e9c9b0300813e8d207c239e1003be482bedd7759f9ed2176.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-stomach",
+      "language": "en",
+      "text": "I have pain in my stomach.",
+      "src": "/speech/en-d7a708ef6682b19d94718fc68ab5d2808067d38a0662ced4e9ba442f33eb690b.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-stomach",
+      "language": "es",
+      "text": "Tengo dolor en el estómago.",
+      "src": "/speech/es-91cd3b78594f763782210fc5a6a064fe8317e2962825f1a1dcc5b004f01ce98a.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-stomach",
+      "language": "ar",
+      "text": "أشعر بألم في بطني.",
+      "src": "/speech/ar-e9668b810b765d449a9028ced201993e4869403d40a4e389b62b548cfcb17a38.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-stomach",
+      "language": "zh-Hans",
+      "text": "我的腹部疼痛。",
+      "src": "/speech/zh-Hans-351c754d53e94ebb3018aa713563a888aeea79dd617f4d86fb68e4e3c8a4efba.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-back",
+      "language": "en",
+      "text": "I have pain in my back.",
+      "src": "/speech/en-f5d5fb8706a4de931ba4a1e72dc31176676b515c5010bd15d02ebb5e65917a64.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-back",
+      "language": "es",
+      "text": "Tengo dolor en la espalda.",
+      "src": "/speech/es-94efd89d3dc5da2236722eea7b8e5d56d28aad8e2e6863e3b4ce66d84b419157.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-back",
+      "language": "ar",
+      "text": "أشعر بألم في ظهري.",
+      "src": "/speech/ar-0530bb0ea7dcbba56e8cd2c38a0359f9e9af8728246e7a6afb049142ab00d85b.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-back",
+      "language": "zh-Hans",
+      "text": "我的背部疼痛。",
+      "src": "/speech/zh-Hans-21d02afbdd7387005e9c092c759f938ef4593f13e8f7cea9b44f27de8077bdc0.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-arm",
+      "language": "en",
+      "text": "I have pain in my arm.",
+      "src": "/speech/en-4631e2c23486ccf6963027129cca92cf5daf02cfbe28c0e55b4138819834d258.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-arm",
+      "language": "es",
+      "text": "Tengo dolor en el brazo.",
+      "src": "/speech/es-8485095495913498609472796573945f05f1c0829c28eb9c45a552457086f439.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-arm",
+      "language": "ar",
+      "text": "أشعر بألم في ذراعي.",
+      "src": "/speech/ar-a85cd68f29af9c0ac220397b49425ef8cdc97daafe377464fad1d21fc29604bf.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-arm",
+      "language": "zh-Hans",
+      "text": "我的手臂疼痛。",
+      "src": "/speech/zh-Hans-420af458778c78d81a99a31dee94c1b9507e1c928745ce6b6fded82a5235923e.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-left-arm",
+      "language": "en",
+      "text": "I have pain in my left arm.",
+      "src": "/speech/en-355489f213c903bbd45e2aefb42de18cd13d991172aeb6493adf3e7e696617f7.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-left-arm",
+      "language": "es",
+      "text": "Tengo dolor en el brazo izquierdo.",
+      "src": "/speech/es-024e14aa35e94b7a8f82b728a277ce58def536dc09f299484c9b3cb97b1846f5.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-left-arm",
+      "language": "ar",
+      "text": "أشعر بألم في ذراعي اليسرى.",
+      "src": "/speech/ar-9c0f866d82cc3af15fa172e0cfb82c58a8fb574de19e7e7a178a5b80035bfa39.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-left-arm",
+      "language": "zh-Hans",
+      "text": "我的左手臂疼痛。",
+      "src": "/speech/zh-Hans-aeb983f2348db78d27258870eff1517235116792a808af8a8d1fc05a2a3b87bc.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-right-arm",
+      "language": "en",
+      "text": "I have pain in my right arm.",
+      "src": "/speech/en-9722fac2fe3747171d5f0a8dc22ab0b95fd7fd7c81d938ccf1c6c8e295a131e1.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-right-arm",
+      "language": "es",
+      "text": "Tengo dolor en el brazo derecho.",
+      "src": "/speech/es-2000660d6eb15486c24feee396a5accc8309c9c94230f9dba7a34a65a55e9a06.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-right-arm",
+      "language": "ar",
+      "text": "أشعر بألم في ذراعي اليمنى.",
+      "src": "/speech/ar-c962986bdd7f0d8a21245c9e3c278df1fd37bb29eda1a4e55d6b52db869221a7.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-right-arm",
+      "language": "zh-Hans",
+      "text": "我的右手臂疼痛。",
+      "src": "/speech/zh-Hans-0c2147c4ed653059667f85a565e38df91a5010275516fb4000d1720e2199046c.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-arm-on-both-sides",
+      "language": "en",
+      "text": "I have pain in my arm, on both sides.",
+      "src": "/speech/en-ece95bbeaa65b419fe91657c35fdcf4727fa23543fb8a61508b22584b2361809.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-arm-on-both-sides",
+      "language": "es",
+      "text": "Tengo dolor en ambos brazos.",
+      "src": "/speech/es-36230e9ac25a65308bb23949cfe221449144d1780f758e371475ac0ac302787e.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-arm-on-both-sides",
+      "language": "ar",
+      "text": "أشعر بألم في كلتا ذراعيّ.",
+      "src": "/speech/ar-df8f6032d81a067934fa76d828d683fc7917f3cabc72be448c6f7be503e4ba77.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-arm-on-both-sides",
+      "language": "zh-Hans",
+      "text": "我的双臂疼痛。",
+      "src": "/speech/zh-Hans-8124dac711a6c43ccc981adba3a57b94d8e5e6c94b5d96c531f741e388c8e21d.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-leg",
+      "language": "en",
+      "text": "I have pain in my leg.",
+      "src": "/speech/en-6ae85e2b3a2a92f8591fd8d0ba194c2cbd1aad0aebeda60e79d611081269ddb3.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-leg",
+      "language": "es",
+      "text": "Tengo dolor en la pierna.",
+      "src": "/speech/es-17f3f0c0ac16e589fa7c80ed21813faa5810e6cf4bdd47b506f2fcab5876452f.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-leg",
+      "language": "ar",
+      "text": "أشعر بألم في ساقي.",
+      "src": "/speech/ar-7628d92edf94c1e635cef0f5a6c60f933a12c11a2b8fcba59221f40ac64372ad.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-leg",
+      "language": "zh-Hans",
+      "text": "我的腿部疼痛。",
+      "src": "/speech/zh-Hans-3519e069958336fb5af873f39d04bb88e6683867fe3e489d8c97231faecf4c26.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-left-leg",
+      "language": "en",
+      "text": "I have pain in my left leg.",
+      "src": "/speech/en-52fb097188fe299ad48b201cc16b915491e74385c5343fdcb7318b82ad399988.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-left-leg",
+      "language": "es",
+      "text": "Tengo dolor en la pierna izquierda.",
+      "src": "/speech/es-7b5235130298bec2b56a24b219806c47e67252c7fe04f44a9c704455643561dd.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-left-leg",
+      "language": "ar",
+      "text": "أشعر بألم في ساقي اليسرى.",
+      "src": "/speech/ar-69aefe1d3e8991e97c1d60be4c9e272aeabad3ac837bfdba660ede76a08053ca.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-left-leg",
+      "language": "zh-Hans",
+      "text": "我的左腿部疼痛。",
+      "src": "/speech/zh-Hans-ffadd98560812c0219380f54eaaac93ee130d187b8f69827b05f4e389a05883c.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-right-leg",
+      "language": "en",
+      "text": "I have pain in my right leg.",
+      "src": "/speech/en-75e5835709187b3768f5f01bab7df2938d3f346be1b49a6ef4ba4a707338f4d5.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-right-leg",
+      "language": "es",
+      "text": "Tengo dolor en la pierna derecha.",
+      "src": "/speech/es-42811e767116fa4dd540337aee75c949b2640d357c9743a45477eddd82b45297.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-right-leg",
+      "language": "ar",
+      "text": "أشعر بألم في ساقي اليمنى.",
+      "src": "/speech/ar-25d057ffca132c8877688afec408ea6ce011183e681eb08273763bde30497a28.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-right-leg",
+      "language": "zh-Hans",
+      "text": "我的右腿部疼痛。",
+      "src": "/speech/zh-Hans-f19038e2d468e64714cc7b2a546e57d567efb0287a85143938f9338e88fc83c8.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-leg-on-both-sides",
+      "language": "en",
+      "text": "I have pain in my leg, on both sides.",
+      "src": "/speech/en-dfc91cb2258a015cd837c5a3486cddc036758ff05c512014c520564c22936d33.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-leg-on-both-sides",
+      "language": "es",
+      "text": "Tengo dolor en ambas piernas.",
+      "src": "/speech/es-66dbb9859e8711a7636ff7d7eccca936488a490a01762691bf1f7591efb4565a.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-leg-on-both-sides",
+      "language": "ar",
+      "text": "أشعر بألم في كلتا ساقيّ.",
+      "src": "/speech/ar-4d1a149d5c2e36302828606f18f915842fe5d0e8162de486308999c815aa9d31.mp3"
+    },
+    {
+      "id": "eye:i-have-pain-in-my-leg-on-both-sides",
+      "language": "zh-Hans",
+      "text": "我的双腿疼痛。",
+      "src": "/speech/zh-Hans-a3232ef06a8e5cfd9a63925b141f05a594681f6f590bc8bc5ac99e13473cd09a.mp3"
     }
   ]
 }

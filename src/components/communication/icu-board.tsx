@@ -38,6 +38,8 @@ import { EyeWorkspace } from "@/components/eye/eye-workspace";
 import { describeAnswers } from "@/lib/eye/flow";
 import { eye, getEyeState, subscribeEye, useEyeState } from "@/lib/eye/session";
 
+import { EYE_LANGUAGES } from "@/lib/questions/eye-localization";
+
 const DESKTOP_QUERY = "(hover: hover) and (pointer: fine)";
 function subscribeDesktop(cb: () => void) {
   const query = window.matchMedia(DESKTOP_QUERY);
@@ -144,6 +146,7 @@ export function IcuBoard({
     return () => clearTimeout(timer);
   }, [count]);
   const boardUp = !expired && !handoff && !reviewed;
+  useEffect(() => { if (!boardUp) eye.stopSpeech(); }, [boardUp]);
   useEffect(() => {
     setGazeAvailable(boardUp);
     return () => setGazeAvailable(false);
@@ -188,6 +191,12 @@ export function IcuBoard({
         </div>
       </header>
       <section id="eye-clinician-tools" className="eye-tools" aria-label="Clinician tools" hidden={!toolsOpen} data-gaze-ignore>
+        <label className="eye-patient-language">
+          Patient language
+          <select aria-label="Patient language" value={eyeState.language} onChange={event => eye.setLanguage(event.target.value)}>
+            {EYE_LANGUAGES.map(language => <option key={language} value={language}>{({ en: "English", es: "Español", ar: "العربية", "zh-Hans": "简体中文" })[language]}</option>)}
+          </select>
+        </label>
         <div className="eye-tool-actions">
           {eyeState.mode ? <>
             <button type="button" className={s.quiet} onClick={() => { eye.start(eyeState.mode === "intake" ? "conversation" : "intake"); setToolsOpen(false); }}>

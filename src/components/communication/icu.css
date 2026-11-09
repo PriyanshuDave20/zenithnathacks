@@ -31,6 +31,8 @@
   border-radius: 20px;
 }
 .eye-tool-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.eye-patient-language { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; font-weight: 600; }
+.eye-patient-language select { min-height: 44px; max-width: 100%; padding: 8px 12px; border: 1px solid var(--stroke); border-radius: 12px; background: var(--paper); color: var(--text); }
 .eye-shell .eye-tool-actions [aria-pressed="true"] { background: var(--action); color: var(--paper); }
 .eye-guidance { margin-top: 20px; max-width: 72ch; }
 .eye-guidance p, .eye-guidance h3 { margin-top: 12px; }
