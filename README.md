@@ -53,7 +53,8 @@ Judges: use the live app above. Open it on a phone-sized viewport (about 390px) 
 - API contracts: [`docs/API.md`](docs/API.md)
 - Submission text (summary and about): [`docs/SUBMISSION.md`](docs/SUBMISSION.md)
 - Team workflow and lanes: [`docs/TEAM.md`](docs/TEAM.md), [`AGENTS.md`](AGENTS.md)
-- Slides / demo video: _add links here_
+- Slides / demo video: 
+  slides: https://onedrive.live.com/:p:/g/personal/5c3f132d677d9b84/IQCqKnLCqzn-TbRuxwLVix6XAWKH3hq3lcWNpRiCs_AyT8I?rtime=UAlQVSs-30g&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3AvYy81YzNmMTMyZDY3N2Q5Yjg0L0lRQ3FLbkxDcXpuLVRiUnV4d0xWaXg2WEFXS0gzaHEzbGNXTnBSaUNzX0F5VDhJP2U9aWl1WmFV
 
 ## Credits
 Built during NatHacks 2026 by the team (GitHub: PremD27, PriyanshuDave20, and teammates). Developed with AI coding assistants (Claude Code and Codex), with human review. Third-party services and libraries: Claude (Anthropic), Azure Translator and Speech, MediaPipe, Better Auth, Prisma, Next.js, Vercel.
