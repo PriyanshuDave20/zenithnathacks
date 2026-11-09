@@ -1,5 +1,11 @@
 # Handoff Log
 
+### 2026-11-08 Zach / Claude · zach/combined-branches — combined open branches into one PR
+- Zach asked to combine all branches with unmerged commits. Merged (no rebase, merge commits) onto origin/main `f69e5e5`: mobile-hr-start, body-prompt-click, idle-10-minutes, session-ui-fixes, gaze-tracking, zenith/gaze-webgazer.
+- Resolutions: docs conflicts keep both entries. idle-10-minutes hardcoded 6 hours in four files that main already drives from `useSessionTimeout`, so main's side was kept (that branch's changes are effectively superseded). session-ui-fixes: kept main's `ScaleControl` pain slider over the 0-10 button grid. gaze-webgazer: kept both eslint ignores; kept `fixation.reset()` with main's `buildCalibrationWaypoints(cancelButtonRef.current)` Cancel clearance. WebGazer replaces the gaze engine wholesale (22 files, vendored assets under `public/`): needs real-camera validation and Backend 2 review.
+- **Not merged, need an owner decision:** `zach/asclepius-refinement` (rewrites the same snake/staff drawing as main's emblem; adds `asclepius-renderer.ts`) and `zach/body-diagram` (add/add conflict on `body-diagram.tsx` and `body-parts.ts` plus DESIGN.md, patient-screens, test runner).
+- Checks: typecheck, lint (0 errors, 1 hook-deps warning in gaze-layer.tsx from the WebGazer branch) and 214 tests pass. No browser or camera validation of the combined result.
+
 ### 2026-11-08 Zach / Claude · zach/mobile-hr-start — mobile heart-rate trace starts top left
 - On viewports under 768px the header ECG monitor now starts at the left edge (`entryX = 16`) instead of under the centred emblem; desktop path unchanged. One change in `src/components/home/heartbeat-journey.tsx` (Frontend lane).
 - Checked at 390px by screenshot after scrolling past the launch distance; typecheck and lint pass. Not checked: the snake's arrival animation against the left-start trace, tablet widths near 768px, real phones.
