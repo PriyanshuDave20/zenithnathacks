@@ -121,7 +121,7 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
   const showBack = (isStep(screen) && screen !== "review") || screen === "needs";
   const [title, subtitle] = TITLES[screen].map(t);
   const wizard = isStep(screen) && screen !== "pain_q" && screen !== "review";
-  const columns = "repeat(auto-fit, minmax(160px, 1fr))";
+  const columns = "repeat(var(--eye-choice-columns, 3), minmax(0, 1fr))";
   const sofar = eyeSummary(answers, language);
 
   let body: ReactNode = null;
@@ -238,13 +238,13 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
             className={s.quiet}
             data-gaze-target="flow-back"
             onClick={goBack}
-            style={{ minHeight: 64, minWidth: "9rem", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: "1.1rem" }}
+            style={{ minHeight: 56, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}
           >
             <ArrowLeft size={22} /> {t("Go back")}
           </button>
         ) : null}
       </div>
-      <div className="sf-icu-status" role="status" aria-live="polite">
+      <div className={`sf-icu-status ${!((wizard || screen === "review") && sofar) && !lastSaid ? "eye-status-empty" : ""}`} role="status" aria-live="polite">
         {(wizard || screen === "review") && sofar ? (
           <>
             {t("So far:")} <strong>{sofar}</strong>
