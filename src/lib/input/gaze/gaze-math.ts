@@ -101,11 +101,8 @@ export function calibrationFixation(elapsedMs: number, count: number, durationMs
 /** One calibration sample: the features seen while the user looked at a known screen point. */
 export type CalibrationSample = { features: GazeFeatures; screen: ScreenPoint };
 
-/** Horizontal: [x, 1]. Vertical: [y, a, p, y², 1]; new fits keep pitch weight zero.
- * The quadratic term is not decoration: the eyelids compress the iris-height signal (looking down
- * hides the iris), so the vertical relation bends. A straight line fitted across a bent relation
- * is exactly what made the middle of the screen sit too high. */
-export type GazeMapping = { x: [number, number]; y: [number, number, number, number, number] };
+/** Horizontal: [x, 1]. Vertical: [y, a, p, 1]; new fits keep pitch weight zero. */
+export type GazeMapping = { x: [number, number]; y: [number, number, number, number] };
 
 /** Why a calibration was refused: each one maps to a different instruction for the person. */
 export type GazeFitFailure = "few-samples" | "invalid" | "coverage" | "no-spread" | "too-noisy" | "degenerate";
@@ -171,21 +168,10 @@ type FitModel = { mapping: GazeMapping; z: number[] };
 function fitRobust(samples: CalibrationSample[], aperture = false): FitModel | null {
   const build = (set: CalibrationSample[]): FitModel | null => {
     const fx = fitStandardised(set.map((s) => [s.features.x]), set.map((s) => s.screen.x));
-    // Vertical: iris height plus its square (the eyelid compression bends the relation) and,
-    // when held-out data justifies it, the eye opening.
-    const fy = fitStandardised(
-      set.map((s) => (aperture ? [s.features.y, s.features.y * s.features.y, s.features.a] : [s.features.y, s.features.y * s.features.y])),
-      set.map((s) => s.screen.y),
-    );
+    const fy = fitStandardised(set.map((s) => aperture ? [s.features.y, s.features.a] : [s.features.y]), set.map((s) => s.screen.y));
     if (!fx || !fy) return null;
     return {
-      mapping: {
-        x: [fx.coef[0], fx.intercept],
-        // y slots: [iris lin, aperture, pitch (unused), iris quad, intercept]
-        y: aperture
-          ? [fy.coef[0], fy.coef[2], 0, fy.coef[1], fy.intercept]
-          : [fy.coef[0], 0, 0, fy.coef[1], fy.intercept],
-      },
+      mapping: { x: [fx.coef[0], fx.intercept], y: [fy.coef[0], aperture ? fy.coef[1] : 0, 0, fy.intercept] },
       z: [...fx.z, ...fy.z],
     };
   };
@@ -298,10 +284,10 @@ export function medianFeatures(list: GazeFeatures[]): GazeFeatures | null {
 export function recenterMapping(mapping: GazeMapping, features: GazeFeatures, target: ScreenPoint = { x: 0.5, y: 0.5 }): GazeMapping {
   // Unclamped, so a pointer that was pinned against an edge still gives the true offset.
   const rawX = mapping.x[0] * features.x + mapping.x[1];
-  const rawY = mapping.y[0] * features.y + mapping.y[1] * features.a + mapping.y[2] * features.p + mapping.y[3] * features.y * features.y + mapping.y[4];
+  const rawY = mapping.y[0] * features.y + mapping.y[1] * features.a + mapping.y[2] * features.p + mapping.y[3];
   return {
     x: [mapping.x[0], mapping.x[1] + (target.x - rawX)],
-    y: [mapping.y[0], mapping.y[1], mapping.y[2], mapping.y[3], mapping.y[4] + (target.y - rawY)],
+    y: [mapping.y[0], mapping.y[1], mapping.y[2], mapping.y[3] + (target.y - rawY)],
   };
 }
 
@@ -370,7 +356,7 @@ export function applyGazeMapping(mapping: GazeMapping | null, f: GazeFeatures): 
   if (!mapping) return defaultMapping(f);
   return {
     x: clamp(mapping.x[0] * f.x + mapping.x[1], 0, 1),
-    y: clamp(mapping.y[0] * f.y + mapping.y[1] * f.a + mapping.y[2] * f.p + mapping.y[3] * f.y * f.y + mapping.y[4], 0, 1),
+    y: clamp(mapping.y[0] * f.y + mapping.y[1] * f.a + mapping.y[2] * f.p + mapping.y[3], 0, 1),
   };
 }
 

@@ -20,6 +20,7 @@
     "@mediapipe/tasks-vision": "^1.2.2",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
+    "better-auth": "1.7.18",
     "dotenv": "^18.0.9",
     "next": "16.4.3",
     "pg": "^8.23.1",
@@ -40,5 +41,8 @@
     "prisma": "^7.10.1",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

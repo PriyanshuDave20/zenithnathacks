@@ -75,13 +75,10 @@ const INTERACTIVE = [
 ].join(", ");
 
 /**
- * Fixed calibration targets: centre first, then corners and edge midpoints, then the centres of
- * up to eight on-screen controls ("hotspots" - the buttons the patient will actually select).
- * Calibrating directly on the selectable options ties the map to the places that matter, and the
- * magnet can then trust its pull. No moving pursuit: each target stays put for ~1.8-3.3 seconds,
- * with the first second ignored for eye travel.
+ * Nine fixed targets, centre first, then the corners and edge midpoints. No moving pursuit:
+ * each target stays put for ~3.3 seconds, with the first second ignored for eye travel.
  */
-function buildCalibrationWaypoints(): { x: number; y: number }[] {
+function buildCalibrationWaypoints(cancelButton?: HTMLElement | null): { x: number; y: number }[] {
   const w = window.innerWidth;
   const h = window.innerHeight;
   // The dot must never go under a bright screen edge (a system light such as Mac Edge Light draws over
@@ -89,30 +86,23 @@ function buildCalibrationWaypoints(): { x: number; y: number }[] {
   const safe = edgeSafePx(w, h, getGazeEdgeWide()) + 28;
   const insetX = Math.max(0.12, safe / w);
   const insetY = Math.max(0.12, safe / h);
+  // The Cancel button sits along the bottom edge. Keep the bottom row of dots (and the seconds label under each dot)
+  // above it, so the dot never passes through or hides the button.
+  const rect = cancelButton?.getBoundingClientRect();
+  const cancelTop = rect && rect.height > 0 ? rect.top : h - 88;
+  const bottomY = Math.min((1 - insetY) * h, cancelTop - 48);
   const pts = [
     { x: 0.5 * w, y: 0.5 * h },
     { x: insetX * w, y: insetY * h },
     { x: 0.5 * w, y: insetY * h },
     { x: (1 - insetX) * w, y: insetY * h },
     { x: (1 - insetX) * w, y: 0.5 * h },
-    { x: (1 - insetX) * w, y: (1 - insetY) * h },
-    { x: 0.5 * w, y: (1 - insetY) * h },
-    { x: insetX * w, y: (1 - insetY) * h },
+    { x: (1 - insetX) * w, y: bottomY },
+    { x: 0.5 * w, y: bottomY },
+    { x: insetX * w, y: bottomY },
     { x: insetX * w, y: 0.5 * h },
   ];
-  // Hotspots: centres of the visible, selectable controls, kept inside the safe margin and spread
-  // out (a hotspot a few pixels from a grid point adds nothing but duplicate samples).
-  const cap = 8;
-  const minDist = 0.09 * Math.hypot(w, h);
-  const seen = [...pts];
-  for (const c of gazeCandidates()) {
-    if (seen.length >= pts.length + cap) break;
-    const x = clampNum(c.box.left + (c.box.right - c.box.left) / 2, safe, w - safe);
-    const y = clampNum(c.box.top + (c.box.bottom - c.box.top) / 2, safe, h - safe);
-    if (seen.some((p) => Math.hypot(p.x - x, p.y - y) < minDist)) continue;
-    seen.push({ x, y });
-  }
-  return seen;
+  return pts;
 }
 
 function selectableTarget(el: Element | null): Element | null {
@@ -211,15 +201,13 @@ export function GazeLayer() {
   // swallows small tremor entirely. Max alphas are the fast end: held 2% below the previous
   // tuning (0.75/0.55) after "too rigid" -> revert -> "a little more rigid".
   const featureSmootherRef = useRef(new FeatureSmoother(0.3, 0.735, 0.06));
-  // One-Euro: steady at rest, no lag on a jump. Opened up after "I have to exaggerate movements":
-  // the old cutoff (0.3 Hz) smoothed away ordinary-size gaze moves, not just jitter.
-  const smootherRef = useRef(new OneEuroFilter(0.8, 0.012, 1.0));
+  // One-Euro: steady at rest, no lag on a jump. Tuned to this tracker's noise (the usual defaults jitter more here).
+  const smootherRef = useRef(new OneEuroFilter(0.3, 0.002, 0.5));
   // Drops the frames of a blink, so closing eyelids cannot drag the pointer.
   const blinkGuardRef = useRef(new BlinkGuard());
   const blinkBufferRef = useRef(new BlinkSafeBuffer());
-  // A steady look is averaged over a short window (responsiveness first; the magnet and the
-  // One-Euro handle jitter), so tracking jitter does not decide which button is chosen.
-  const fixationRef = useRef(new FixationFilter(500, 4));
+  // A steady look is averaged over a longer window, so tracking jitter does not decide which button is chosen.
+  const fixationRef = useRef(new FixationFilter());
   const stickyTargetRef = useRef<Element | null>(null);
   const candidatesRef = useRef<{ at: number; items: { el: Element; box: GazeBox }[] }>({ at: 0, items: [] });
   // One-point drift correction in progress (null when not recentering).
@@ -246,6 +234,7 @@ export function GazeLayer() {
   const generationRef = useRef(0);
 
   const calibrationDialog = useRef<HTMLDialogElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const active = phase === "calibrating" || phase === "on";
 
   const enable = useCallback(async () => {
@@ -404,7 +393,7 @@ export function GazeLayer() {
     const smoother = smootherRef.current;
     smoother.reset();
     featureSmoother.reset();
-    const waypoints = phase === "calibrating" ? buildCalibrationWaypoints() : null;
+    const waypoints = phase === "calibrating" ? buildCalibrationWaypoints(cancelButtonRef.current) : null;
     let raf = 0;
     let last = performance.now();
     let lastFeatureAt = last;
@@ -571,32 +560,7 @@ export function GazeLayer() {
       const p0 = smoother.next({ x, y }, featureDt);
       const jump = clampNum(Math.min(window.innerWidth, window.innerHeight) * 0.12, 60, 140);
       const p = fixationRef.current.next(p0, now, jump);
-
-      // Which control is meant: the one under the pointer, else the nearest within reach, and it sticks
-      // unless another is clearly closer. Webcam tracking is only good to a fraction of a screen.
-      if (now - candidatesRef.current.at > 200) candidatesRef.current = { at: now, items: gazeCandidates() };
-      const items = candidatesRef.current.items;
-      const previous = items.find((c) => c.el === stickyTargetRef.current)?.box.id ?? null;
-      const reach = clampNum(Math.min(window.innerWidth, window.innerHeight) * 0.14, 56, 130);
-      const chosen = pickGazeTarget(p, items.map((c) => c.box), { radius: reach, previous });
-      const target = chosen == null ? null : (items.find((c) => c.box.id === chosen)?.el ?? null);
-      stickyTargetRef.current = target;
-
-      // Magnetic pull: when the gaze lands somewhat near a control, the pointer gravitates to its
-      // centre - the farther in, the stronger - so "roughly there" becomes "on the button" without
-      // exaggerated eye movements, and the eye sees the cursor sit on what it is about to choose.
-      let px = p.x;
-      let py = p.y;
-      if (target) {
-        const box = target.getBoundingClientRect();
-        const cx = box.left + box.width / 2;
-        const cy = box.top + box.height / 2;
-        const t = clampNum(1 - Math.hypot(p.x - cx, p.y - cy) / reach, 0, 1);
-        const k = 0.25 + 0.6 * t;
-        px = p.x + (cx - p.x) * k;
-        py = p.y + (cy - p.y) * k;
-      }
-      cursor.style.transform = `translate3d(${px}px, ${py}px, 0)`;
+      cursor.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
       cursor.style.opacity = "1";
 
       // Drift correction in progress: collect a steady reading of the eyes on the centre dot; no selecting meanwhile.
@@ -644,8 +608,17 @@ export function GazeLayer() {
         return;
       }
 
+      // Which control is meant: the one under the pointer, else the nearest within reach, and it sticks
+      // unless another is clearly closer. Webcam tracking is only good to a fraction of a screen.
+      if (now - candidatesRef.current.at > 200) candidatesRef.current = { at: now, items: gazeCandidates() };
+      const items = candidatesRef.current.items;
+      const previous = items.find((c) => c.el === stickyTargetRef.current)?.box.id ?? null;
+      const reach = clampNum(Math.min(window.innerWidth, window.innerHeight) * 0.14, 56, 130);
+      const chosen = pickGazeTarget(p, items.map((c) => c.box), { radius: reach, previous });
+      const target = chosen == null ? null : (items.find((c) => c.box.id === chosen)?.el ?? null);
+      stickyTargetRef.current = target;
       // Edge scrolling asks whether the pointer is actually ON a control, not merely near one.
-      const onControl = selectableTarget(document.elementFromPoint(px, py));
+      const onControl = selectableTarget(document.elementFromPoint(p.x, p.y));
       let key: string | null = null;
       if (target) {
         let k = elementKeysRef.current.get(target);
@@ -741,6 +714,7 @@ export function GazeLayer() {
             <span ref={calibDotTimerRef} className="absolute left-0 top-6 -translate-x-1/2 whitespace-nowrap text-sm font-semibold tabular-nums text-on-navy-soft">4s</span>
           </div>
           <button
+            ref={cancelButtonRef}
             type="button"
             onClick={cancelCalibration}
             style={{ bottom: "max(40px, var(--eye-edge, 40px))" }}

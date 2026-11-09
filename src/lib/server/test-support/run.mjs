@@ -15,6 +15,10 @@ const tests = [
   "src/lib/input/gaze/gaze-math.test.ts",
   "src/lib/input/gaze/dwell.test.ts",
   "src/lib/server/redact.test.ts",
+  "src/lib/server/clinician-api.test.ts",
+  "src/lib/server/auth/auth.test.ts",
+  "src/lib/server/metrics.test.ts",
+  "src/app/api/metrics/route.test.ts",
   "src/lib/server/llm.test.ts",
   "src/lib/server/providers/nvidia.test.ts",
   "src/lib/server/translation/translation.test.ts",
@@ -26,8 +30,12 @@ const tests = [
   "src/lib/server/respond/respond.test.ts",
   "src/app/api/respond/route.test.ts",
   "src/components/session/api.test.ts",
+  "src/components/session/metrics-lifecycle.test.ts",
+  "src/components/auth/session-store.test.ts",
   "src/components/session/speech-playback.test.ts",
   "src/components/session/cloud-speech.test.ts",
+  "src/lib/eye/flow.test.ts",
+  "src/lib/theme-pref.test.ts",
 ];
 
 try {
@@ -65,6 +73,11 @@ try {
     });
     if (result.error) throw result.error;
     process.exitCode = result.status ?? 1;
+    if (process.exitCode === 0) {
+      const auth = spawnSync(process.execPath, ["--test", "src/lib/server/auth/library.test.mjs"], { stdio: "inherit", cwd: root });
+      if (auth.error) throw auth.error;
+      process.exitCode = auth.status ?? 1;
+    }
   }
 } finally {
   rmSync(output, { recursive: true, force: true });

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test, type TestContext } from "node:test";
-import { POST as translateRoute } from "../../app/api/translate/route";
-import { POST as respondRoute } from "../../app/api/respond/route";
+import { POST as translateRoute } from "../../app/api/translate/handler";
+import { POST as respondRoute } from "../../app/api/respond/handler";
 import { STORIES } from "../../lib/server/fixtures/stories";
 import { BODY_PARTS } from "../../lib/input/body-parts";
 import { getGuidedQuestions } from "../../lib/questions/localization";
@@ -17,7 +17,7 @@ function connectRoutes(t: TestContext) {
   const requests: Request[] = [];
   t.mock.method(globalThis, "fetch", async (path: string, init: RequestInit) => {
     assert.equal(init.cache, "no-store");
-    assert.equal(init.credentials, "omit");
+    assert.equal(init.credentials, "same-origin");
     assert.ok(init.signal);
     const request = new Request(`http://synapse.test${path}`, init);
     requests.push(request.clone());
@@ -95,7 +95,7 @@ test("adapter rejects HTTP errors, invalid JSON, malformed schemas and network f
   await assert.rejects(translate(STORIES[0].translateRequest));
 });
 
-test("invalid selections are rejected by the route; undeclared request fields and metrics never fetch", async (t) => {
+test("invalid selections are rejected by the route and undeclared request fields never fetch", async (t) => {
   const requests = connectRoutes(t);
   for (const input of [
     { questionId: "where", kind: "option" as const, value: "unknown-part" },
@@ -105,8 +105,48 @@ test("invalid selections are rejected by the route; undeclared request fields an
     await assert.rejects(translate({ context: STORIES[0].translateRequest.context, inputs: [input] }));
   }
   assert.throws(() => respond({ ...STORIES[0].respondRequest, name: "extra" } as Parameters<typeof respond>[0]));
-  track({ event: "session_started", mode: "standard" });
   assert.equal(requests.length, 3);
+});
+
+test("metrics sends only validated anonymous fields without reading the empty 204", async (t) => {
+  const calls: { path: string; init: RequestInit }[] = [];
+  t.mock.method(globalThis, "fetch", async (path: string, init: RequestInit) => {
+    calls.push({ path, init });
+    return { ok: true, status: 204, json() { assert.fail("A metrics response must not be parsed"); } };
+  });
+  const wider = { event: "first_message" as const, mode: "icu" as const, msSinceStart: 1234, text: "synthetic content", clinicianId: "synthetic-id" };
+  assert.equal(track(wider), undefined);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].path, "/api/metrics");
+  assert.equal(calls[0].init.method, "POST");
+  assert.equal(calls[0].init.credentials, "omit");
+  assert.equal(calls[0].init.cache, "no-store");
+  assert.ok(calls[0].init.signal);
+  assert.deepEqual(JSON.parse(String(calls[0].init.body)), { event: "first_message", mode: "icu", msSinceStart: 1234 });
+});
+
+test("invalid metrics never fetch and sync/network/HTTP failures cannot escape or retry", async (t) => {
+  const invalid = [null, {}, { event: "other", mode: "standard" }, { event: "first_message", mode: "other" },
+    ...[-1, Infinity, NaN, "12"].map(msSinceStart => ({ event: "first_message", mode: "standard", msSinceStart }))];
+  let calls = 0;
+  const mock = t.mock.method(globalThis, "fetch", () => { calls++; throw new Error("synthetic failure"); });
+  for (const event of invalid) assert.doesNotThrow(() => track(event as Parameters<typeof track>[0]));
+  assert.equal(calls, 0);
+  assert.doesNotThrow(() => track({ event: "session_started", mode: "mute" }));
+  assert.equal(calls, 1);
+  mock.mock.restore();
+  const rejected = t.mock.method(globalThis, "fetch", async () => { calls++; throw new Error("synthetic network failure"); });
+  track({ event: "session_started", mode: "deaf_hoh" });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(calls, 2);
+  rejected.mock.restore();
+  t.mock.method(globalThis, "fetch", async () => {
+    calls++;
+    return { ok: false, status: 500, json() { assert.fail("Metrics errors must not be read"); } };
+  });
+  track({ event: "teachback_confirmed", mode: "low_literacy" });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(calls, 3);
 });
 
 // Frontend recovery must show human-readable selections, never transport IDs.

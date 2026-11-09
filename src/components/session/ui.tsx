@@ -41,11 +41,17 @@ export function Screen({
   );
 }
 
-/** Sticky bottom action area, inside thumb reach on phones, clear of the home indicator. */
+/**
+ * Sticky bottom actions: a floating rounded capsule that hugs its buttons (no full-width bar or hard
+ * border), inside thumb reach on phones and clear of the home indicator. The wrapper ignores pointer
+ * events so only the capsule itself catches taps; content scrolls past around it.
+ */
 export function ActionBar({ children }: { children: ReactNode }) {
   return (
-    <div className="sticky bottom-0 z-10 -mx-4 mt-auto border-t border-line bg-ground/92 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 backdrop-blur-xl sm:-mx-6 sm:px-6">
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">{children}</div>
+    <div className="pointer-events-none sticky bottom-0 z-10 mt-auto flex justify-center pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:justify-end">
+      <div className="pointer-events-auto flex w-full flex-row items-center gap-2 rounded-[2rem] bg-surface/90 p-2 shadow-lift ring-1 ring-line backdrop-blur-xl [&>*]:min-w-0 [&>*]:flex-1 sm:w-auto sm:[&>*]:flex-none">
+        {children}
+      </div>
     </div>
   );
 }

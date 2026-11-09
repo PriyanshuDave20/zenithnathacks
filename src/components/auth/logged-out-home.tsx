@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { LoadingStatus } from "@/components/ui/spinner";
 import { useClinician } from "./api";
 
-/** Resolve the browser mock session before exposing the public landing page. */
+/** Resolve the server-backed clinician session before exposing the public landing page. */
 export function LoggedOutHome({ children }: { children: ReactNode }) {
   const clinician = useClinician();
   const router = useRouter();

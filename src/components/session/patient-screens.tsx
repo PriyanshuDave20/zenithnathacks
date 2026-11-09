@@ -35,6 +35,7 @@ import { BodyDiagram } from "@/components/input/body-diagram";
 import { RegionIdSchema } from "@/lib/contracts";
 import { getBodyPart, spotParts, spotsToInputs, type BodyFigure, type BodySpot } from "@/lib/input/body-parts";
 import { STRINGS } from "./strings";
+import { ScaleSlider as ScaleControl } from "./scale-slider";
 import { ActionBar, PrimaryButton, QuietButton, Screen, SpeechBubble, Spinner, Tile, Title } from "./ui";
 import { useRecognition, useSpeak } from "./use-speech";
 import type { SpeechPlaybackStatus } from "./speech-playback";
@@ -270,6 +271,54 @@ export function IntakeFree({
 
 /* ---------- Guided intake: one question at a time, pictures, read-aloud ---------- */
 
+/** 0-10 style scale as one slider (numbers) plus a separate button for any non-numeric option such as "Not sure". */
+function ScaleSlider({
+  options,
+  answer,
+  locale,
+  label,
+  onAnswer,
+}: {
+  options: { id: string; text: Record<string, string> }[];
+  answer: string | undefined;
+  locale: string;
+  label: string;
+  onAnswer: (id: string) => void;
+}) {
+  const numeric = options.filter((o) => /^s\d+$/.test(o.id)).sort((x, y) => Number(x.id.slice(1)) - Number(y.id.slice(1)));
+  const other = options.filter((o) => !/^s\d+$/.test(o.id));
+  if (numeric.length === 0) return null;
+  const lo = Number(numeric[0].id.slice(1));
+  const hi = Number(numeric[numeric.length - 1].id.slice(1));
+  const current = answer && /^s\d+$/.test(answer) ? Number(answer.slice(1)) : null;
+  const otherPicked = other.find((o) => o.id === answer);
+  return (
+    <div className="mt-4 flex flex-col gap-4">
+      <ScaleControl
+        value={current}
+        onChange={(n) => onAnswer(`s${n}`)}
+        min={lo}
+        max={hi}
+        label={label}
+        locale={locale}
+      />
+      {other.map((o) => (
+        <button
+          key={o.id}
+          type="button"
+          aria-pressed={otherPicked?.id === o.id}
+          onClick={() => onAnswer(o.id)}
+          className={`press min-h-14 rounded-full px-6 text-lg font-semibold ${
+            otherPicked?.id === o.id ? "bg-blue-deep text-white shadow-soft" : "bg-surface text-ink ring-1 ring-line hover:bg-blue-soft"
+          }`}
+        >
+          {o.text[locale]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function IntakeGuided({
   lang,
   mode,
@@ -356,26 +405,13 @@ export function IntakeGuided({
               <BodyDiagram regions={RegionIdSchema.options} onSelect={() => {}} lang={lang.code} spots={spots} onSpotsChange={changeSpots} figure={figure} />
             </div>
           ) : isScale ? (
-            <div className="mt-4 grid grid-cols-4 gap-2 sm:gap-3">
-              {q.options.map((o, i) => {
-                const on = answers[q.id] === o.id;
-                return (
-                  <button
-                    key={o.id}
-                    type="button"
-                    aria-pressed={on}
-                    aria-label={o.text[lang.code]}
-                    onClick={() => setAnswers({ ...answers, [q.id]: o.id })}
-                    className={`press flex aspect-square min-h-14 flex-col items-center justify-center rounded-full font-display text-[clamp(1.5rem,6vw,2.25rem)] font-bold ${
-                      on ? "bg-blue-deep text-white shadow-soft" : "bg-surface text-ink ring-1 ring-line hover:bg-blue-soft"
-                    }`}
-                  >
-                    {/^s\d+$/.test(o.id) ? new Intl.NumberFormat(lang.code).format(Number(o.id.slice(1))) : <span className="text-sm">{o.text[lang.code]}</span>}
-                    {/^s\d+$/.test(o.id) ? <span aria-hidden="true" className={`mt-1 block h-1.5 rounded-full ${on ? "bg-white" : "bg-blue"}`} style={{ width: `${Math.min(90, (i + 1) * 8)}%` }} /> : null}
-                  </button>
-                );
-              })}
-            </div>
+            <ScaleSlider
+              options={q.options}
+              answer={answers[q.id]}
+              locale={lang.code}
+              label={q.text[lang.code]}
+              onAnswer={(id) => setAnswers({ ...answers, [q.id]: id })}
+            />
           ) : (
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {q.options.map((o) => {

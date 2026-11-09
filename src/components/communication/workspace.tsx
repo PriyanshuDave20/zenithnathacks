@@ -35,6 +35,7 @@ import {
   type RespondResponse,
 } from "@/lib/mocks";
 import { translate, respond, isReplyUnavailable } from "@/components/session/api";
+import { SessionMetrics } from "@/components/session/metrics-lifecycle";
 import { getGuidedQuestions } from "@/lib/questions/localization";
 import { displayInputs } from "@/components/session/input-display";
 import { STRINGS } from "@/components/session/strings";
@@ -45,6 +46,9 @@ import "./workspace.css";
 import { workspaceStyles as s } from "./styles";
 import { EkgLoader, VoiceBars } from "./motion";
 import { SessionSetup, type SetupMode } from "./session-setup";
+import { ScaleSlider as ScaleControl } from "@/components/session/scale-slider";
+import { getSummaryPrefs } from "@/lib/summary-prefs";
+import { addQuickReply, useQuickReplies } from "@/lib/quick-replies";
 import {
   IntakeFree,
   IntakeGuided,
@@ -52,6 +56,7 @@ import {
   SpeechFeedback,
 } from "@/components/session/patient-screens";
 import "./flow.css";
+import { idleMsFor, SESSION_WARNING_MS, useSessionTimeout } from "@/lib/session-timeout";
 
 const PICTOS = {
   head: PictoHead,
@@ -188,6 +193,9 @@ export function CommunicationWorkspace() {
   const [role, setRole] = useState<"patient" | "clinician">("clinician");
   const [setupMode, setSetupMode] = useState<SetupMode>("icu");
   const [patientPath, setPatientPath] = useState<"free" | "guided">("free");
+  // How this clinician likes to read and copy the summary (dashboard "How I read summaries"). Read once when the visit
+  // starts; this page only renders in the browser (it sits behind the sign-in check), so it cannot disagree with the server.
+  const [summaryPrefs] = useState(getSummaryPrefs);
   // Which body drawing the patient and clinician see. Display only: not sent or stored.
   const [bodyFigure, setBodyFigure] = useState<BodyFigure>("male");
   // The patient's last submitted report, kept so a failed translation can be retried or shown as-is.
@@ -207,11 +215,14 @@ export function CommunicationWorkspace() {
   const [severity, setSeverity] = useState<number | null>(null);
   const [scale, setScale] = useState(1);
   const [highContrast, setHighContrast] = useState(false);
+  // Colour-blind friendly colours for this visit only (set on the patient form like the other display options).
+  const [colourBlind, setColourBlind] = useState(false);
   const [audio, setAudio] = useState(false);
   const [flipped, setFlipped] = useState(false);
   const [help, setHelp] = useState(false);
   const [sound, setSound] = useState(false);
   const [draft, setDraft] = useState("");
+  const savedReplies = useQuickReplies();
   const [channel, setChannel] = useState<"voice" | "pictures" | "type">(
     "voice",
   );
@@ -220,6 +231,7 @@ export function CommunicationWorkspace() {
   const [body, setBody] = useState(false);
   const [copied, setCopied] = useState("");
   const version = useRef(0);
+  const metrics = useRef(new SessionMetrics());
   const lock = useRef(false);
   const nextId = useRef(1);
   const main = useRef<HTMLElement>(null);
@@ -251,6 +263,7 @@ export function CommunicationWorkspace() {
   };
 
   function clear(end = false) {
+    metrics.current.reset();
     version.current++;
     lock.current = false;
     stopVoice();
@@ -278,6 +291,7 @@ export function CommunicationWorkspace() {
   // Invalidate in-flight work on navigation, React Activity hiding, and bfcache restoration.
   useEffect(() => {
     const wipe = () => {
+      metrics.current.reset();
       version.current++;
       lock.current = false;
       setTurns([]);
@@ -327,6 +341,7 @@ export function CommunicationWorkspace() {
   useEffect(() => {
     stream.current?.scrollTo({ top: stream.current.scrollHeight });
   }, [turns.length, pending]);
+  const sessionTimeout = useSessionTimeout();
   const idle = useIdle({
     enabled:
       stage !== "end" &&
@@ -334,8 +349,8 @@ export function CommunicationWorkspace() {
         turns.length > 0 ||
         patientInputs.length > 0 ||
         !!draft),
-    idleMs: 270000,
-    graceMs: 30000,
+    idleMs: idleMsFor(sessionTimeout),
+    graceMs: SESSION_WARNING_MS,
     onExpire: () => clear(true),
   });
 
@@ -462,6 +477,7 @@ export function CommunicationWorkspace() {
   }
   function confirm() {
     if (!pending) return;
+    metrics.current.firstMessage();
     setTurns((current) => [...current, pending]);
     setStage("handoff");
     setPending(null);
@@ -516,6 +532,8 @@ export function CommunicationWorkspace() {
       return;
     }
     // A failed service must still let the clinician see the patient's own words.
+    if (busy || !patientInputs.length) return;
+    metrics.current.firstMessage();
     setTurns((current) => [
       ...current,
       {
@@ -574,11 +592,24 @@ export function CommunicationWorkspace() {
   const flags = [
     ...new Set(turns.flatMap((t) => t.translation?.summary.redFlags ?? [])),
   ];
+  // "Flags to check" can lead the summary (clinician setting); they are never hidden.
+  const flagsBlock = flags.length ? (
+                  <div className={s.flags}>
+                    <h3>
+                      <Alert size={20} /> Flags to check
+                    </h3>
+                    <ul>
+                      {flags.map((f) => (
+                        <li key={f}>{f}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null;
   // Every spot from every patient report, so overlapping reports read as one heat map.
   const allSpots = useMemo(() => turns.flatMap((t) => t.spots ?? []), [turns]);
   const bodyParts = spotParts(bodySpots);
   async function copySummary() {
-    const content = turns
+    const conversation = turns
       .map((t) =>
         t.translation
           ? `Patient report (demo): ${t.translation.translated}\nOriginal: ${t.original}\nBack-translation: ${t.translation.backTranslation}`
@@ -587,6 +618,19 @@ export function CommunicationWorkspace() {
             : `Clinician: ${t.original}\nTeach-back: ${t.understood ?? "Not checked"}`,
       )
       .join("\n\n");
+    // What goes on the clipboard follows the clinician's setting. Same facts as the screen, English, no identifiers.
+    const summaryText = [
+      "Synapse summary (communication aid, demo; confirm with the patient)",
+      `Chief complaint: ${latestPatient?.translation?.summary.chiefComplaint ?? "Not stated"}`,
+      `Symptoms: ${symptomList.join(", ") || "Not stated"}`,
+      `Duration: ${latestPatient?.translation?.summary.duration ?? "Not stated"}`,
+      allSpots.length ? `Where it hurts: ${spotLabels(allSpots)}` : null,
+      flags.length ? `Flags to check: ${flags.join("; ")}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const content =
+      summaryPrefs.copy === "summary" ? summaryText : summaryPrefs.copy === "both" ? `${summaryText}\n\n${conversation}` : conversation;
     try {
       await navigator.clipboard.writeText(content);
       setCopied("Copied. Review before adding to any record.");
@@ -605,6 +649,7 @@ export function CommunicationWorkspace() {
   return (
     <div
       className={`${s.root} ${highContrast ? s.high : ""} ${mode === "deaf_hoh" ? s.caption : ""}`}
+      data-cvd={colourBlind ? "on" : undefined}
       style={{ "--scale": scale } as CSSProperties}
     >
       <header className={s.header}>
@@ -692,6 +737,13 @@ export function CommunicationWorkspace() {
                 >
                   High contrast
                 </button>
+                <button
+                  type="button"
+                  aria-pressed={colourBlind}
+                  onClick={() => setColourBlind(!colourBlind)}
+                >
+                  Colour-blind friendly
+                </button>
                 {canAudio ? (
                   <button
                     type="button"
@@ -759,6 +811,13 @@ export function CommunicationWorkspace() {
                 >
                   High contrast
                 </button>
+                <button
+                  type="button"
+                  aria-pressed={colourBlind}
+                  onClick={() => setColourBlind(!colourBlind)}
+                >
+                  Colour-blind friendly
+                </button>
                 {mode !== "deaf_hoh" && setupMode !== "icu" ? (
                   <button
                     type="button"
@@ -788,7 +847,7 @@ export function CommunicationWorkspace() {
             <h1>Pass the device to the patient</h1>
             <p>
               {setupMode === "icu"
-                ? "Eye mode is ready. When the board opens, tap Start once you are both looking at the screen; the patient then follows a moving dot for 30 seconds."
+                ? "Eye mode is ready. When the board opens, choose Intake or Conversation, then tap Ready once you are both looking at the screen; the patient then follows a moving dot for 30 seconds."
                 : readyForReply
                   ? lastReply?.unavailable
                     ? "Translation is unavailable. Return to the clinician or ask for an interpreter."
@@ -806,6 +865,8 @@ export function CommunicationWorkspace() {
                 lang={language}
                 dir={meta.dir}
                 onClick={() => {
+                  // Start when the patient accepts the first handoff, after setup can still change.
+                  metrics.current.start(mode);
                   setRole("patient");
                   setStage(readyForReply ? "teachback" : "patient");
                 }}
@@ -1312,25 +1373,19 @@ export function CommunicationWorkspace() {
                                   }[language]
                                 }
                               </h3>
-                              <div
-                                className={s.choices}
-                                role="group"
-                                aria-labelledby="pain-question"
-                              >
-                                {Array.from({ length: 11 }, (_, n) => (
-                                  <button
-                                    type="button"
-                                    key={n}
-                                    aria-pressed={severity === n}
-                                    disabled={busy}
-                                    onClick={() =>
-                                      setSeverity(severity === n ? null : n)
-                                    }
-                                  >
-                                    {n}
-                                  </button>
-                                ))}
-                              </div>
+                              <ScaleControl
+                                value={severity}
+                                onChange={setSeverity}
+                                label={
+                                  {
+                                    en: "Pain: 0 is none, 10 is the worst",
+                                    es: "Dolor: 0 es nada, 10 es el peor",
+                                    ar: "الألم: ٠ لا ألم، ١٠ أسوأ ألم",
+                                    "zh-Hans": "疼痛：0为不痛，10为最痛",
+                                  }[language]
+                                }
+                                locale={language}
+                              />
                             </div>
                             {[guidedQuestions[1], guidedQuestions[4]].map((q) => (
                               <div key={q.id}>
@@ -1387,6 +1442,7 @@ export function CommunicationWorkspace() {
                             style={{ marginBottom: 20 }}
                           >
                             {[
+                              ...savedReplies.map((reply) => ({ en: reply })),
                               { en: "Please point to where it hurts." },
                               ...CLINICIAN_REPLIES,
                             ].map((r) => (
@@ -1420,6 +1476,17 @@ export function CommunicationWorkspace() {
                             speech.setFinalText("");
                           }}
                         />
+                        {role === "clinician" && message.trim() && !savedReplies.includes(message.trim())
+                          && !CLINICIAN_REPLIES.some((r) => r.en === message.trim())
+                          && message.trim() !== "Please point to where it hurts." ? (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => addQuickReply(message)}
+                          >
+                            Save as quick reply
+                          </button>
+                        ) : null}
                         {selected.length + bodyParts.length ? (
                           <p role="status">
                             {selected.length + bodyParts.length}{" "}
@@ -1544,6 +1611,7 @@ export function CommunicationWorkspace() {
               </section>
               <section className={`${s.sheet} ${s.clinical}`}>
                 <h2>Clinician summary</h2>
+                {summaryPrefs.flagsFirst ? flagsBlock : null}
                 <dl>
                   <dt>Chief complaint · latest report</dt>
                   <dd>
@@ -1571,19 +1639,9 @@ export function CommunicationWorkspace() {
                     </p>
                   </div>
                 ) : null}
-                {flags.length ? (
-                  <div className={s.flags}>
-                    <h3>
-                      <Alert size={20} /> Flags to check
-                    </h3>
-                    <ul>
-                      {flags.map((f) => (
-                        <li key={f}>{f}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-                <h3>Original & read-back</h3>
+                {summaryPrefs.flagsFirst ? null : flagsBlock}
+                <details open={summaryPrefs.detail === "full"}>
+                  <summary style={{ cursor: "pointer", minHeight: 44, fontWeight: 700, padding: "10px 0" }}>Original & read-back</summary>
                 {turns
                   .filter((t) => t.translation)
                   .map((t) => (
@@ -1600,6 +1658,8 @@ export function CommunicationWorkspace() {
                       ))}
                     </div>
                   ))}
+                </details>
+                {/* Untranslated words are the only record of what the patient said: never collapsed, whatever the setting. */}
                 {turns
                   .filter((t) => t.role === "patient" && !t.translation)
                   .map((t) => (
@@ -1692,6 +1752,7 @@ export function CommunicationWorkspace() {
                       type="button"
                       key={answer}
                       onClick={() => {
+                        if (answer === "yes") metrics.current.teachback();
                         setTurns((t) =>
                           t.map((turn) =>
                             turn.id === lastReply.id

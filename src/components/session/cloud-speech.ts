@@ -1,4 +1,4 @@
-import { publicSpeechCatalog } from "../../lib/questions/speech-catalog";
+import { guidedSpeechSegments, publicSpeechCatalog } from "../../lib/questions/speech-catalog";
 import type { SpeechPlaybackState } from "./speech-playback";
 
 export type SpeechOptions = { kind?: "dynamic" | "public" };
@@ -38,6 +38,17 @@ export function publicSpeechClip(text: string, language: string, clips: Clip[]):
   return clip && /^\/speech\/(?:en|es|ar|zh-Hans)-[a-f0-9]{64}\.mp3$/.test(clip.src) ? clip.src : undefined;
 }
 
+/** Require the entire read-back to be covered before starting; never omit an unrecognised answer. */
+export function publicSpeechPlaylist(text: string, language: string, clips: Clip[]): string[] | undefined {
+  const single = publicSpeechClip(text, language, clips);
+  if (single) return [single];
+  const key = languageKey(language);
+  const segments = key ? guidedSpeechSegments(text, key) : undefined;
+  if (!segments) return undefined;
+  const paths = segments.map(segment => publicSpeechClip(segment, language, clips));
+  return paths.every((path): path is string => Boolean(path)) ? paths : undefined;
+}
+
 let stopActive: (() => void) | undefined;
 
 /** Own a single in-memory audio request across hooks; stale requests can never start playback. */
@@ -59,12 +70,14 @@ export function createCloudSpeech(
   let disposed = false;
   let ready: { text: string; language: string } | undefined;
   let retryBrowser = false;
+  let remainingClips: string[] = [];
 
   const emit = (status: SpeechPlaybackState["status"], speaking = false) => {
     if (!disposed) update({ speaking, status });
   };
   const releaseAudio = () => {
     ready = undefined;
+    remainingClips = [];
     if (audio) { audio.onended = null; audio.onerror = null; audio.pause(); audio.src = ""; audio = undefined; }
     if (objectUrl) { dependencies.revokeUrl(objectUrl); objectUrl = undefined; }
   };
@@ -88,6 +101,12 @@ export function createCloudSpeech(
     const current = audio!;
     current.onended = () => {
       if (version !== token) return;
+      const next = remainingClips.shift();
+      if (next) {
+        current.src = next;
+        play(++version, text, language);
+        return;
+      }
       version++;
       releaseAudio();
       if (stopActive === stop) stopActive = undefined;
@@ -121,18 +140,23 @@ export function createCloudSpeech(
       stopActive = stop;
       const token = version;
       const settings = dependencies.metadata();
-      const clip = options.kind === "public" ? publicSpeechClip(text, language, settings.clips) : undefined;
-      if (useBrowser || (!clip && (options.kind === "public" || settings.provider !== "azure" || !languageKey(language)))) {
+      const playlist = options.kind === "public" ? publicSpeechPlaylist(text, language, settings.clips) : undefined;
+      if (useBrowser || (!playlist && (options.kind === "public" || settings.provider !== "azure" || !languageKey(language)))) {
         local.speak(text, language);
         return;
       }
       audio = dependencies.makeAudio();
-      if (clip) { audio.src = clip; play(token, text, language); return; }
+      if (playlist) {
+        audio.src = playlist[0];
+        remainingClips = playlist.slice(1);
+        play(token, text, language);
+        return;
+      }
       request = new AbortController();
       emit("loading-audio");
       void dependencies.fetch("/api/speech", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, language }), cache: "no-store", credentials: "omit",
+        body: JSON.stringify({ text, language }), cache: "no-store", credentials: "same-origin",
         signal: AbortSignal.any([request.signal, AbortSignal.timeout(10000)]),
       }).then(async response => {
         if (!response.ok || !response.headers.get("Content-Type")?.startsWith("audio/mpeg")) throw new Error();

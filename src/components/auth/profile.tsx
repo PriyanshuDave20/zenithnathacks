@@ -1,6 +1,8 @@
 "use client";
 
 import { HomeLink } from "@/components/auth/home-link";
+import { HubTheme } from "@/components/accessibility/hub-theme";
+import { ThemeToggle } from "@/components/accessibility/theme-toggle";
 
 import { LoadingStatus } from "@/components/ui/spinner";
 
@@ -13,16 +15,13 @@ import { signOut, updateProfile, useClinician, USING_MOCK_AUTH, type ClinicianPr
 import { FormError, initials, SubmitButton, TextField } from "./auth-ui";
 import { RolePicker } from "./forms";
 
-// Languages a clinician may speak; the session app supports the first four today.
+// Languages a clinician may speak; the session app supports the first four today. Only languages shown here can be saved.
 const LANGS: { code: string; name: string; english: string }[] = [
   { code: "en", name: "English", english: "English" },
   { code: "es", name: "Español", english: "Spanish" },
   { code: "ar", name: "العربية", english: "Arabic" },
   { code: "zh-Hans", name: "中文", english: "Mandarin" },
   { code: "fr", name: "Français", english: "French" },
-  { code: "pt", name: "Português", english: "Portuguese" },
-  { code: "tl", name: "Tagalog", english: "Tagalog" },
-  { code: "vi", name: "Tiếng Việt", english: "Vietnamese" },
 ];
 
 export function ProfilePage() {
@@ -45,14 +44,14 @@ export function ProfilePage() {
 
 function ProfileForm({ me }: { me: ClinicianProfile }) {
   const router = useRouter();
-  const [form, setForm] = useState({ name: me.name, clinic: me.clinic, role: me.role as ClinicianRole, languages: me.languages });
+  const [form, setForm] = useState({ name: me.name, clinic: me.clinic, role: me.role as ClinicianRole, languages: me.languages.filter((code) => LANGS.some((l) => l.code === code)) });
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const welcome = useSearchParams().has("welcome");
   const dirty =
-    form.name !== me.name || form.clinic !== me.clinic || form.role !== me.role || form.languages.join() !== me.languages.join();
+    form.name !== me.name || form.clinic !== me.clinic || form.role !== me.role || form.languages.join() !== me.languages.filter((code) => LANGS.some((l) => l.code === code)).join();
 
   async function onSave(e: FormEvent) {
     e.preventDefault();
@@ -75,8 +74,13 @@ function ProfileForm({ me }: { me: ClinicianProfile }) {
 
   async function onSignOut() {
     setSigningOut(true);
-    await signOut();
-    router.replace("/signin");
+    try {
+      await signOut();
+      router.replace("/signin");
+    } catch {
+      setError("Couldn’t sign out. Please try again.");
+      setSigningOut(false);
+    }
   }
 
   const toggleLang = (code: string) =>
@@ -84,15 +88,19 @@ function ProfileForm({ me }: { me: ClinicianProfile }) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-ground">
+      <HubTheme />
       <header className="on-navy sticky top-0 z-30 border-b border-white/10 bg-navy/92 pt-[env(safe-area-inset-top)] text-white backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-4 sm:px-6">
           <HomeLink className="rounded-lg" aria-label="Synapse home">
             <SynapseMark className="h-9 w-auto" />
           </HomeLink>
           <span className="font-display text-lg font-bold">Profile</span>
+          <span className="ms-auto">
+            <ThemeToggle />
+          </span>
           <Link
             href="/start"
-            className="press ms-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-blue px-5 text-base font-semibold text-navy hover:bg-white"
+            className="press inline-flex min-h-11 items-center gap-2 rounded-full bg-blue px-5 text-base font-semibold text-navy hover:bg-white"
           >
             Start a session <ArrowRight size={18} />
           </Link>
@@ -171,16 +179,10 @@ function ProfileForm({ me }: { me: ClinicianProfile }) {
                 {me.plan.name}
               </h2>
               <p className="mt-3 inline-flex items-center rounded-full bg-navy-raised px-3 py-1 text-sm font-semibold text-blue">
-                {USING_MOCK_AUTH
-                  ? "Sample plan · billing not connected"
-                  : me.plan.status === "trial"
-                    ? `Free trial · ends ${me.plan.renews}`
-                    : `Active · renews ${me.plan.renews}`}
+                Free clinician account
               </p>
               <p className="mt-5 text-sm leading-relaxed text-on-navy-soft">
-                {USING_MOCK_AUTH
-                  ? "This plan is a placeholder. Plans and billing arrive with the account service."
-                  : "Manage your plan from your clinic’s billing settings."}
+                Plans and billing are not connected.
               </p>
             </section>
             <p className="flex items-start gap-3 rounded-[1.5rem] bg-ground-2 p-5 text-base leading-relaxed text-ink-soft">
