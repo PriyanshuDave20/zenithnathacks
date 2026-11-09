@@ -23,6 +23,12 @@ FORM: Pinned brief. Authority, in Zach's words to the team: "a meuze.ai-level qu
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
+### Landing copy and mobile pulse (Zach, 2026-11-08)
+
+Audience refinement: judges and investors. Explain the communication barrier, demonstrate the two-way workflow and shared-device approach, and distinguish browser-memory patient messages from persisted clinician profiles. Lead the lower page with the communication benefit; retain explicit diagnostic/interpreter and provider-processing limits without suggesting Synapse cannot help people communicate. No traction, clinical-result or compliance claims.
+
+Below 768px only, start the heart-rate trace from the left inset under the header, retain its full waveform at both endpoints, and fit the canvas to dynamic viewport changes. Preserve desktop's centered emblem arrival. Keep the incumbent visual world and demo interactions.
+
 ## Motion update (Zach, 2026-11-07)
 
 The snake climbs the stationary pole, reaches the header, and turns into a small heartbeat reading-progress marker. User explicitly requested integration into the website and removal of the separate testing page. Keep existing home-page content and pinned phone; honour reduced motion and mobile fallback.

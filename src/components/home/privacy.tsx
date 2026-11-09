@@ -3,25 +3,25 @@ import { Clear, IdMasked, Shield } from "./icons";
 const kept = [
   {
     icon: <Shield size={22} />,
-    title: "Lives in memory only",
-    body: "The session exists in the open browser tab. There are no patient, visit, or message records anywhere.",
+    title: "Patient messages stay in the session",
+    body: "Answers and messages are held in browser memory while the session is open. Synapse does not save them as patient or visit records.",
   },
   {
     icon: <Clear size={22} />,
-    title: "Cleared three ways",
-    body: "At the end of the visit, with the Clear button, or automatically after a period of inactivity.",
+    title: "Clear the conversation when you’re done",
+    body: "End the session or use the Clear button to remove its messages. Inactive sessions clear automatically, too.",
   },
   {
     icon: <IdMasked size={22} />,
-    title: "No identifiers asked",
-    body: "No names, IDs, dates of birth, or addresses. Patients are asked not to say them, and the AI is instructed to leave them out of every summary.",
+    title: "No personal details needed",
+    body: "Patients can describe how they feel without giving a name, ID, date of birth, or address. Prompts ask them to leave these details out, and the AI is instructed to omit them.",
   },
 ];
 
 const limits = [
-  "A communication aid, not a diagnostic tool. Clinicians make every clinical decision.",
-  "Not a certified interpreter. The original words and a back-translation are always shown so reliability can be judged.",
-  "Text is sent to an AI model to translate it. Synapse is designed to avoid identifiable data, but free speech can still contain it.",
+  "Review the original message, translation, and read-back to check meaning with the patient.",
+  "Clinicians make all care decisions. Synapse does not diagnose conditions and is not a certified interpreter.",
+  "Text is processed by translation and AI services. Please leave out names and personal details; free speech can still include them.",
 ];
 
 export function Privacy() {
@@ -34,10 +34,12 @@ export function Privacy() {
             id="privacy-title"
             className="max-w-[14ch] font-display text-[clamp(2.25rem,6vw,3.5rem)] font-bold leading-[1.04] tracking-[-0.03em] [text-wrap:balance]"
           >
-            Nothing about the patient is kept.
+            Focus on the conversation.
           </h2>
           <p className="mt-5 max-w-[30rem] text-lg leading-relaxed text-ink-soft">
-            Synapse is built so there is nothing to leak: no patient accounts, no patient records, no history. Only clinicians have an account, and it holds only their own details.
+            Built for clinic conversations without creating patient records. Messages stay in the
+            open session; only the clinician&rsquo;s own profile is saved to their account. Patients
+            need no account or download.
           </p>
         </div>
 
@@ -57,7 +59,12 @@ export function Privacy() {
           </ul>
 
           <div className="mt-12 rounded-[2rem] bg-ground-2 p-6 sm:p-8">
-            <h3 className="font-display text-xl font-bold">What Synapse is not</h3>
+            <h3 className="font-display text-xl font-bold">Here to help you communicate</h3>
+            <p className="mt-3 text-base leading-relaxed text-ink-soft">
+              Synapse brings translation and accessible input into one workflow, helping patients
+              explain their needs and clinicians respond. It supports the conversation while keeping
+              these limits clear.
+            </p>
             <ul className="mt-4 flex flex-col gap-3">
               {limits.map((t) => (
                 <li key={t} className="flex gap-3 text-base leading-relaxed text-ink-soft">
