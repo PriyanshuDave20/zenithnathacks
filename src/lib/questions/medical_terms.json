@@ -2288,7 +2288,7 @@
       "id": 3,
       "topic": "Location",
       "clinical_phrase": "Where is the symptom located?",
-      "plain_question": "Where do you feel it? Please point with one finger.",
+      "plain_question": "Where do you feel it? Please click where it hurts.",
       "high_risk": 0
     },
     {

@@ -115,7 +115,7 @@ test("cloud errors prompt a fresh browser-voice tap without silently queuing pla
   f.playback.speak("Please wait.", "en"); assert.equal(f.localCalls, 1); assert.equal(f.calls, 1); f.playback.dispose();
 });
 
-for (const [language, locale] of [["es", "es-ES"], ["ar", "ar-SA"], ["zh-Hans", "zh-CN"], ["en", "en-US"]]) {
+for (const [language, locale] of [["es", "es-ES"], ["ar", "ar-SA"], ["zh-Hans", "zh-CN"]]) {
   test(`${language} guided summary plays all existing Azure question/answer clips in order without cloud or browser speech`, () => {
     const f = guidedFixture();
     const text = guidedReadBack(language);
@@ -161,6 +161,19 @@ test("incomplete, changed or untrusted guided wording falls back as a whole with
   const missing = publicSpeechPlaylist(text, "es", f.clips)!.at(-1);
   f.clips.splice(0, f.clips.length, ...f.clips.filter(clip => clip.src !== missing));
   f.playback.speak(text, "es", { kind: "public" });
+  assert.equal(f.plays, 0);
+  assert.equal(f.localCalls, 1);
+  assert.deepEqual(f.localTexts, [text]);
+  assert.equal(f.calls, 0);
+  f.playback.dispose();
+});
+
+test("updated English body prompt falls back to current browser wording rather than the stale public clip", () => {
+  const f = guidedFixture();
+  const text = guidedReadBack("en");
+  assert.equal(publicSpeechClip(guidedPack("en").questions.where.text, "en-US", f.clips), undefined);
+  assert.equal(publicSpeechPlaylist(text, "en-US", f.clips), undefined);
+  f.playback.speak(text, "en-US", { kind: "public" });
   assert.equal(f.plays, 0);
   assert.equal(f.localCalls, 1);
   assert.deepEqual(f.localTexts, [text]);
