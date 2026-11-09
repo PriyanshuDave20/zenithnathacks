@@ -76,7 +76,11 @@ export function speakAloud(text: string, onStatus: (status: EyeSpeechStatus) => 
 }
 
 /** Reuses an autoplay-blocked clip (or explicitly requested device fallback) from a fresh gesture. */
-export function replayEyeSpeech(): void { replay?.(); }
+export function replayEyeSpeech(): boolean {
+  if (!replay) return false;
+  replay();
+  return true;
+}
 export function stopSpeaking(): void {
   generation++;
   playback?.dispose(); playback = undefined;

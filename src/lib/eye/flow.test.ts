@@ -249,3 +249,60 @@ test("Eye audio failure offers explicit device fallback; blocked audio can retry
     assert.equal(getEyeState().speechStatus, "spoken");
   });
 });
+
+
+test("Eye replay rebuilds disposed audio after stop, remount, mute and mode changes without recording choices", async () => {
+  await withEyeSpeech(async ({ audio, utterances }) => {
+    eye.setLanguage("ar"); eye.start("conversation"); eye.say("I would like some water."); await tick();
+    const expected = getEyeState().lastSaid;
+    const log = getEyeState().log;
+    const stopped = audio.at(-1)!;
+    const lateEnd = stopped.onended;
+    eye.stopSpeech(); // Same teardown used by unmount and handoff.
+    assert.equal(stopped.src, "");
+    eye.repeat(); await tick();
+    const repeated = audio.at(-1)!;
+    assert.notEqual(repeated, stopped);
+    assert.ok(repeated.src.startsWith("/speech/ar-"));
+    assert.equal(getEyeState().lastSaid, expected);
+    assert.equal(getEyeState().log, log);
+    lateEnd?.();
+    assert.equal(getEyeState().speechStatus, "speaking");
+    eye.setMuted(true);
+    const count = audio.length;
+    eye.repeat(); await tick();
+    assert.equal(audio.length, count);
+    eye.setMuted(false); eye.repeat(); await tick();
+    assert.equal(audio.length, count + 1);
+    assert.equal(getEyeState().log, log);
+    eye.start("intake"); eye.repeat(); await tick();
+    assert.ok(audio.at(-1)!.src.startsWith("/speech/ar-"));
+    assert.equal(getEyeState().log, log);
+    // Rebuilt controllers preserve explicit browser fallback and the locale.
+    audio.at(-1)!.onerror?.();
+    assert.equal(getEyeState().speechStatus, "browser-ready");
+    eye.repeat();
+    assert.equal(utterances.at(-1)!.lang, "ar-SA");
+    eye.stopSpeech();
+    assert.equal(utterances.at(-1)!.onend, null);
+    eye.repeat(); await tick();
+    assert.equal(getEyeState().speechStatus, "speaking");
+    eye.clear();
+    const afterClear = audio.length;
+    eye.repeat(); await tick();
+    assert.equal(audio.length, afterClear);
+    assert.equal(getEyeState().lastSaid, null);
+    assert.equal(getEyeState().speechStatus, "idle");
+  });
+});
+
+test("Eye replay of a choice first selected while muted retains its language without a duplicate event", async () => {
+  await withEyeSpeech(async ({ audio }) => {
+    eye.setLanguage("zh-Hans"); eye.setMuted(true); eye.say("No.");
+    const log = getEyeState().log;
+    eye.setMuted(false); eye.repeat(); await tick();
+    assert.ok(audio.at(-1)!.src.startsWith("/speech/zh-Hans-"));
+    assert.equal(getEyeState().log, log);
+    assert.equal(getEyeState().speechStatus, "speaking");
+  });
+});

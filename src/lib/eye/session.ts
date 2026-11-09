@@ -58,7 +58,13 @@ export const eye = {
     stopCurrentSpeech();
     set({ ...INITIAL, language });
   },
-  repeat() { if (!state.muted) replayEyeSpeech(); },
+  repeat() {
+    if (state.muted || !state.lastSaid) return;
+    // Resume a blocked clip with its current queue when possible. Navigation,
+    // handoff and mute dispose that controller, but retain the selected message.
+    // Rebuild playback from memory without recording a second patient choice.
+    if (!replayEyeSpeech()) speakAloud(state.lastSaid, (speechStatus) => set({ speechStatus }), state.language);
+  },
   /** The clinician picks a mode. Intake starts at the questions; Conversation starts at its home screen. */
   start(mode: EyeMode) {
     stopCurrentSpeech();
