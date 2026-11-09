@@ -9,7 +9,7 @@ export const speechStatusLabel: Record<EyeSpeechStatus, string> = {
   idle: "No speech yet.", queued: "Waiting for the device to speak.", speaking: "Speaking aloud…", spoken: "Finished speaking aloud.",
   muted: "Not spoken. Sound was off when this choice was selected.", unavailable: "Speech is unavailable. Please show this choice to the clinician.",
   error: "The device could not speak. Please show this choice to the clinician.", stopped: "Speech stopped. The choice remains on screen.",
-  "audio-ready": "Tap Speak again to play the audio.", "browser-ready": "Azure audio is unavailable. Tap Use device voice to try this device’s voice.",
+  "audio-ready": "Audio is ready. Turn Speak aloud off and on to retry.", "browser-ready": "Azure audio is unavailable. Please try again.",
 };
 export function canSpeak(): boolean {
   return typeof window !== "undefined" && ("Audio" in window || "speechSynthesis" in window);

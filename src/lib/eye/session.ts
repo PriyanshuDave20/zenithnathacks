@@ -63,7 +63,10 @@ export const eye = {
     // Resume a blocked clip with its current queue when possible. Navigation,
     // handoff and mute dispose that controller, but retain the selected message.
     // Rebuild playback from memory without recording a second patient choice.
-    if (!replayEyeSpeech()) speakAloud(state.lastSaid, (speechStatus) => set({ speechStatus }), state.language);
+    if (!replayEyeSpeech()) {
+      const spoken = localizeEyeSpeech(state.lastSaid, state.language);
+      if (spoken) speakAloud(spoken, (speechStatus) => set({ speechStatus }), state.language);
+    }
   },
   /** The clinician picks a mode. Intake starts at the questions; Conversation starts at its home screen. */
   start(mode: EyeMode) {
@@ -82,12 +85,14 @@ export const eye = {
     if (!text.trim()) return;
     const patientText = localizeEyeSpeech(text, state.language);
     if (!patientText) { set({ speechStatus: "error" }); return; }
-    set({ lastSaid: patientText, speechStatus: state.muted ? "muted" : "queued", log: [...state.log, { at: Date.now(), text, help }].slice(-40) });
+    set({ lastSaid: text, speechStatus: state.muted ? "muted" : "queued", log: [...state.log, { at: Date.now(), text, help }].slice(-40) });
     if (!state.muted) speakAloud(patientText, (speechStatus) => set({ speechStatus }), state.language);
   },
   setMuted(muted: boolean) {
+    const resume = state.muted && !muted;
     if (muted) stopCurrentSpeech();
     set({ muted });
+    if (resume) eye.repeat();
   },
   stopSpeech: stopCurrentSpeech,
   finishIntake(intake: FlowAnswers, summary: string) {

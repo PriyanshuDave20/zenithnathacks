@@ -168,7 +168,7 @@ test("Eye choices use static Azure audio in every language, only finishing after
       assert.equal(getEyeState().speechStatus, "speaking");
       current.onended?.();
       assert.equal(getEyeState().speechStatus, "spoken");
-      assert.equal(getEyeState().lastSaid, localizeEyeSpeech("I have pain in my left leg. It is severe.", language));
+      assert.equal(getEyeState().lastSaid, "I have pain in my left leg. It is severe.");
     }
     assert.equal(utterances.length, 0);
   });
@@ -304,5 +304,17 @@ test("Eye replay of a choice first selected while muted retains its language wit
     assert.ok(audio.at(-1)!.src.startsWith("/speech/zh-Hans-"));
     assert.equal(getEyeState().log, log);
     assert.equal(getEyeState().speechStatus, "speaking");
+  });
+});
+
+ test("Existing Speak aloud toggle retries localized Azure audio without extra controls or choices", async () => {
+  await withEyeSpeech(async ({ audio }) => {
+    eye.setLanguage("es"); eye.setMuted(true); eye.say("Yes.");
+    const log = getEyeState().log;
+    eye.setMuted(false); await tick();
+    assert.equal(audio.length, 1);
+    assert.ok(audio[0].src.startsWith("/speech/es-"));
+    assert.equal(getEyeState().lastSaid, "Yes.");
+    assert.equal(getEyeState().log, log);
   });
 });

@@ -40,9 +40,7 @@ import {
   type FlowStep,
 } from "@/lib/eye/flow";
 import { eye, useEyeState } from "@/lib/eye/session";
-import { eyeText, eyeSummary } from "@/lib/questions/eye-localization";
-import { prepareEyeSpeech } from "@/lib/eye/speak";
-import { speechStatusLabel } from "@/lib/eye/speak";
+import { prepareEyeSpeech, speechStatusLabel } from "@/lib/eye/speak";
 import { FlowTile } from "./flow-tile";
 
 type Icon = (p: { size?: number }) => ReactNode;
@@ -81,9 +79,7 @@ const channelOf = (event: MouseEvent) =>
 
 /** The Eye mode screens. All state is in memory (src/lib/eye/session.ts); this file only draws it. */
 export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => void }) {
-  const { mode, screen, answers, lastSaid, lastIntake, speechStatus, language, muted, intake } = useEyeState();
-  const t = (source: string) => eyeText(source, language);
-  const label = (option: { label: string; hint?: string }) => ({ label: t(option.label), hint: option.hint ? t(option.hint) : undefined });
+  const { mode, screen, answers, lastSaid, lastIntake, speechStatus } = useEyeState();
   useEffect(() => { prepareEyeSpeech(); return () => eye.stopSpeech(); }, []);
   const emit = (event: MouseEvent, optionId: string) => onSelect?.({ channel: channelOf(event), optionId });
 
@@ -119,10 +115,10 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
   }
 
   const showBack = (isStep(screen) && screen !== "review") || screen === "needs";
-  const [title, subtitle] = TITLES[screen].map(t);
+  const [title, subtitle] = TITLES[screen];
   const wizard = isStep(screen) && screen !== "pain_q" && screen !== "review";
   const columns = "repeat(auto-fit, minmax(160px, 1fr))";
-  const sofar = eyeSummary(answers, language);
+  const sofar = describeAnswers(answers).join(" · ");
 
   let body: ReactNode = null;
   let grid: React.CSSProperties | undefined = { gridTemplateColumns: columns };
@@ -131,8 +127,8 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
     grid = { gridTemplateColumns: "repeat(2, 1fr)" };
     body = (
       <>
-        <FlowTile id="mode-intake" tone="strong" label={t("Intake")} hint={t("First meeting: guided questions")} onPick={() => eye.start("intake")} />
-        <FlowTile id="mode-conversation" tone="strong" label={t("Conversation")} hint={t("Ongoing: yes, no, and what I need")} onPick={() => eye.start("conversation")} />
+        <FlowTile id="mode-intake" tone="strong" label="Intake" hint="First meeting: guided questions" onPick={() => eye.start("intake")} />
+        <FlowTile id="mode-conversation" tone="strong" label="Conversation" hint="Ongoing: yes, no, and what I need" onPick={() => eye.start("conversation")} />
       </>
     );
   } else if (screen === "home") {
@@ -142,7 +138,7 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
       <FlowTile
         key={n.id}
         id={`need-${n.id}`}
-        label={t(n.label)}
+        label={n.label}
         icon={n.id === "pain" ? <PictoPain size={40} /> : n.id === "move" ? <PictoMove size={40} /> : n.id === "breathing" ? <PictoBreath size={40} /> : undefined}
         onPick={(e) => {
           emit(e, `need-${n.id}`);
@@ -157,16 +153,16 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
     ));
   } else if (screen === "rest") {
     grid = { gridTemplateColumns: "1fr" };
-    body = <FlowTile id="rest-ready" tone="strong" label={t("I’m ready")} hint={t("Look here to carry on")} onPick={() => eye.go("home")} />;
+    body = <FlowTile id="rest-ready" tone="strong" label="I’m ready" hint="Look here to carry on" onPick={() => eye.go("home")} />;
   } else if (screen === "help") {
     grid = { gridTemplateColumns: "1fr" };
     body = (
       <>
         <p role="alert" className="eye-help-banner">
-          {t("HELP. The patient is asking for a person.")}
-          <small>{t(speechStatusLabel[speechStatus])} {t("Staff have not been notified automatically.")}</small>
+          HELP. The patient is asking for a person.
+          <small>{speechStatusLabel[speechStatus]} Staff have not been notified automatically.</small>
         </p>
-        <FlowTile id="help-cancel" label={t("Cancel: I’m okay")} hint={t("Look here to stop calling")} onPick={() => eye.go("home")} />
+        <FlowTile id="help-cancel" label="Cancel: I’m okay" hint="Look here to stop calling" onPick={() => eye.go("home")} />
       </>
     );
   } else if (screen === "done") {
@@ -174,41 +170,41 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
     body = (
       <>
         <p className="sf-icu-review-choice" role="status" style={{ gridColumn: "1 / -1" }}>
-          {intake ? eyeSummary(intake, language) : (lastIntake ?? t("No answers were recorded"))}
+          {lastIntake ?? "No answers were recorded"}
         </p>
-        <FlowTile id="done-conversation" tone="strong" label={t("Start conversation mode")} hint={t("For ongoing care")} onPick={() => eye.start("conversation")} />
-        <FlowTile id="done-redo" label={t("Redo the intake")} onPick={() => eye.start("intake")} />
+        <FlowTile id="done-conversation" tone="strong" label="Start conversation mode" hint="For ongoing care" onPick={() => eye.start("conversation")} />
+        <FlowTile id="done-redo" label="Redo the intake" onPick={() => eye.start("intake")} />
       </>
     );
   } else if (screen === "pain_q") {
     grid = { gridTemplateColumns: "repeat(2, 1fr)" };
     body = (
       <>
-        <FlowTile id="pain-yes" tone="strong" minHeight={220} label={t("Yes")} hint={t("I am in pain")} onPick={(e) => { emit(e, "pain-yes"); answer("pain_q", { ...answers, hurts: "yes" }); }} />
-        <FlowTile id="pain-no" tone="strong" minHeight={220} label={t("No")} hint={t("I am not in pain")} onPick={(e) => { emit(e, "pain-no"); answer("pain_q", { ...answers, hurts: "no" }); }} />
+        <FlowTile id="pain-yes" tone="strong" minHeight={220} label="Yes" hint="I am in pain" onPick={(e) => { emit(e, "pain-yes"); answer("pain_q", { ...answers, hurts: "yes" }); }} />
+        <FlowTile id="pain-no" tone="strong" minHeight={220} label="No" hint="I am not in pain" onPick={(e) => { emit(e, "pain-no"); answer("pain_q", { ...answers, hurts: "no" }); }} />
       </>
     );
   } else if (screen === "where") {
-    body = WHERE_OPTIONS.map((o) => <FlowTile key={o.id} id={`where-${o.id}`} label={t(o.label)} icon={icon(o.picto, 44)} onPick={() => answer("where", { ...answers, where: o.id })} />);
+    body = WHERE_OPTIONS.map((o) => <FlowTile key={o.id} id={`where-${o.id}`} label={o.label} icon={icon(o.picto, 44)} onPick={() => answer("where", { ...answers, where: o.id })} />);
   } else if (screen === "side") {
-    body = SIDE_OPTIONS.map((o) => <FlowTile key={o.id} id={`side-${o.id}`} {...label(o)} onPick={() => answer("side", { ...answers, side: o.id })} />);
+    body = SIDE_OPTIONS.map((o) => <FlowTile key={o.id} id={`side-${o.id}`} label={o.label} hint={o.hint} onPick={() => answer("side", { ...answers, side: o.id })} />);
   } else if (screen === "strength") {
-    body = STRENGTH_OPTIONS.map((o) => <FlowTile key={o.id} id={`strength-${o.id}`} {...label(o)} onPick={() => answer("strength", { ...answers, strength: o.id })} />);
+    body = STRENGTH_OPTIONS.map((o) => <FlowTile key={o.id} id={`strength-${o.id}`} label={o.label} hint={o.hint} onPick={() => answer("strength", { ...answers, strength: o.id })} />);
   } else if (screen === "duration") {
-    body = DURATION_OPTIONS.map((o) => <FlowTile key={o.id} id={`duration-${o.id}`} label={t(o.label)} icon={icon(o.picto)} onPick={() => answer("duration", { ...answers, duration: o.id })} />);
+    body = DURATION_OPTIONS.map((o) => <FlowTile key={o.id} id={`duration-${o.id}`} label={o.label} icon={icon(o.picto)} onPick={() => answer("duration", { ...answers, duration: o.id })} />);
   } else if (screen === "worse") {
-    body = WORSE_OPTIONS.map((o) => <FlowTile key={o.id} id={`worse-${o.id}`} label={t(o.label)} icon={icon(o.picto)} onPick={() => answer("worse", { ...answers, worse: o.id })} />);
+    body = WORSE_OPTIONS.map((o) => <FlowTile key={o.id} id={`worse-${o.id}`} label={o.label} icon={icon(o.picto)} onPick={() => answer("worse", { ...answers, worse: o.id })} />);
   } else if (screen === "other") {
-    body = OTHER_OPTIONS.map((o) => <FlowTile key={o.id} id={`other-${o.id}`} label={t(o.label)} icon={icon(o.picto)} onPick={() => answer("other", { ...answers, other: o.id })} />);
+    body = OTHER_OPTIONS.map((o) => <FlowTile key={o.id} id={`other-${o.id}`} label={o.label} icon={icon(o.picto)} onPick={() => answer("other", { ...answers, other: o.id })} />);
   } else if (screen === "review") {
     grid = { gridTemplateColumns: "repeat(2, 1fr)" };
     body = (
       <>
-        <FlowTile id="review-yes" tone="strong" label={t("Yes, say it")} hint={sofar} onPick={(e) => { emit(e, "review-yes"); answer("review", answers); }} />
+        <FlowTile id="review-yes" tone="strong" label="Yes, say it" hint={sofar} onPick={(e) => { emit(e, "review-yes"); answer("review", answers); }} />
         <FlowTile
           id="review-change"
-          label={t("No, change it")}
-          hint={t("Start these questions again")}
+          label="No, change it"
+          hint="Start these questions again"
           onPick={() => {
             eye.answers(mode === "intake" ? { ...answers, hurts: null, where: null, side: null, strength: null, duration: null, worse: null, other: null } : { ...answers, where: null, side: null, strength: null });
             eye.go(mode === "intake" ? "pain_q" : "where");
@@ -219,7 +215,7 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
   }
 
   return (
-    <section lang={language} dir={language === "ar" ? "rtl" : "ltr"} className={s.panel} aria-labelledby="icu-prompt">
+    <section className={s.panel} aria-labelledby="icu-prompt">
       <style>{`
         .eye-help-banner{grid-column:1/-1;margin:0;padding:28px;border-radius:20px;background:var(--alert-deep,#9b1c1c);color:#fff;font-size:2.2rem;font-weight:800;line-height:1.15;text-align:center}
         .eye-help-banner small{display:block;margin-top:10px;font-size:1.05rem;font-weight:500;opacity:.9}
@@ -240,39 +236,34 @@ export function EyeWorkspace({ onSelect }: { onSelect?: (event: SelectEvent) => 
             onClick={goBack}
             style={{ minHeight: 64, minWidth: "9rem", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: "1.1rem" }}
           >
-            <ArrowLeft size={22} /> {t("Go back")}
+            <ArrowLeft size={22} /> Go back
           </button>
         ) : null}
       </div>
       <div className="sf-icu-status" role="status" aria-live="polite">
         {(wizard || screen === "review") && sofar ? (
           <>
-            {t("So far:")} <strong>{sofar}</strong>
+            So far: <strong>{sofar}</strong>
           </>
         ) : lastSaid ? (
           <>
-            {t("Selected:")} <strong>{lastSaid}</strong>{" "}
-            <span>{t(speechStatusLabel[speechStatus])}</span>
+            Selected: <strong>{lastSaid}</strong>{" "}
+            <span>{speechStatusLabel[speechStatus]}</span>
           </>
         ) : (
-          t("No choice selected yet.")
+          "No choice selected yet."
         )}
       </div>
-      {lastSaid && !muted && ["home", "done", "help", "rest"].includes(screen) ? (
-        <button type="button" className={s.quiet} data-gaze-ignore onClick={() => eye.repeat()} style={{ minHeight: 44, marginBlock: 8 }}>
-          {t(speechStatus === "browser-ready" ? "Use device voice" : "Speak again")}
-        </button>
-      ) : null}
       {screen === "home" ? (
         <div key={screen}>
           <div className={i.board} style={{ gridTemplateColumns: "repeat(2, 1fr)", paddingBottom: 0 }}>
-            <FlowTile id="answer-yes" tone="strong" minHeight={190} label={t("Yes")} onPick={(e) => { emit(e, "yes"); eye.say("Yes."); }} />
-            <FlowTile id="answer-no" tone="strong" minHeight={190} label={t("No")} onPick={(e) => { emit(e, "no"); eye.say("No."); }} />
+            <FlowTile id="answer-yes" tone="strong" minHeight={190} label="Yes" onPick={(e) => { emit(e, "yes"); eye.say("Yes."); }} />
+            <FlowTile id="answer-no" tone="strong" minHeight={190} label="No" onPick={(e) => { emit(e, "no"); eye.say("No."); }} />
           </div>
           <div className={i.board} style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-            <FlowTile id="home-needs" minHeight={96} label={t("I need something")} onPick={(e) => { emit(e, "needs"); eye.go("needs"); }} />
-            <FlowTile id="home-rest" minHeight={96} label={t("Rest")} onPick={(e) => { emit(e, "rest"); eye.say("I would like to rest."); eye.go("rest"); }} />
-            <FlowTile id="home-help" tone="help" minHeight={96} label={t("Help")} onPick={(e) => { emit(e, "help"); eye.say(HELP_SAY, true); eye.go("help"); }} />
+            <FlowTile id="home-needs" minHeight={96} label="I need something" onPick={(e) => { emit(e, "needs"); eye.go("needs"); }} />
+            <FlowTile id="home-rest" minHeight={96} label="Rest" onPick={(e) => { emit(e, "rest"); eye.say("I would like to rest."); eye.go("rest"); }} />
+            <FlowTile id="home-help" tone="help" minHeight={96} label="Help" onPick={(e) => { emit(e, "help"); eye.say(HELP_SAY, true); eye.go("help"); }} />
           </div>
         </div>
       ) : (
