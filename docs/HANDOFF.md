@@ -352,6 +352,14 @@ Do not put secrets or patient data here.
 
 ## Entries
 
+### 2026-11-08  zenith / Claude  zenith/gaze-tracking (stabilization module, diagnostics, hotspot calibration)
+- Done: the final screen-space point now passes through a consolidated stabilizer (`src/lib/input/gaze/stabilizer.ts`) before the fixation filter and magnet: validity check (NaN/Inf held) -> outlier gate (isolated jumps beyond `maxJumpPx`/`maxJumpPxPerSec` are held; a position persisting past `sustainedMs` is accepted as an intentional fast move) -> per-axis One-Euro with real frame dt -> dead zone (`deadzonePx`, freezes micro-jitter but slow drift still escapes). Defaults: minCutoff 1.0 Hz, beta 0.02, derivativeCutoff 1.0, deadzone 6 px, maxJump 340 px / 6000 px/s, sustained 90 ms, lost after 600 ms. The bare `OneEuroFilter` instance in the layer was replaced by the module (one smoothing stage consolidated, not added).
+- Diagnostics: open any page with `?gazeDebug` while gaze is active - panel shows FPS, per-frame processing latency, tracking status (ok/degraded/lost), outlier counter, a grey raw cursor next to the stabilized blue one, and live sliders for minCutoff/beta/derivativeCutoff/dead zone (rebuild the filters; no camera restart). Not rendered without the query param.
+- Calibration now also visits up to 8 on-screen selectable controls (hotspots) after the 9-point grid, deduped and kept inside the edge-safe margin.
+- Tests: `stabilizer.test.ts` (stationary jitter, intentional movement, isolated outlier vs sustained move, tracking loss, variable frame rate, reset isolation, NaN/Infinity/stale clock) - run.mjs gained one line; suite now 218 tests, 0 fail. Typecheck, lint (0 errors), production build pass.
+- Not yet verified on a real webcam (no camera in this environment): the defaults are starting points - tune with `?gazeDebug`. Known layering kept on purpose: FeatureSmoother (feature EMA) + stabilizer (px) + FixationFilter (targeting median) each serve a different stage; merging them is possible later if latency is perceptible.
+- Touched: new `stabilizer.ts` + tests, `gaze-layer.tsx` (stabilizer wiring, diagnostics, hotspot waypoints), `test-support/run.mjs` (one line), `docs/HANDOFF.md`. No other lanes.
+
 ### 2026-11-07  Prem / Codex  prem/guided-language-packs (nonclinical speech regression)
 - Report: Spanish speech "Dónde está la biblioteca" reached the original-only fallback. Reproduced HTTP 502; a content-free diagnostic confirmed nonempty translation/read-back but schema rejection at `summary.duration`. It should translate as ordinary conversation with no invented clinical concern.
 - Fixed: normalize only provider `summary.duration: null` to the existing omitted optional field before strict validation; other invalid types/fields still fail. Prompt explicitly translates nonclinical questions, uses a Not stated/empty clinical summary and omits absent duration. No schema, provider, frontend, storage or dependency changes.
