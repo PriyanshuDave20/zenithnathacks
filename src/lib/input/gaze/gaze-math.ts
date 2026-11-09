@@ -101,8 +101,11 @@ export function calibrationFixation(elapsedMs: number, count: number, durationMs
 /** One calibration sample: the features seen while the user looked at a known screen point. */
 export type CalibrationSample = { features: GazeFeatures; screen: ScreenPoint };
 
-/** Horizontal: [x, 1]. Vertical: [y, a, p, 1]; new fits keep pitch weight zero. */
-export type GazeMapping = { x: [number, number]; y: [number, number, number, number] };
+/** Horizontal: [x, 1]. Vertical: [y, a, p, y², 1]; new fits keep pitch weight zero.
+ * The quadratic term is not decoration: the eyelids compress the iris-height signal (looking down
+ * hides the iris), so the vertical relation bends. A straight line fitted across a bent relation
+ * is exactly what makes the middle of the screen sit too high and the lower half unreachable. */
+export type GazeMapping = { x: [number, number]; y: [number, number, number, number, number] };
 
 /** Why a calibration was refused: each one maps to a different instruction for the person. */
 export type GazeFitFailure = "few-samples" | "invalid" | "coverage" | "no-spread" | "too-noisy" | "degenerate";
@@ -168,10 +171,21 @@ type FitModel = { mapping: GazeMapping; z: number[] };
 function fitRobust(samples: CalibrationSample[], aperture = false): FitModel | null {
   const build = (set: CalibrationSample[]): FitModel | null => {
     const fx = fitStandardised(set.map((s) => [s.features.x]), set.map((s) => s.screen.x));
-    const fy = fitStandardised(set.map((s) => aperture ? [s.features.y, s.features.a] : [s.features.y]), set.map((s) => s.screen.y));
+    // Vertical: iris height plus its square (the eyelid compression bends the relation) and,
+    // when held-out data justifies it, the eye opening.
+    const fy = fitStandardised(
+      set.map((s) => (aperture ? [s.features.y, s.features.y * s.features.y, s.features.a] : [s.features.y, s.features.y * s.features.y])),
+      set.map((s) => s.screen.y),
+    );
     if (!fx || !fy) return null;
     return {
-      mapping: { x: [fx.coef[0], fx.intercept], y: [fy.coef[0], aperture ? fy.coef[1] : 0, 0, fy.intercept] },
+      mapping: {
+        x: [fx.coef[0], fx.intercept],
+        // y slots: [iris lin, aperture, pitch (unused), iris quad, intercept]
+        y: aperture
+          ? [fy.coef[0], fy.coef[2], 0, fy.coef[1], fy.intercept]
+          : [fy.coef[0], 0, 0, fy.coef[1], fy.intercept],
+      },
       z: [...fx.z, ...fy.z],
     };
   };
@@ -284,10 +298,10 @@ export function medianFeatures(list: GazeFeatures[]): GazeFeatures | null {
 export function recenterMapping(mapping: GazeMapping, features: GazeFeatures, target: ScreenPoint = { x: 0.5, y: 0.5 }): GazeMapping {
   // Unclamped, so a pointer that was pinned against an edge still gives the true offset.
   const rawX = mapping.x[0] * features.x + mapping.x[1];
-  const rawY = mapping.y[0] * features.y + mapping.y[1] * features.a + mapping.y[2] * features.p + mapping.y[3];
+  const rawY = mapping.y[0] * features.y + mapping.y[1] * features.a + mapping.y[2] * features.p + mapping.y[3] * features.y * features.y + mapping.y[4];
   return {
     x: [mapping.x[0], mapping.x[1] + (target.x - rawX)],
-    y: [mapping.y[0], mapping.y[1], mapping.y[2], mapping.y[3] + (target.y - rawY)],
+    y: [mapping.y[0], mapping.y[1], mapping.y[2], mapping.y[3], mapping.y[4] + (target.y - rawY)],
   };
 }
 
@@ -356,7 +370,7 @@ export function applyGazeMapping(mapping: GazeMapping | null, f: GazeFeatures): 
   if (!mapping) return defaultMapping(f);
   return {
     x: clamp(mapping.x[0] * f.x + mapping.x[1], 0, 1),
-    y: clamp(mapping.y[0] * f.y + mapping.y[1] * f.a + mapping.y[2] * f.p + mapping.y[3], 0, 1),
+    y: clamp(mapping.y[0] * f.y + mapping.y[1] * f.a + mapping.y[2] * f.p + mapping.y[3] * f.y * f.y + mapping.y[4], 0, 1),
   };
 }
 
@@ -464,6 +478,7 @@ export class SmoothedPoint {
 export class BlinkGuard {
   private buf: number[] = []; // openings of recent frames we accepted
   private prev = 0;
+  private lastY = 0; // iris height on the last accepted frame: the down-look discriminator
   private blinkStart = -1;
   private blinkRef = 0;
   private blinkSigma = 0;
@@ -511,6 +526,13 @@ export class BlinkGuard {
     this.blinkStart = -1;
   }
 
+  /** Looking down narrows the eye, like a blink starting. But looking down also slides the iris
+   * well below the eye-corner line, which a blink never does: that difference keeps down-looks
+   * from being dropped as blinks (they used to be, which pinned the cursor at the top). */
+  private isLookDown(f: GazeFeatures) {
+    return f.y > this.lastY + 0.1;
+  }
+
   /** The features unchanged for an open eye, or null while a blink is closing, closed or reopening. */
   next(f: GazeFeatures | null, nowMs: number): GazeFeatures | null {
     const st = this.stats();
@@ -525,6 +547,13 @@ export class BlinkGuard {
     this.prev = a;
 
     if (this.blinkStart >= 0) {
+      if (this.isLookDown(f)) {
+        // What looked like a blink is the eye narrowing while the iris slides down: keep tracking.
+        this.adopt(a);
+        this.push(a);
+        this.lastY = f.y;
+        return f;
+      }
       this.blinkMin = Math.min(this.blinkMin, a);
       const deep = this.blinkMin < this.blinkRef * this.deepDip;
       this.stableFrames = Math.abs(a - this.blinkPrev) <= Math.max(this.blinkRef * 0.02, this.blinkSigma) ? this.stableFrames + 1 : 0;
@@ -539,6 +568,7 @@ export class BlinkGuard {
       if (settled || nowMs - this.blinkStart > this.sustainedMs) {
         this.adopt(a);
         this.push(a);
+        this.lastY = f.y;
         return f;
       }
       return null;
@@ -547,17 +577,29 @@ export class BlinkGuard {
     if (st) {
       const drop = Math.max(this.minDrop * st.ref, this.noiseK * st.sigma);
       if (smooth < st.ref - drop) {
+        if (this.isLookDown(f)) {
+          // The eye narrowed while the iris slid well below the corner line: a downward look, not
+          // a blink. Keep the frame and let the narrower opening become the new usual for the
+          // next step down, so descending gaze is never eaten as a blink.
+          this.adopt(a);
+          this.push(a);
+          this.lastY = f.y;
+          return f;
+        }
         this.begin(st.ref, st.sigma, nowMs);
         return null;
       }
     }
     this.push(a);
-    return nowMs < this.settleUntil ? null : f;
+    if (nowMs < this.settleUntil) return null;
+    this.lastY = f.y;
+    return f;
   }
 
   reset() {
     this.buf = [];
     this.prev = 0;
+    this.lastY = 0;
     this.blinkStart = -1;
     this.blinkRef = 0;
     this.blinkSigma = 0;

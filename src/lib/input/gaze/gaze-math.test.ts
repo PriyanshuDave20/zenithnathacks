@@ -154,6 +154,29 @@ test("gaze rejects blinks, collapsed eyes, and non-finite landmarks", () => {
   assert.equal(gazeFeatures(face({468: {x: NaN, y: 0.46}})), null);
 });
 
+test("a look-down narrows the eye but must not be dropped as a blink", () => {
+  const guard = new BlinkGuard();
+  let at = 0;
+  const feed = (a: number, y: number) => {
+    const f = guard.next({ x: 0, y, a, p: 0 }, at);
+    at += 33;
+    return f;
+  };
+  // Usual open eye.
+  for (let i = 0; i < 20; i++) feed(0.3, 0.0);
+  // The eye narrows while the iris slides well below the corner line: a look-down, not a blink.
+  const down = feed(0.22, 0.25);
+  assert.ok(down, "a down-look must pass through the blink guard");
+  assert.equal(down!.a, 0.22);
+  // Continued narrowing while looking further down stays tracking too.
+  const further = feed(0.16, 0.4);
+  assert.ok(further, "the next step down must pass through as well");
+  // A real blink (aperture collapses, iris stays near the corner line) is still dropped.
+  // A real blink (aperture collapses far below the narrowed baseline, iris stays put) is still dropped.
+  const blink = feed(0.05, 0.41);
+  assert.equal(blink, null, "an aperture collapse without downward iris motion is a blink");
+});
+
 test("iris displacement is invariant under eye roll", () => {
   const original = face({468: {x: 0.46, y: 0.47}, 473: {x: 0.56, y: 0.47}});
   const angle = 0.25;
@@ -274,7 +297,7 @@ function blinkFrames() {
 
 test("BlinkGuard keeps the pointer still through a blink and passes open-eye frames untouched", () => {
   // Gaze at the middle of the screen: this map puts the open-eye features at (0.5, 0.5).
-  const map = { x: [-4, 0.9] as [number, number], y: [2.5, 4, 0, -0.54] as [number, number, number, number] };
+  const map = { x: [-4, 0.9] as [number, number], y: [2.5, 4, 0, 0, -0.54] as [number, number, number, number, number] };
   const run = (guarded: boolean) => {
     const guard = new BlinkGuard();
     const smoother = new FeatureSmoother(0.3, 0.735, 0.06);
@@ -341,7 +364,7 @@ test("BlinkGuard does not freeze the pointer when the person simply looks lower"
 });
 
 test("recenterMapping removes a steady offset and keeps the map's gains", () => {
-  const map = { x: [-4, 0.9] as [number, number], y: [2.5, 4, 0, -0.54] as [number, number, number, number] };
+  const map = { x: [-4, 0.9] as [number, number], y: [2.5, 4, 0, 0, -0.54] as [number, number, number, number, number] };
   const centreLook = { x: 0.1, y: 0, a: 0.26, p: 0 }; // this map puts it at (0.5, 0.5)
   assert.deepEqual(applyGazeMapping(map, centreLook), { x: 0.5, y: 0.5 });
   // The head has shifted since calibration: looking at the centre now reads differently.
@@ -595,7 +618,7 @@ test("a minute of repeated blinks does not accumulate offset or stop the filtere
     const guard = new BlinkGuard();
     const buffer = new BlinkSafeBuffer();
     const smoother = new FeatureSmoother();
-    const map = { x: [-4, 0.9] as [number, number], y: [10, 0, 0, 0.5] as [number, number, number, number] };
+    const map = { x: [-4, 0.9] as [number, number], y: [10, 0, 0, 0, 0.5] as [number, number, number, number, number] };
     let updates = 0;
     let finalAt = 0;
     for (let t = 0; t < 60000; t += 1000 / fps) {
