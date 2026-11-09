@@ -560,7 +560,33 @@ export function GazeLayer() {
       const p0 = smoother.next({ x, y }, featureDt);
       const jump = clampNum(Math.min(window.innerWidth, window.innerHeight) * 0.12, 60, 140);
       const p = fixationRef.current.next(p0, now, jump);
-      cursor.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
+
+      // Which control is meant: the one under the pointer, else the nearest within reach, and it sticks
+      // unless another is clearly closer. Webcam tracking is only good to a fraction of a screen.
+      if (now - candidatesRef.current.at > 200) candidatesRef.current = { at: now, items: gazeCandidates() };
+      const items = candidatesRef.current.items;
+      const previous = items.find((c) => c.el === stickyTargetRef.current)?.box.id ?? null;
+      const reach = clampNum(Math.min(window.innerWidth, window.innerHeight) * 0.14, 56, 130);
+      const chosen = pickGazeTarget(p, items.map((c) => c.box), { radius: reach, previous });
+      const target = chosen == null ? null : (items.find((c) => c.box.id === chosen)?.el ?? null);
+      stickyTargetRef.current = target;
+
+      // Magnetic pull: each selectable control is a magnetic region. When the gaze lands somewhat
+      // near one, the pointer gravitates to its centre - the farther in, the stronger - so "roughly
+      // there" becomes "on the button" without exaggerated eye movements, and the eye sees the
+      // cursor sit on what it is about to choose.
+      let px = p.x;
+      let py = p.y;
+      if (target) {
+        const box = target.getBoundingClientRect();
+        const cx = box.left + box.width / 2;
+        const cy = box.top + box.height / 2;
+        const t = clampNum(1 - Math.hypot(p.x - cx, p.y - cy) / reach, 0, 1);
+        const k = 0.25 + 0.6 * t;
+        px = p.x + (cx - p.x) * k;
+        py = p.y + (cy - p.y) * k;
+      }
+      cursor.style.transform = `translate3d(${px}px, ${py}px, 0)`;
       cursor.style.opacity = "1";
 
       // Drift correction in progress: collect a steady reading of the eyes on the centre dot; no selecting meanwhile.
@@ -608,17 +634,8 @@ export function GazeLayer() {
         return;
       }
 
-      // Which control is meant: the one under the pointer, else the nearest within reach, and it sticks
-      // unless another is clearly closer. Webcam tracking is only good to a fraction of a screen.
-      if (now - candidatesRef.current.at > 200) candidatesRef.current = { at: now, items: gazeCandidates() };
-      const items = candidatesRef.current.items;
-      const previous = items.find((c) => c.el === stickyTargetRef.current)?.box.id ?? null;
-      const reach = clampNum(Math.min(window.innerWidth, window.innerHeight) * 0.14, 56, 130);
-      const chosen = pickGazeTarget(p, items.map((c) => c.box), { radius: reach, previous });
-      const target = chosen == null ? null : (items.find((c) => c.box.id === chosen)?.el ?? null);
-      stickyTargetRef.current = target;
       // Edge scrolling asks whether the pointer is actually ON a control, not merely near one.
-      const onControl = selectableTarget(document.elementFromPoint(p.x, p.y));
+      const onControl = selectableTarget(document.elementFromPoint(px, py));
       let key: string | null = null;
       if (target) {
         let k = elementKeysRef.current.get(target);
