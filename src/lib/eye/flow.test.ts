@@ -70,96 +70,138 @@ test("the clinician rows are labelled and only include what was answered", () =>
   assert.deepEqual(describeRows(EMPTY_ANSWERS), []);
 });
 
-// Speech lifecycle regressions: no camera, audio device or network is used.
-function withEyeSpeech(run: (speech: { utterances: SpeechSynthesisUtterance[]; cancelled: () => number }) => void) {
-  const oldWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
-  const oldUtterance = Object.getOwnPropertyDescriptor(globalThis, "SpeechSynthesisUtterance");
+// Speech lifecycle regressions: fixed synthetic metadata, no camera/network/audio device.
+import { publicSpeechCatalog } from "../questions/speech-catalog";
+import { EYE_LANGUAGES, eyeSummary, eyeSpeechSegments, localizeEyeSpeech } from "../questions/eye-localization";
+import { publicSpeechPlaylist } from "../../components/session/cloud-speech";
+
+const clips = publicSpeechCatalog().map((entry, index) => ({ ...entry, src: `/speech/${entry.language}-${index.toString(16).padStart(64, "0")}.mp3` }));
+class FakeAudio {
+  static nextBlocked = false;
+  constructor() { this.blocked = FakeAudio.nextBlocked; FakeAudio.nextBlocked = false; }
+  src = "";
+  onended: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  plays = 0;
+  pauses = 0;
+  blocked = false;
+  play() { this.plays++; return this.blocked ? Promise.reject(Object.assign(new Error(), { name: "NotAllowedError" })) : Promise.resolve(); }
+  pause() { this.pauses++; }
+}
+const tick = () => new Promise<void>(resolve => setImmediate(resolve));
+async function withEyeSpeech(run: (speech: { audio: FakeAudio[]; utterances: SpeechSynthesisUtterance[]; cancelled: () => number }) => Promise<void>) {
+  const names = ["window", "Audio", "fetch", "SpeechSynthesisUtterance"] as const;
+  const old = names.map(name => Object.getOwnPropertyDescriptor(globalThis, name));
+  const audio: FakeAudio[] = [];
   const utterances: SpeechSynthesisUtterance[] = [];
   let cancels = 0;
+  class Audio extends FakeAudio { constructor() { super(); audio.push(this); } }
   class Utterance {
     constructor(public text: string) {}
-    lang = "";
-    rate = 1;
-    onstart: (() => void) | null = null;
-    onend: (() => void) | null = null;
-    onerror: (() => void) | null = null;
+    lang = ""; rate = 1; voice: SpeechSynthesisVoice | null = null;
+    onstart: (() => void) | null = null; onend: (() => void) | null = null; onerror: (() => void) | null = null;
   }
-  Object.defineProperty(globalThis, "window", { configurable: true, value: {
-    speechSynthesis: { cancel: () => { cancels++; }, speak: (utterance: SpeechSynthesisUtterance) => utterances.push(utterance) },
-  } });
-  Object.defineProperty(globalThis, "SpeechSynthesisUtterance", { configurable: true, value: Utterance });
-  try {
+  const fetcher = (async (url: string) => new Response(JSON.stringify(url.includes("manifest") ? { schemaVersion: 1, clips } : { provider: "azure" }), { headers: { "Content-Type": "application/json" } })) as typeof fetch;
+  const values = [{ Audio, fetch: fetcher, speechSynthesis: {
+    getVoices: () => ["en-US", "es-ES", "ar-SA", "zh-CN"].map(lang => ({ lang, localService: true } as SpeechSynthesisVoice)),
+    cancel: () => { cancels++; }, speak: (utterance: SpeechSynthesisUtterance) => utterances.push(utterance),
+  } }, Audio, fetcher, Utterance];
+  names.forEach((name, index) => Object.defineProperty(globalThis, name, { configurable: true, writable: true, value: values[index] }));
+  try { eye.clear(); await run({ audio, utterances, cancelled: () => cancels }); }
+  finally {
     eye.clear();
-    run({ utterances, cancelled: () => cancels });
-  } finally {
-    eye.clear();
-    if (oldWindow) Object.defineProperty(globalThis, "window", oldWindow);
-    else Reflect.deleteProperty(globalThis, "window");
-    if (oldUtterance) Object.defineProperty(globalThis, "SpeechSynthesisUtterance", oldUtterance);
-    else Reflect.deleteProperty(globalThis, "SpeechSynthesisUtterance");
+    names.forEach((name, index) => { const descriptor = old[index]; if (descriptor) Object.defineProperty(globalThis, name, descriptor); else Reflect.deleteProperty(globalThis, name); });
   }
 }
 
-function speechEvent(utterance: SpeechSynthesisUtterance, type: "start" | "end" | "error") {
-  const callback = utterance[`on${type}`];
-  if (callback) Reflect.apply(callback, utterance, [{}]);
-}
+test("Eye summaries in all languages resolve complete Azure playlists without losing side, severity or negation", () => {
+  for (const language of EYE_LANGUAGES) {
+    for (const where of ["head", "chest", "abdomen", "back", "arm", "leg"]) {
+      for (const side of (where === "arm" || where === "leg" ? [null, "left", "right", "both"] : [null])) {
+        for (const strength of ["mild", "moderate", "severe", "worst"]) {
+          const summary = eyeSummary(a({ hurts: "yes", where, side, strength, duration: "days", worse: "moving", other: "fever" }), language);
+          assert.ok(summary);
+          assert.equal(eyeSpeechSegments(summary, language)?.length, 5);
+          assert.equal(publicSpeechPlaylist(summary, language, clips)?.length, 5);
+        }
+      }
+    }
+    for (const [field, choices] of Object.entries({ duration: ["today", "days", "week", "longer"], worse: ["breathing", "moving", "eating", "nothing"], other: ["fever", "nausea", "dizzy", "short_breath", "none"] })) {
+      for (const choice of choices) {
+        const summary = eyeSummary(a({ hurts: "yes", where: "arm", side: "both", [field]: choice }), language);
+        const playlist = publicSpeechPlaylist(summary, language, clips);
+        assert.ok(playlist?.length);
+        assert.equal(playlist.length, choice === "nothing" || choice === "none" ? 1 : 2);
+      }
+    }
+    const noPain = eyeSummary(a({ hurts: "no", other: "none" }), language);
+    assert.equal(publicSpeechPlaylist(noPain, language, clips)?.length, 1);
+    assert.notEqual(noPain, eyeSummary(a({ hurts: "yes" }), language));
+    const help = localizeEyeSpeech("I need help. Please come now.", language)!;
+    assert.equal(publicSpeechPlaylist(help, language, clips)?.length, 1);
+    assert.equal(eyeSpeechSegments(`${help} unknown`, language), undefined);
+  }
+});
 
-test("Eye speech only reports completion after playback, and superseded callbacks cannot change the next choice", () => {
-  withEyeSpeech(({ utterances }) => {
-    eye.say("Yes.");
+test("Clearing Eye during pending manifest loading cannot start late audio", async () => {
+  await withEyeSpeech(async ({ audio, utterances }) => {
+    eye.setLanguage("es"); eye.say("Yes.");
     assert.equal(getEyeState().speechStatus, "queued");
-    speechEvent(utterances[0], "start");
-    assert.equal(getEyeState().speechStatus, "speaking");
-    eye.say("No.");
-    speechEvent(utterances[0], "end");
-    assert.equal(getEyeState().speechStatus, "queued");
-    assert.equal(getEyeState().lastSaid, "No.");
-    speechEvent(utterances[1], "start");
-    speechEvent(utterances[1], "end");
-    assert.equal(getEyeState().speechStatus, "spoken");
+    eye.clear();
+    await tick();
+    assert.equal(audio.length, 0);
+    assert.equal(utterances.length, 0);
+    assert.equal(getEyeState().speechStatus, "idle");
   });
 });
 
-test("Eye muted, unavailable and failed speech retain the choice without claiming playback", () => {
-  withEyeSpeech(({ utterances }) => {
-    eye.setMuted(true);
-    eye.say("I need help.", true);
+test("Eye choices use static Azure audio in every language, only finishing after the final segment", async () => {
+  await withEyeSpeech(async ({ audio, utterances }) => {
+    for (const language of EYE_LANGUAGES) {
+      eye.setLanguage(language);
+      eye.say("I have pain in my left leg. It is severe.");
+      await tick();
+      const current = audio.at(-1)!;
+      assert.ok(current.src.startsWith(`/speech/${language}-`));
+      assert.equal(getEyeState().speechStatus, "speaking");
+      current.onended?.();
+      assert.equal(getEyeState().speechStatus, "speaking");
+      current.onended?.();
+      assert.equal(getEyeState().speechStatus, "spoken");
+      assert.equal(getEyeState().lastSaid, localizeEyeSpeech("I have pain in my left leg. It is severe.", language));
+    }
     assert.equal(utterances.length, 0);
+  });
+});
+
+test("Eye mute, supersession, Help exit and clear cancel audio and reject late callbacks", async () => {
+  await withEyeSpeech(async ({ audio }) => {
+    eye.setLanguage("ar");
+    eye.setMuted(true);
+    eye.say("I need help. Please come now.", true);
+    await tick();
+    assert.equal(audio.length, 0);
     assert.equal(getEyeState().speechStatus, "muted");
     assert.equal(getEyeState().log[0].help, true);
     eye.setMuted(false);
-    assert.equal(getEyeState().speechStatus, "muted");
-    eye.say("Yes.");
-    speechEvent(utterances[0], "error");
-    assert.equal(getEyeState().speechStatus, "error");
-    window.speechSynthesis.speak = () => { throw new Error("Speech unavailable"); };
-    eye.say("No.");
-    assert.equal(getEyeState().speechStatus, "error");
-    Reflect.deleteProperty(window, "speechSynthesis");
-    eye.say("I would like water.");
-    assert.equal(getEyeState().speechStatus, "unavailable");
-    assert.equal(getEyeState().lastSaid, "I would like water.");
-  });
-});
-
-test("Leaving Eye Help cancels current speech; clearing removes all session content and ignores late callbacks", () => {
-  withEyeSpeech(({ utterances, cancelled }) => {
-    eye.start("conversation");
-    eye.go("help");
-    eye.say("I need help.", true);
-    speechEvent(utterances[0], "start");
-    const before = cancelled();
+    eye.start("conversation"); eye.go("help"); eye.say("I need help. Please come now.", true);
+    await tick();
+    const help = audio.at(-1)!;
+    const lateHelp = help.onended;
     eye.go("home");
-    assert.ok(cancelled() > before);
+    assert.ok(help.pauses);
     assert.equal(getEyeState().speechStatus, "stopped");
-    speechEvent(utterances[0], "end");
+    lateHelp?.();
     assert.equal(getEyeState().speechStatus, "stopped");
-    eye.say("I would like water.");
-    eye.answers(a({ where: "head" }));
-    eye.finishIntake(a({ where: "head" }), "Head");
+    eye.say("Yes."); await tick();
+    const yes = audio.at(-1)!;
+    const lateYes = yes.onended;
+    eye.say("No."); await tick();
+    lateYes?.();
+    assert.equal(getEyeState().speechStatus, "speaking");
     eye.clear();
-    speechEvent(utterances[1], "end");
+    audio.at(-1)?.onended?.();
+    assert.equal(getEyeState().language, "en");
     assert.equal(getEyeState().lastSaid, null);
     assert.equal(getEyeState().lastIntake, null);
     assert.equal(getEyeState().intake, null);
@@ -167,5 +209,43 @@ test("Leaving Eye Help cancels current speech; clearing removes all session cont
     assert.deepEqual(getEyeState().log, []);
     assert.equal(getEyeState().mode, null);
     assert.equal(getEyeState().speechStatus, "idle");
+  });
+});
+
+test("Eye language changes clear the previous flow while same-language handoff preserves it", async () => {
+  await withEyeSpeech(async () => {
+    eye.setLanguage("es-MX"); eye.start("intake"); eye.say("Yes."); await tick();
+    eye.setLanguage("es");
+    assert.equal(getEyeState().mode, "intake");
+    eye.setLanguage("zh-Hans");
+    assert.equal(getEyeState().language, "zh-Hans");
+    assert.equal(getEyeState().mode, null);
+    assert.equal(getEyeState().lastSaid, null);
+    assert.deepEqual(getEyeState().log, []);
+    eye.setLanguage("yue-HK");
+    assert.equal(getEyeState().language, "en");
+  });
+});
+
+test("Eye audio failure offers explicit device fallback; blocked audio can retry without recording another choice", async () => {
+  await withEyeSpeech(async ({ audio, utterances }) => {
+    FakeAudio.nextBlocked = true;
+    eye.say("Yes."); await tick();
+    const current = audio.at(-1)!;
+    assert.equal(getEyeState().speechStatus, "audio-ready");
+    const count = getEyeState().log.length;
+    current.blocked = false;
+    eye.repeat(); await tick();
+    assert.equal(current.plays, 2);
+    assert.equal(getEyeState().log.length, count);
+    current.onerror?.();
+    assert.equal(getEyeState().speechStatus, "browser-ready");
+    assert.equal(utterances.length, 0);
+    eye.repeat();
+    assert.equal(utterances.length, 1);
+    utterances[0].onstart?.({} as SpeechSynthesisEvent);
+    assert.equal(getEyeState().speechStatus, "speaking");
+    utterances[0].onend?.({} as SpeechSynthesisEvent);
+    assert.equal(getEyeState().speechStatus, "spoken");
   });
 });

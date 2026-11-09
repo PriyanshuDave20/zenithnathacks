@@ -2,7 +2,9 @@
 
 import { useSyncExternalStore } from "react";
 import { EMPTY_ANSWERS, type EyeMode, type EyeScreen, type FlowAnswers } from "./flow";
-import { speakAloud, stopSpeaking, type EyeSpeechStatus } from "./speak";
+import { speakAloud, stopSpeaking, replayEyeSpeech, type EyeSpeechStatus } from "./speak";
+
+import { eyeLanguage, localizeEyeSpeech, type EyeLanguage } from "../questions/eye-localization";
 
 // The Eye mode conversation lives in this module's memory, nothing else: no localStorage, no cookies, no server.
 //  - It survives moving between pages in the app (leave the eye board, come back: you are where you were),
@@ -11,6 +13,7 @@ import { speakAloud, stopSpeaking, type EyeSpeechStatus } from "./speak";
 //  - A clinician pressing Clear leaves nothing behind.
 
 export type EyeState = {
+  language: EyeLanguage;
   mode: EyeMode | null; // null until the clinician picks Intake or Conversation
   screen: EyeScreen;
   answers: FlowAnswers;
@@ -22,7 +25,7 @@ export type EyeState = {
   log: { at: number; text: string; help: boolean }[]; // patient choices, including muted ones, oldest first
 };
 
-const INITIAL: EyeState = { mode: null, screen: "mode", answers: EMPTY_ANSWERS, muted: false, lastSaid: null, speechStatus: "idle", lastIntake: null, intake: null, log: [] };
+const INITIAL: EyeState = { language: "en", mode: null, screen: "mode", answers: EMPTY_ANSWERS, muted: false, lastSaid: null, speechStatus: "idle", lastIntake: null, intake: null, log: [] };
 
 let state: EyeState = INITIAL;
 const listeners = new Set<() => void>();
@@ -45,10 +48,17 @@ export function useEyeState(): EyeState {
 
 function stopCurrentSpeech() {
   stopSpeaking();
-  if (state.speechStatus === "queued" || state.speechStatus === "speaking") set({ speechStatus: "stopped" });
+  if (state.speechStatus === "queued" || state.speechStatus === "speaking" || state.speechStatus === "audio-ready" || state.speechStatus === "browser-ready") set({ speechStatus: "stopped" });
 }
 
 export const eye = {
+  setLanguage(value: string) {
+    const language = eyeLanguage(value);
+    if (language === state.language) return;
+    stopCurrentSpeech();
+    set({ ...INITIAL, language });
+  },
+  repeat() { if (!state.muted) replayEyeSpeech(); },
   /** The clinician picks a mode. Intake starts at the questions; Conversation starts at its home screen. */
   start(mode: EyeMode) {
     stopCurrentSpeech();
@@ -64,8 +74,10 @@ export const eye = {
   /** Say it aloud (unless muted), keep it on screen for staff. */
   say(text: string, help = false) {
     if (!text.trim()) return;
-    set({ lastSaid: text, speechStatus: state.muted ? "muted" : "queued", log: [...state.log, { at: Date.now(), text, help }].slice(-40) });
-    if (!state.muted) speakAloud(text, (speechStatus) => set({ speechStatus }));
+    const patientText = localizeEyeSpeech(text, state.language);
+    if (!patientText) { set({ speechStatus: "error" }); return; }
+    set({ lastSaid: patientText, speechStatus: state.muted ? "muted" : "queued", log: [...state.log, { at: Date.now(), text, help }].slice(-40) });
+    if (!state.muted) speakAloud(patientText, (speechStatus) => set({ speechStatus }), state.language);
   },
   setMuted(muted: boolean) {
     if (muted) stopCurrentSpeech();

@@ -3,7 +3,8 @@
 //   Intake (the clinician's first meeting):  pain? -> where -> side -> strength -> how long -> worse when -> anything else -> review -> done
 //   Conversation (ongoing):  home (Yes / No / I need something / Rest / Help) -> needs -> (Pain: where -> side -> strength -> review)
 //
-// Everything here is a label the clinician reads or the app says aloud; nothing is sent anywhere. English only for now.
+// Canonical English wording for clinicians and flow rules. Patient copy and static Azure audio
+// are localized by src/lib/questions/eye-localization.ts; selected answers stay in browser memory.
 
 export type EyeMode = "intake" | "conversation";
 export type FlowStep = "pain_q" | "where" | "side" | "strength" | "duration" | "worse" | "other" | "review";

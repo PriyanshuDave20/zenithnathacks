@@ -249,6 +249,8 @@ const SPOKEN: Record<string, Translations> = {
   }
 };
 const UI: Record<string, Translations> = {
+  "Look here to stop calling": { en: "Look here to stop calling", es: "Mire aquí para dejar de llamar", ar: "انظر هنا لإيقاف النداء", "zh-Hans": "注视这里停止呼叫" },
+  "No speech yet.": { en: "No speech yet.", es: "Todavía no se ha hablado.", ar: "لم يتم النطق بعد.", "zh-Hans": "尚未朗读。" },
   "Yes": {
     "en": "Yes",
     "es": "Sí",

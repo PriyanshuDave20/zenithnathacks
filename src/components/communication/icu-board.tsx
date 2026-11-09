@@ -38,6 +38,8 @@ import { EyeWorkspace } from "@/components/eye/eye-workspace";
 import { describeAnswers } from "@/lib/eye/flow";
 import { eye, getEyeState, subscribeEye, useEyeState } from "@/lib/eye/session";
 
+import { EYE_LANGUAGES } from "@/lib/questions/eye-localization";
+
 const DESKTOP_QUERY = "(hover: hover) and (pointer: fine)";
 function subscribeDesktop(cb: () => void) {
   const query = window.matchMedia(DESKTOP_QUERY);
@@ -143,6 +145,7 @@ export function IcuBoard({
     return () => clearTimeout(timer);
   }, [count]);
   const boardUp = !expired && !handoff && !reviewed;
+  useEffect(() => { if (!boardUp) eye.stopSpeech(); }, [boardUp]);
   useEffect(() => {
     setGazeAvailable(boardUp);
     return () => setGazeAvailable(false);
@@ -173,6 +176,12 @@ export function IcuBoard({
             <SynapseWordmark accent="#77a0c4" />
           </Link>
           <span className={s.holder}>Eye mode</span>
+          <label data-gaze-ignore style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            Patient language
+            <select value={eyeState.language} onChange={event => eye.setLanguage(event.target.value)} style={{ minHeight: 44, maxWidth: "100%" }}>
+              {EYE_LANGUAGES.map(language => <option key={language} value={language}>{({ en: "English", es: "Español", ar: "العربية", "zh-Hans": "简体中文" })[language]}</option>)}
+            </select>
+          </label>
           <div className={s.headerActions}>
             {gazeRequested && !handoff && !reviewed && !expired ? (
               <button type="button" onClick={stopGaze}>
