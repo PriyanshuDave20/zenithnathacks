@@ -33,11 +33,22 @@ function useRedirectIfSignedIn() {
   }, [me, router]);
 }
 
+function useAuthBusy() {
+  const [busy, setBusy] = useState<"email" | "google" | null>(null);
+  useEffect(() => {
+    // Back from OAuth can restore this document with its pending Google promise.
+    const onPageShow = () => setBusy(current => current === "google" ? null : current);
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+  return [busy, setBusy] as const;
+}
+
 export function SignInForm() {
   useRedirectIfSignedIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState<"email" | "google" | null>(null);
+  const [busy, setBusy] = useAuthBusy();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -135,7 +146,7 @@ export function RolePicker({ value, onChange }: { value: ClinicianRole; onChange
 export function SignUpForm() {
   useRedirectIfSignedIn();
   const [form, setForm] = useState({ name: "", email: "", password: "", clinic: "", role: "doctor" as ClinicianRole });
-  const [busy, setBusy] = useState<"email" | "google" | null>(null);
+  const [busy, setBusy] = useAuthBusy();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const set = (k: keyof typeof form) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
