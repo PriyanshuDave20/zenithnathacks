@@ -73,18 +73,19 @@ clinical sign-off.
 
 Eye intake and conversation use a separate fixed four-language catalog in
 `src/lib/questions/eye-localization.ts` (`en`, `es`, `ar`, `zh-Hans`). Patient setup
-passes the language to the Eye memory store; direct entry has a clinician-only
-language selector. Changing language clears the previous Eye flow. Patient text
-and spoken clauses are localized deterministically; the clinician's structured
-summary and choice log retain their English meaning. This catalog is a draft and
+passes the language to the Eye memory store; direct entry defaults to English.
+Changing language clears the previous Eye flow. Spoken clauses are localized
+deterministically. The original English screens, displayed choices, structured
+summary and choice log are preserved. This catalog is a draft and
 still requires fluent-speaker and clinical review.
 
 Eye speech resolves complete registered clauses into public Azure MP3 playlists.
 No selected answers are sent to a model, Translator or runtime synthesis endpoint.
 Only the fixed public source wording is supplied to the explicit speech-generation
-maintenance tool. Missing/failed audio offers an explicit device-voice fallback;
-autoplay blocking offers a fresh-tap replay. Replay does not record another choice
-or metric. Mute, Clear, language/account changes, Help cancellation, handoff and
+maintenance tool. No new selector, translated controls, RTL layout or replay
+buttons are added; device-voice fallback is intentionally not exposed. The existing Speak aloud toggle retries the retained Azure choice
+when sound is enabled again; failures remain explicit in the existing status text.
+Replay does not record another choice or metric. Mute, Clear, language/account changes, Help cancellation, handoff and
 navigation stop playback and invalidate pending callbacks. Session content and
 audio selection remain in memory.
 
