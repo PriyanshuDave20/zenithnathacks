@@ -1,167 +1,192 @@
-// On-device webcam face tracking for the gaze input channel, wrapping @mediapipe/tasks-vision.
-// Privacy rule (AGENTS.md): camera frames are processed locally in WASM and are never uploaded,
-// stored, or logged. The face model and WASM runtime are static files fetched once over the
-// network when gaze is enabled; no video or landmark data leaves the device.
-import { FaceLandmarker, FilesetResolver, type NormalizedLandmark } from "@mediapipe/tasks-vision";
+// Webcam gaze tracking for the gaze input channel, wrapping WebGazer.js (brownhci).
+// Everything runs in the browser: the webcam stream and the face-mesh regression stay on the
+// device; no server, no API key. WebGazer is loaded as its self-contained UMD bundle from
+// /webgazer/webgazer.js (its ESM dependency graph does not survive the bundler), and the
+// face-mesh solution assets are served from public/mediapipe/face_mesh, so no CDN is needed.
+// Privacy rule (AGENTS.md): camera frames are processed locally and are never uploaded, stored,
+// or logged; regression data never persists between sessions (saveDataAcrossSessions(false)).
 
-const WASM_BASE = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.2/wasm";
-const MODEL_URL =
-  "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+import type { WebGazerInstance } from "./webgazer";
 
-let infoRouted = false;
-/**
- * MediaPipe's WASM runtime writes informational lines ("INFO: Created TensorFlow Lite XNNPACK
- * delegate for CPU.") to console.error. Next's dev overlay shows every console.error as an error and
- * covers the page with it. Route those lines to console.info; real errors still pass through.
- */
-function routeMediapipeInfo() {
-  if (infoRouted || typeof console === "undefined") return;
-  infoRouted = true;
-  const original = console.error;
-  console.error = (...args: unknown[]) => {
-    if (typeof args[0] === "string" && /^INFO: /.test(args[0])) {
-      console.info(...args);
+export type GazePrediction = { x: number; y: number; at: number };
+
+/** "hd": 720p with a mild zoom (finer eye detail when the camera cooperates). "safe": the plain view. */
+export type GazeCameraProfile = "hd" | "safe";
+
+/** Where the WebGazer bundle and its face-mesh solution files live, relative to the site root. */
+const BUNDLE_SRC = "/webgazer/webgazer.js";
+const SOLUTION_PATH = "/mediapipe/face_mesh";
+
+/** WebGazer's begin() only settles once its loop is paused, so readiness is polled instead. */
+const READY_TIMEOUT_MS = 15000;
+
+/** Load the WebGazer bundle once; later calls resolve immediately with the running instance. */
+function loadWebgazer(): Promise<WebGazerInstance> {
+  if (typeof window === "undefined") return Promise.reject(new Error("Gaze can only start in the browser."));
+  if (window.webgazer) return Promise.resolve(window.webgazer);
+  return new Promise((resolve, reject) => {
+    const done = () => {
+      if (window.webgazer) resolve(window.webgazer);
+      else reject(new Error("The eye tracking script loaded but did not initialise."));
+    };
+    const existing = document.querySelector<HTMLScriptElement>("script[data-synapse-webgazer]");
+    if (existing) {
+      existing.addEventListener("load", done, { once: true });
+      existing.addEventListener("error", () => reject(new Error("The eye tracking script failed to load.")), { once: true });
+      if (window.webgazer) done();
       return;
     }
-    original.apply(console, args);
-  };
+    const script = document.createElement("script");
+    script.src = BUNDLE_SRC;
+    script.async = true;
+    script.dataset.synapseWebgazer = "";
+    script.addEventListener("load", done, { once: true });
+    script.addEventListener("error", () => reject(new Error("The eye tracking script failed to load.")), { once: true });
+    document.head.appendChild(script);
+  });
 }
 
 export class GazeTracker {
-  private landmarker: FaceLandmarker | null = null;
-  private stream: MediaStream | null = null;
-  private video: HTMLVideoElement | null = null;
-  private lastFrameTime = -1;
-  private detectErrors = 0;
-  private generation = 0;
+  private wg: WebGazerInstance | null = null;
   private starting: Promise<void> | null = null;
+  private stopRequested = false;
+  private predictCb: ((p: GazePrediction | null) => void) | null = null;
+  private recorded = 0;
+  // "hd" asks for 720p with a mild zoom: a bigger face means finer iris landmarks. When that view
+  // does not track (some cameras misbehave zoomed, or the face ends up partly out of frame), the
+  // layer retries with "safe": the plain 640x480 view WebGazer is tuned for.
+  private profile: GazeCameraProfile = "hd";
+
+  /** Camera view to request on the next start (does nothing while the camera is running). */
+  setCameraProfile(p: GazeCameraProfile) {
+    if (this.wg) return;
+    this.profile = p;
+  }
+
+  get cameraProfile() {
+    return this.profile;
+  }
+
+  /** Receives the newest prediction (viewport px) whenever WebGazer's loop emits one, or null when it cannot see a face. */
+  setPredictionListener(cb: ((p: GazePrediction | null) => void) | null) {
+    this.predictCb = cb;
+  }
+
+  /** How many calibration labels have been recorded so far. */
+  get recordedSamples() {
+    return this.recorded;
+  }
 
   /**
-   * Ask for the camera and load the face model. Throws with a plain message on failure.
-   * Concurrent calls share one start (React Strict Mode double-invokes effects in dev, and the
-   * camera must only be requested once); stop() drops the shared start so a start right after a
-   * stop is always a fresh one rather than the cancelled one.
+   * Ask for the camera and warm WebGazer up. Idempotent: concurrent calls share one start (React
+   * Strict Mode double-invokes effects in dev), and stop() during a start cancels the remainder.
    */
-  start(video: HTMLVideoElement): Promise<void> {
+  start(): Promise<void> {
     if (this.starting) return this.starting;
-    if (this.landmarker) return Promise.resolve();
-    const run = this.begin(video).finally(() => {
+    if (this.wg) return Promise.resolve();
+    this.stopRequested = false;
+    const run = this.begin().finally(() => {
       if (this.starting === run) this.starting = null;
     });
     this.starting = run;
     return run;
   }
 
-  private async begin(video: HTMLVideoElement): Promise<void> {
-    routeMediapipeInfo();
-    const generation = ++this.generation;
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
-      audio: false,
+  private async begin(): Promise<void> {
+    const wg = await loadWebgazer();
+    if (this.stopRequested) return;
+
+    // One-time configuration: everything off except raw predictions - our own UI draws the cursor.
+    wg.saveDataAcrossSessions(false); // privacy: nothing persists between sessions or page loads
+    wg.params.faceMeshSolutionPath = SOLUTION_PATH;
+    // A bigger, sharper face means finer iris landmarks, which is what the eye patches are built
+    // from. Zoom is a request: cameras without it ignore it, and the layer falls back to the
+    // "safe" view when the zoomed one does not track.
+    wg.params.camConstraints =
+      this.profile === "safe"
+        ? { video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" }, audio: false }
+        : {
+            video: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              facingMode: "user",
+              advanced: [{ zoom: { ideal: 1.5 } }],
+            },
+            audio: false,
+          };
+    wg.showVideo(false);
+    wg.showPredictionPoints(false);
+    wg.showFaceOverlay(false);
+    wg.showFaceFeedbackBox(false);
+    wg.applyKalmanFilter(true); // WebGazer's own jitter filter; our One-Euro sits on top
+    wg.setGazeListener((data) => {
+      if (!this.predictCb) return;
+      this.predictCb(data ? { x: data.x, y: data.y, at: performance.now() } : null);
     });
-    if (generation !== this.generation) { stream.getTracks().forEach(t => t.stop()); throw new Error("Tracking cancelled"); }
-    this.stream = stream;
-    this.video = video;
-    video.srcObject = stream;
-    video.muted = true;
-    video.playsInline = true;
-    await video.play();
 
-    const fileset = await FilesetResolver.forVisionTasks(WASM_BASE);
-    const options = (delegate: "GPU" | "CPU") => ({
-      baseOptions: { modelAssetPath: MODEL_URL, delegate },
-      runningMode: "VIDEO" as const,
-      numFaces: 1,
-      outputFaceBlendshapes: false,
-      outputFacialTransformationMatrixes: false,
+    // begin() rejects when the camera is denied or missing; it does not resolve while the
+    // prediction loop runs, so success is "the video frame data has arrived".
+    const started = wg.begin(() => {});
+    await new Promise<void>((resolve, reject) => {
+      started.catch(reject);
+      const t0 = performance.now();
+      const check = () => {
+        if (this.stopRequested) {
+          resolve();
+          return;
+        }
+        if (wg.isReady()) {
+          resolve();
+          return;
+        }
+        if (performance.now() - t0 > READY_TIMEOUT_MS) {
+          reject(new Error("The camera started but eye tracking did not warm up."));
+          return;
+        }
+        setTimeout(check, 100);
+      };
+      setTimeout(check, 150);
     });
-    // CPU delegate on purpose: the GPU/WebGL path throws intermittently mid-run on some
-    // machines ("finishProcessing" errors), and XNNPACK CPU keeps ~30 fps with none of that.
-    const landmarker = await FaceLandmarker.createFromOptions(fileset, options("CPU"));
-    if (generation !== this.generation) { landmarker.close(); throw new Error("Tracking cancelled"); }
-    this.landmarker = landmarker;
-  }
-
-  /**
-   * One inference pass over the newest camera frame. Returns undefined between camera frames (the
-   * webcam delivers ~30 fps; the render loop runs faster, so this throttles the model itself).
-   * Null means a new frame had no usable face; callers must cancel dwell for that frame.
-   */
-  detect(nowMs: number): NormalizedLandmark[] | null | undefined {
-    if (!this.landmarker || !this.video) return null;
-    if (this.video.readyState < 2 || this.video.videoWidth === 0) return null;
-    if (this.video.currentTime === this.lastFrameTime) return undefined;
-    this.lastFrameTime = this.video.currentTime;
-    try {
-      const result = this.landmarker.detectForVideo(this.video, nowMs);
-      this.detectErrors = 0;
-      return result.faceLandmarks[0] ?? null;
-    } catch {
-      // Warmup or a bad frame: skip it instead of crashing the render loop or spamming the
-      // console. A long run of failures is reported through `unhealthy` instead.
-      this.detectErrors++;
-      return null;
+    if (this.stopRequested) {
+      this.stop();
+      return;
     }
+    // Calibration labels must come only from our explicit calibration dots: WebGazer's built-in
+    // click/move recording would otherwise teach the regression from ordinary mouse use.
+    wg.removeMouseEventListeners();
+    this.wg = wg;
   }
 
-  private lumaCanvas: HTMLCanvasElement | null = null;
+  /** Train the regression: the person is looking at viewport (x, y) right now. */
+  recordCalibration(x: number, y: number) {
+    this.recorded++;
+    this.wg?.recordScreenPosition(x, y, "click");
+  }
 
-  /**
-   * Brightness (0..1) of the face in the current camera frame, measured on a 16 x 16 canvas that is
-   * read straight away and discarded: nothing is stored, logged or sent. Used to notice that the room
-   * has got darker or brighter since calibration, which shifts the shadows around the eyes.
-   */
-  faceLuma(landmarks: NormalizedLandmark[]): number | null {
-    const v = this.video;
-    if (!v || v.readyState < 2 || v.videoWidth === 0 || typeof document === "undefined") return null;
-    const l = landmarks[234];
-    const r = landmarks[454];
-    const t = landmarks[10];
-    const b = landmarks[152];
-    if (!l || !r || !t || !b) return null;
-    const x0 = Math.max(0, Math.min(l.x, r.x) * v.videoWidth);
-    const y0 = Math.max(0, Math.min(t.y, b.y) * v.videoHeight);
-    const sw = Math.min(v.videoWidth - x0, Math.max(8, Math.abs(r.x - l.x) * v.videoWidth));
-    const sh = Math.min(v.videoHeight - y0, Math.max(8, Math.abs(b.y - t.y) * v.videoHeight));
-    if (sw < 8 || sh < 8) return null;
+  /** Forget everything the regression learned (used before a recalibration). */
+  async resetCalibration() {
+    this.recorded = 0;
     try {
-      const canvas = (this.lumaCanvas ??= document.createElement("canvas"));
-      canvas.width = 16;
-      canvas.height = 16;
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      if (!ctx) return null;
-      ctx.drawImage(v, x0, y0, sw, sh, 0, 0, 16, 16);
-      const d = ctx.getImageData(0, 0, 16, 16).data;
-      let sum = 0;
-      for (let i = 0; i < d.length; i += 4) sum += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
-      return sum / ((d.length / 4) * 255);
+      await this.wg?.clearData();
     } catch {
-      return null;
+      // clearData touches storage backends; with data saving off it may have nothing to do.
     }
-  }
-
-  /** Pixel geometry of the actual video, independent of CSS mirroring or display size. */
-  get frameAspectRatio() {
-    return this.video && this.video.videoWidth > 0 && this.video.videoHeight > 0
-      ? this.video.videoWidth / this.video.videoHeight : 1;
-  }
-
-  /** True when inference keeps failing (bad lighting, unsupported camera) — the UI can say so. */
-  get unhealthy() {
-    return this.detectErrors > 60;
   }
 
   /** Stop everything: the camera light must go out the moment gaze is disabled. */
   stop() {
-    this.generation++;
-    this.starting = null;
-    this.landmarker?.close();
-    this.landmarker = null;
-    this.stream?.getTracks().forEach((t) => t.stop());
-    this.stream = null;
-    if (this.video) this.video.srcObject = null;
-    this.video = null;
-    this.lastFrameTime = -1;
-    this.detectErrors = 0;
+    this.stopRequested = true;
+    const wg = this.wg;
+    this.wg = null;
+    this.recorded = 0;
+    this.setPredictionListener(null);
+    if (!wg) return;
+    try {
+      wg.stopVideo();
+    } catch {
+      // The stream may already be gone (failed start).
+    }
+    wg.clearGazeListener();
+    wg.end();
   }
 }

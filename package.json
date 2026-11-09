@@ -17,7 +17,6 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@mediapipe/tasks-vision": "^1.2.2",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "better-auth": "1.7.18",
@@ -27,6 +26,7 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "three": "^0.170.0",
+    "webgazer": "^3.5.3",
     "zod": "^4.6.7"
   },
   "devDependencies": {

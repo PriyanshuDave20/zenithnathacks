@@ -14,6 +14,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     ".agents/**",
     ".claude/**",
+    // Vendored third-party runtime assets (WebGazer's face-mesh solution files) - minified library
+    // code, never edited by hand.
+    "public/**",
   ]),
 ]);
 
