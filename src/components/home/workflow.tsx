@@ -64,11 +64,11 @@ export function Workflow() {
           id="how-title"
           className="max-w-[18ch] font-display text-[clamp(2.25rem,6vw,3.5rem)] font-bold leading-[1.04] tracking-[-0.03em] [text-wrap:balance]"
         >
-          One visit. One device, passed back and forth.
+          One device. Both sides of the conversation.
         </h2>
         <p className="mt-5 max-w-[38rem] text-lg leading-relaxed text-ink-soft">
-          Six steps, from the clinician&rsquo;s first tap to a cleared screen. Each person only sees what is
-          meant for them.
+          Follow one example visit, from patient input to an English summary and a translated
+          reply. The patient needs no app or account.
         </p>
 
         <div className="mt-14 lg:mt-6 lg:grid lg:grid-cols-[1fr_22rem] lg:gap-16">

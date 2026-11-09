@@ -11,10 +11,11 @@ export function Closing() {
           id="closing-title"
           className="mx-auto mt-12 max-w-[16ch] font-display text-[clamp(2.25rem,6vw,3.5rem)] font-bold leading-[1.04] tracking-[-0.03em] [text-wrap:balance]"
         >
-          Ready when your next patient is.
+          Start a clearer conversation.
         </h2>
         <p className="mx-auto mt-5 max-w-[32rem] text-lg leading-relaxed text-on-navy-soft">
-          Open it on the device in your hand. Pick a language and a mode, and pass it over.
+          See how one device connects patient input, clinician review, and a reply the patient can
+          understand. Sign in to try a session.
         </p>
         <Link
           href="/dashboard"
@@ -30,7 +31,7 @@ export function Closing() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-on-navy-soft sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <p>Synapse · Built at NatHacks 2026</p>
-          <p>Synthetic demo data only. Not a diagnostic tool or certified interpreter.</p>
+          <p>Helping patients and clinicians communicate. Demo uses fictional patient examples.</p>
         </div>
       </div>
     </footer>

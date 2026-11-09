@@ -43,11 +43,19 @@ export function HeartbeatJourney() {
 
     function resize() {
       const dpr = Math.min(devicePixelRatio || 1, 2);
-      width = innerWidth;
-      height = innerHeight;
-      canvas!.width = Math.round(width * dpr);
-      canvas!.height = Math.round(height * dpr);
-      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const mobile = innerWidth < 768;
+      const bounds = mobile ? canvas!.getBoundingClientRect() : undefined;
+      width = bounds?.width ?? innerWidth;
+      height = bounds?.height ?? innerHeight;
+      const pixelWidth = Math.round(width * dpr);
+      const pixelHeight = Math.round(height * dpr);
+      // Mobile browser chrome changes dvh while scrolling. Keep the bitmap fitted to
+      // its CSS box, and avoid clearing it again when the dimensions haven't changed.
+      if (!mobile || canvas!.width !== pixelWidth || canvas!.height !== pixelHeight) {
+        canvas!.width = pixelWidth;
+        canvas!.height = pixelHeight;
+        ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
       const r = slot!.getBoundingClientRect();
       const copy = document.querySelector<HTMLElement>("[data-emblem-copy]")?.getBoundingClientRect();
       const phone = document.querySelector<HTMLElement>("[data-phone-rail] figure")?.getBoundingClientRect();
@@ -84,7 +92,8 @@ export function HeartbeatJourney() {
     function draw(time: number) {
       const reducedMotion = motion.matches;
       const pulse = live && !reducedMotion;
-      const maxScroll = document.documentElement.scrollHeight - innerHeight;
+      const mobile = width < 768;
+      const maxScroll = document.documentElement.scrollHeight - (mobile ? height : innerHeight);
       const progress = maxScroll > 0 ? clamp(scrollY / maxScroll) : 0;
       const launchDistance = innerHeight * 0.7;
       const travel = clamp(scrollY / launchDistance);
@@ -93,12 +102,16 @@ export function HeartbeatJourney() {
       const dockY = header!.getBoundingClientRect().bottom - 1;
       const hasEmblem = rect.width > 8 && rect.height > 8;
       // The monitor begins exactly where the snake arrives. Progress only continues clockwise.
-      const entryX = hasEmblem ? origin.x : width * 0.72;
       const startX = 16;
+      const entryX = mobile ? startX : hasEmblem ? origin.x : width * 0.72;
       const pathLength = width - 12 - 18 - startX + Math.PI * 18 / 2 + Math.max(0, height - 24 - dockY - 18);
       const entryProgress = clamp((entryX - startX) / pathLength);
       const readingProgress = hasEmblem ? clamp((scrollY - launchDistance) / Math.max(1, maxScroll - launchDistance)) : progress;
-      const monitorProgress = mix(entryProgress, 1, readingProgress);
+      // Keep the entire mobile waveform on the route at both ends: clamped points
+      // otherwise pile up into a flickering vertical stroke at the left edge.
+      const monitorProgress = mobile
+        ? mix(22 / pathLength, 1 - 22 / pathLength, progress)
+        : mix(entryProgress, 1, readingProgress);
       const animating = live && !reducedMotion;
       if (t0 < 0) t0 = time;
       if (!animating) introDone = true;
@@ -108,7 +121,7 @@ export function HeartbeatJourney() {
       const idle = animating && introDone ? 1 - ease(0, 0.1, phase) : 0;
       const sway = idle * 0.22 * Math.sin(time / 1500);
       const stage: Stage = { ...origin, dockX: origin.x, dockY, sway };
-      const docked = hasEmblem ? ease(0.86, 1, phase) : ease(0.01, 0.15, phase);
+      const docked = mobile ? ease(0, 48, scrollY) : hasEmblem ? ease(0.86, 1, phase) : ease(0.01, 0.15, phase);
       const bucket = animating ? Math.round(time / 33) : 0;
       const stamp = [phase, progress, stage.x, stage.top, stage.height, width, height, bucket, introDone ? 1 : Math.round(introP * 200)].join(":");
       if (stamp === lastPaint) return;
@@ -321,7 +334,7 @@ export function HeartbeatJourney() {
         const trailEnd = Math.max(0, monitorProgress - 22 / pathLength);
         // The tail unfurls backwards from the arriving snake, with a feathered origin.
         // It reads as the same signal gaining history, not a bar appearing from nowhere.
-        const trailStart = mix(trailEnd, 0, ease(0.84, 1, phase));
+        const trailStart = mobile ? 0 : mix(trailEnd, 0, ease(0.84, 1, phase));
         const travelled = Array.from({ length: 180 }, (_, i) => route(mix(trailStart, trailEnd, i / 179)));
         // A dark under-stroke keeps the quiet blue trace legible over both the white and navy bands.
         line(track, navy, 3, docked * 0.2);
@@ -371,6 +384,8 @@ export function HeartbeatJourney() {
       requestPaint();
     }
     void document.fonts.ready.then(() => { if (mounted) resize(); });
+    const viewportFit = new ResizeObserver(() => { if (innerWidth < 768) resize(); });
+    viewportFit.observe(canvas);
     requestPaint();
     window.addEventListener("resize", resize);
     window.addEventListener("scroll", scroll, { passive: true });
@@ -380,6 +395,7 @@ export function HeartbeatJourney() {
     return () => {
       mounted = false;
       cancelAnimationFrame(raf);
+      viewportFit.disconnect();
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", scroll);
       document.removeEventListener("visibilitychange", visibility);
