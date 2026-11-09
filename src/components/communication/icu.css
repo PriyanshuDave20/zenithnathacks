@@ -4,6 +4,86 @@
   gap: 24px;
   align-items: start;
 }
+
+/* Eye mode owns its chrome and layout; shared session rules must not create a
+   second column or a separate action bar around the patient's choices. */
+.eye-shell .eye-header-inner {
+  min-height: 60px;
+  padding-block: max(8px, env(safe-area-inset-top)) 8px;
+  gap: 16px;
+  flex-wrap: nowrap;
+}
+.eye-shell[data-eye-wide="on"] .eye-header-inner {
+  padding-top: max(8px, var(--eye-edge-v, 8px));
+}
+.eye-shell .eye-header-inner > a { width: 112px; }
+.eye-shell .eye-header-inner > a svg { height: 20px; }
+.eye-mode-label { font-size: 0.875rem; color: var(--on-navy-soft, #b9c9db); white-space: nowrap; }
+.eye-header-actions { display: flex; align-items: center; gap: 8px; margin-inline-start: auto; }
+.eye-shell .eye-header-actions button { font-size: 0.875rem; white-space: nowrap; }
+.eye-shell .eye-header-actions .eye-pass { background: #77a0c4; color: #101e34; }
+.eye-shell .eye-tools {
+  max-width: min(1152px, calc(100% - 2 * var(--eye-edge, 24px)));
+  margin: 16px auto 0;
+  padding: 20px;
+  background: var(--paper);
+  border: 1px solid var(--stroke);
+  border-radius: 20px;
+}
+.eye-tool-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.eye-shell .eye-tool-actions [aria-pressed="true"] { background: var(--action); color: var(--paper); }
+.eye-guidance { margin-top: 20px; max-width: 72ch; }
+.eye-guidance p, .eye-guidance h3 { margin-top: 12px; }
+.eye-guidance p, .eye-privacy-note { color: var(--muted); }
+.eye-guidance svg { display: inline-block; vertical-align: middle; }
+.eye-privacy-note { margin-top: 16px; font-size: 0.875rem; }
+.eye-shell .sf-icu-patient { padding-top: 16px; padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+.eye-context { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.eye-context > div { font-size: 0.875rem; }
+.eye-tracking-status { font-size: 0.875rem; color: var(--muted); white-space: nowrap; }
+.eye-shell .eye-context > .sc-quiet { min-height: 44px; padding: 8px 12px; font-size: 0.875rem; }
+.eye-shell .scIcu-layout { display: block; max-width: none; margin: 0; --eye-choice-columns: 3; }
+.eye-shell .sc-panelHead { padding: 16px 20px; }
+.eye-shell .sc-panelHead > div { min-width: 0; }
+.eye-shell .sc-panelHead > button { flex-shrink: 0; font-size: 1rem; }
+.eye-shell .sf-icu-status { padding: 8px 20px 12px; background: var(--paper); font-size: 1rem; }
+.eye-shell .eye-status-empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.eye-shell .scIcu-board { padding: 20px; gap: 16px; }
+.eye-patient-stop {
+  position: fixed;
+  bottom: max(12px, var(--eye-edge-v, 12px), env(safe-area-inset-bottom));
+  inset-inline: max(16px, var(--eye-edge, 16px));
+  z-index: 35;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.eye-patient-stop > button { pointer-events: auto; }
+.eye-shell[data-eye-tracking="on"] .sf-icu-patient { padding-bottom: calc(104px + var(--eye-edge-v, 12px)); }
+@media (max-width: 600px) {
+  .eye-shell .eye-header-inner { gap: 8px; }
+  .eye-shell .eye-header-inner > a, .eye-shell .eye-header-inner > a svg { width: 76px; }
+  .eye-mode-label { display: none; }
+  .eye-header-actions { gap: 6px; }
+  .eye-shell .eye-header-actions button { padding: 6px 9px; font-size: 0.75rem; white-space: normal; line-height: 1.25; }
+  .eye-shell .eye-header-actions .eye-pass { max-width: 92px; }
+  .eye-shell .eye-header-actions button:first-child:not(:last-child) { max-width: 86px; }
+  .eye-shell .eye-tools { padding: 16px; }
+  .eye-shell .scIcu-layout { --eye-choice-columns: 2; }
+  .eye-shell .sc-panelHead { padding: 12px; gap: 8px; }
+  .eye-shell .sc-panelHead h2 { font-size: 1.125rem; }
+  .eye-shell .sc-panelHead > button { padding-inline: 12px; font-size: 0.875rem; }
+  .eye-shell .scIcu-board { padding: 12px; gap: 12px; }
+  .eye-context { gap: 8px; }
+}
 .scIcu-board {
   padding: 24px;
   display: grid;

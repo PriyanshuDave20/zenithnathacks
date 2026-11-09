@@ -85,6 +85,7 @@ export function IcuBoard({
   const [colourBlind, setColourBlind] = useState(false); // this visit only
   const [handoff, setHandoff] = useState(false);
   const [reviewed, setReviewed] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   useEffect(
     () => () => {
       setHandoff(false);
@@ -117,7 +118,7 @@ export function IcuBoard({
       root.setProperty("--eye-edge-v", `${Math.round(edgeWide ? edge : edge / 2)}px`);
       // The floating eye buttons sit this far in from the side; on a wide enough screen the board leaves a gutter for
       // them (button width + a gap) so they never lie on top of a choice.
-      root.setProperty("--eye-gutter", window.innerWidth >= 900 ? `${edge + 100}px` : "0px");
+      root.setProperty("--eye-gutter", gazePhase === "on" && window.innerWidth >= 900 ? `${edge + 100}px` : `${edge}px`);
     };
     apply();
     window.addEventListener("resize", apply);
@@ -127,7 +128,7 @@ export function IcuBoard({
       document.documentElement.style.removeProperty("--eye-edge-v");
       document.documentElement.style.removeProperty("--eye-gutter");
     };
-  }, [edgeWide]);
+  }, [edgeWide, gazePhase]);
   // 3-2-1 after the clinician taps Ready, so the patient can settle before the camera starts.
   const [count, setCount] = useState<number | null>(null);
   useEffect(() => {
@@ -166,42 +167,60 @@ export function IcuBoard({
     window.scrollTo({ top: 0 });
   }, [handoff, reviewed, expired]);
   return (
-    <div className={`${s.root} ${contrast ? s.high : ""}`} data-cvd={colourBlind ? "on" : undefined}>
+    <div className={`${s.root} eye-shell ${contrast ? s.high : ""}`} data-cvd={colourBlind ? "on" : undefined} data-eye-wide={edgeWide ? "on" : undefined} data-eye-tracking={gazePhase === "on" ? "on" : undefined}>
       <header className={s.header} data-gaze-ignore>
-        <div className={s.headerInner} style={{ paddingInline: "max(24px, var(--eye-edge, 24px))", paddingTop: "max(8px, var(--eye-edge-v, 8px))" }}>
+        <div className={`${s.headerInner} eye-header-inner`} style={{ paddingInline: "max(16px, var(--eye-edge, 16px))" }}>
           <Link href="/start" aria-label="Back to communication workspace">
             <SynapseWordmark accent="#77a0c4" />
           </Link>
-          <span className={s.holder}>Eye mode</span>
-          <div className={s.headerActions}>
+          <span className="eye-mode-label">Eye mode</span>
+          <div className="eye-header-actions">
             {gazeRequested && !handoff && !reviewed && !expired ? (
               <button type="button" onClick={stopGaze}>
                 Stop eye control
               </button>
             ) : null}
-            {eyeState.mode ? (
-              <button type="button" data-gaze-ignore onClick={() => eye.start(eyeState.mode === "intake" ? "conversation" : "intake")}>
-                {eyeState.mode === "intake" ? "Switch to conversation" : "Switch to intake"}
-              </button>
-            ) : null}
-            {eyeState.mode ? (
-              <button type="button" data-gaze-ignore onClick={eye.clear}>
-                Clear
-              </button>
-            ) : null}
-            <button
-              type="button"
-              aria-pressed={contrast}
-              onClick={() => setContrast(!contrast)}
-            >
-              High contrast
+            <button type="button" aria-expanded={toolsOpen} aria-controls="eye-clinician-tools" onClick={() => setToolsOpen(!toolsOpen)}>
+              {toolsOpen ? "Close tools" : "Clinician tools"}
             </button>
-            <button type="button" aria-pressed={colourBlind} onClick={() => setColourBlind(!colourBlind)}>
-              Colour-blind friendly
-            </button>
+            {boardUp ? <button type="button" className="eye-pass" onClick={() => { setToolsOpen(false); setHandoff(true); }}>Pass to clinician</button> : null}
           </div>
         </div>
       </header>
+      <section id="eye-clinician-tools" className="eye-tools" aria-label="Clinician tools" hidden={!toolsOpen} data-gaze-ignore>
+        <div className="eye-tool-actions">
+          {eyeState.mode ? <>
+            <button type="button" className={s.quiet} onClick={() => { eye.start(eyeState.mode === "intake" ? "conversation" : "intake"); setToolsOpen(false); }}>
+              {eyeState.mode === "intake" ? "Switch to conversation" : "Switch to intake"}
+            </button>
+            <button type="button" className={s.quiet} onClick={() => { eye.clear(); setToolsOpen(false); }}>Clear</button>
+          </> : null}
+          <button type="button" className={s.quiet} aria-pressed={contrast} onClick={() => setContrast(!contrast)}>High contrast</button>
+          <button type="button" className={s.quiet} aria-pressed={colourBlind} onClick={() => setColourBlind(!colourBlind)}>Colour-blind friendly</button>
+        </div>
+            <div className="eye-guidance">
+              <h2>Eye control guidance</h2>
+              <p>
+                Position the screen directly in front of the patient, at a
+                comfortable viewing distance.
+              </p>
+              <h3>Eye control</h3>
+              <p>
+                Choose Intake or Conversation, then tap Ready when you and the patient are both looking at the screen; the patient then follows the 30-second moving dot. Keep the device and head steady; recalibrate after moving either.
+              </p>
+              <p className={s.notice}>
+                A ring around the gaze cursor fills while looking at a choice. A completed two-second dwell selects it. Camera frames are processed on this device; tracking can be turned off using the eye button.
+              </p>
+              <p>
+                Choices here do not notify staff or trigger clinical actions.
+              </p>
+              <p>
+                <Speaker size={18} /> Keep spoken reassurance and a human
+                communication aid available.
+              </p>
+            </div>
+        <p className="eye-privacy-note">Camera processing stays on this device. Selections are kept only for this conversation.</p>
+      </section>
       {expired ? (
         <main ref={main} tabIndex={-1} className={s.handoff}>
           <h1>Session cleared</h1>
@@ -259,7 +278,7 @@ export function IcuBoard({
           </section>
         </main>
       ) : (
-        <main ref={main} tabIndex={-1} className={`${s.main} sf-icu-patient`} style={{ paddingInline: "max(24px, var(--eye-edge, 24px))" }}>
+        <main ref={main} tabIndex={-1} className={`${s.main} sf-icu-patient`} style={{ paddingInlineStart: "max(16px, var(--eye-edge, 16px))", paddingInlineEnd: "max(16px, var(--eye-gutter, 16px))" }}>
           {boardUp && !gazeSkipped && (count !== null || !gazeRequested || gazePhase === "off" || gazePhase === "starting") ? (
             <div className="sf-icu-gate" role="dialog" aria-modal="true" aria-labelledby="icu-gate-title">
               <style>{GATE_CSS}</style>
@@ -328,18 +347,10 @@ export function IcuBoard({
               )}
             </div>
           ) : null}
-          <div className={s.intro}>
-            {/* Once a mode is chosen, the page title makes room so the choices fit without scrolling. */}
-            {eyeState.screen === "mode" ? (
-              <div>
-                <h1>Let your eyes do the talking.</h1>
-                <p>One clear choice at a time, with room to rest.</p>
-              </div>
-            ) : (
-              <h1 className="sr-only">Eye mode questions</h1>
-            )}
+          <h1 className="sr-only">Eye communication board</h1>
+          <div className="eye-context" data-gaze-ignore>
             <ClinicianBar />
-            <span className={s.badge}>
+            <span className="eye-tracking-status">
               {gazePhase === "on" ? "Eye control on" : "Eye control off"}
             </span>
             {gazeSkipped && gazePhase !== "on" ? (
@@ -348,7 +359,7 @@ export function IcuBoard({
               </button>
             ) : null}
           </div>
-          <div className={i.layout} style={{ maxWidth: "min(1050px, calc(100vw - 2 * var(--eye-gutter, 0px)))" }}
+          <div className={i.layout}
             onClickCapture={(event) => {
               // A deliberate mode/board choice starts this local flow, including a resumed board.
               // Camera setup and clinician controls are outside this surface.
@@ -358,55 +369,8 @@ export function IcuBoard({
             }}
           >
             <EyeWorkspace onSelect={onSelect} />
-            <details className={`${s.sheet} sf-icu-guide`} data-gaze-ignore>
-              <summary>Clinician guidance & preview controls</summary>
-              <p>
-                Position the screen directly in front of the patient, at a
-                comfortable viewing distance.
-              </p>
-              <h3>Eye control</h3>
-              <p>
-                Choose Intake or Conversation, then tap Ready when you and the patient are both looking at the screen; the patient then follows the 30-second moving dot. Keep the device and head steady; recalibrate after moving either.
-              </p>
-              <p className={s.notice}>
-                A ring around the gaze cursor fills while looking at a choice. A completed two-second dwell selects it. Camera frames are processed on this device; tracking can be turned off using the eye button.
-              </p>
-              <p>
-                Choices here do not notify staff or trigger clinical actions.
-              </p>
-              <button
-                type="button"
-                className={s.quiet}
-                disabled={!eyeState.mode}
-                onClick={eye.clear}
-              >
-                Clear everything
-              </button>
-              <p>
-                <Speaker size={18} /> Keep spoken reassurance and a human
-                communication aid available.
-              </p>
-            </details>
-          </div>
-        </main>
-      )}
-      {idle.warningLeft !== null ? (
-        <aside className={s.alert} role="alert">
-          <h2>Still there?</h2>
-          <p>To protect privacy, this session clears in {idle.warningLeft}s.</p>
-          <button type="button" className={s.primary} onClick={idle.keepAlive}>Keep session</button>
-        </aside>
-      ) : null}
-      {!expired && !handoff && !reviewed ? (
-        <footer className={s.footer} style={{ paddingBottom: "max(16px, var(--eye-edge-v, 16px))", paddingInline: "max(24px, var(--eye-edge, 24px))" }}>
-          <div className={s.footerInner}>
-            <p>
-              Camera processing stays on this device. Selections are kept only for this conversation.
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", flexShrink: 0, maxWidth: "100%", gap: 12, alignItems: "stretch", justifyContent: "flex-end" }}>
               {gazePhase === "on" ? (
-                // Big, always on screen, and a normal button: the person can dwell on it with their eyes like
-                // any choice, or the clinician can tap it. Inline styles so a stale dev stylesheet cannot shrink it.
+                <div className="eye-patient-stop">
                 <button
                   type="button"
                   data-gaze-target="stop-eye-control"
@@ -414,7 +378,7 @@ export function IcuBoard({
                   onClick={stopGaze}
                   style={{
                     minHeight: 72,
-                    minWidth: "18rem",
+                    minWidth: "min(18rem, 100%)",
                     maxWidth: "100%",
                     padding: "0 32px",
                     borderRadius: 9999,
@@ -431,19 +395,20 @@ export function IcuBoard({
                     Look here for 2 seconds, or tap
                   </span>
                 </button>
+                </div>
               ) : null}
-              <button
-                type="button"
-                data-gaze-ignore
-                className={s.primary}
-                onClick={() => setHandoff(true)}
-              >
-                Pass to clinician
-              </button>
-            </div>
+
           </div>
-        </footer>
+        </main>
+      )}
+      {idle.warningLeft !== null ? (
+        <aside className={s.alert} role="alert">
+          <h2>Still there?</h2>
+          <p>To protect privacy, this session clears in {idle.warningLeft}s.</p>
+          <button type="button" className={s.primary} onClick={idle.keepAlive}>Keep session</button>
+        </aside>
       ) : null}
+
     </div>
   );
 }
