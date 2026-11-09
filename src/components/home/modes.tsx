@@ -21,19 +21,19 @@ export const modes: { id: ModeId; tab: string; short: string; arrives: string; i
     tab: "Another language",
     short: "Language",
     arrives: "Speech in the patient’s language",
-    intro: "The patient speaks or types in their own language, then checks a read-back before sharing it with the clinician.",
+    intro: "The patient speaks or types in their own language, then checks the message before sharing it with the clinician.",
   },
   {
     id: "deaf",
     tab: "Deaf or hard of hearing",
     short: "Deaf/HoH",
     arrives: "Typing and taps, with captions",
-    intro: "Questions and replies appear as large text. The patient types or taps an answer. No audio-only cues.",
+    intro: "Questions and replies appear as large text. The patient types or taps an answer, with no need to hear the audio.",
   },
   {
     id: "literacy",
-    tab: "Low literacy",
-    short: "Literacy",
+    tab: "Pictures & simple questions",
+    short: "Pictures",
     arrives: "Pictures, with read-aloud",
     intro: "One question at a time, answered with pictures. Read-aloud supports the questions and answers.",
   },
@@ -197,10 +197,11 @@ export function Modes() {
           id="modes-title"
           className="max-w-[16ch] font-display text-[clamp(2.25rem,6vw,3.5rem)] font-bold leading-[1.04] tracking-[-0.03em] [text-wrap:balance]"
         >
-          A way to communicate. For every patient.
+          Different ways to join the conversation.
         </h2>
         <p className="mt-5 max-w-[38rem] text-lg leading-relaxed text-ink-soft">
-          Choose how the patient communicates. Explore speech, captions, pictures, typed phrases, and the Eye mode board.
+          Speak, type, tap pictures, or use the Eye mode board. Choose the approach that fits this
+          patient and this visit.
         </p>
 
         <div

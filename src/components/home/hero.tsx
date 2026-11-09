@@ -25,15 +25,15 @@ export function Hero() {
             className="rise mt-4 max-w-[34rem] text-lg leading-relaxed text-on-navy-soft sm:hidden"
             style={{ ["--i" as string]: 1 }}
           >
-            Patients say it their way. Clinicians get a clear summary. Nothing is stored.
+            One shared device helps patients express their needs and clinicians respond across language, hearing, and speech barriers.
           </p>
           <p
             className="rise mt-6 hidden max-w-[34rem] text-xl leading-relaxed text-on-navy-soft sm:block"
             style={{ ["--i" as string]: 1 }}
           >
-            Patients describe what is wrong in their own language and their own way: speech, text, or
-            pictures. Synapse turns it into a clear summary for the clinician, on the clinician&rsquo;s own
-            device. Nothing is stored.
+            Communication barriers shouldn&rsquo;t stop a clinical conversation. Synapse brings
+            speech, text, pictures, and translated replies to one shared device, helping patients
+            explain their needs and clinicians respond. No patient download or account required.
           </p>
           <div className="rise mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 sm:mt-9" style={{ ["--i" as string]: 2 }}>
             <Link
@@ -54,7 +54,7 @@ export function Hero() {
             </a>
           </div>
           <p className="rise mt-10 hidden max-w-[30rem] text-sm text-on-navy-soft lg:block" style={{ ["--i" as string]: 3 }}>
-            A communication aid, not a diagnostic tool or a certified interpreter. The demo uses synthetic data only.
+            Built to support the conversation. This walkthrough uses fictional patient examples.
           </p>
         </div>
 
@@ -69,7 +69,7 @@ export function Hero() {
             <ArrowDown size={18} />
           </a>
           <p className="mt-8 text-center text-sm text-on-navy-soft lg:hidden">
-            A communication aid, not a diagnostic tool or a certified interpreter. The demo uses synthetic data only.
+            Built to support the conversation. This walkthrough uses fictional patient examples.
           </p>
         </div>
         <div aria-hidden="true" className="hidden min-h-[calc(100svh-12rem)] lg:block" />

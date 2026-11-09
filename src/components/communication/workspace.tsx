@@ -188,7 +188,7 @@ function Action({
 
 export function CommunicationWorkspace() {
   const [stage, setStage] = useState<Stage>("setup");
-  const [language, setLanguage] = useState<PatientLanguage>("es");
+  const [language, setLanguage] = useState<PatientLanguage>("en");
   const [mode, setMode] = useState<Mode>("standard");
   const [role, setRole] = useState<"patient" | "clinician">("clinician");
   const [setupMode, setSetupMode] = useState<SetupMode>("icu");
